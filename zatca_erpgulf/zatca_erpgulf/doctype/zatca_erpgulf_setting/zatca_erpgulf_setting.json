@@ -1,0 +1,221 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-08 11:32:46.332033",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "details_and_otp_section",
+  "zatca_invoice_enabled",
+  "background",
+  "send_invoice_to_zatca",
+  "select",
+  "create_csr",
+  "csr_data",
+  "attach_xml_with_invoice",
+  "attach_xml_with_qr_code",
+  "attach_qr_code_doctype",
+  "attach_e_invoice_send_status_with_invoice",
+  "pih",
+  "urls__api_endpoints_section",
+  "sandbox_url",
+  "simulation_url",
+  "production_url",
+  "compliance_csid_generation_section",
+  "otp",
+  "csid_attach",
+  "basic_auth",
+  "compliance_request_id",
+  "zatca_compliance_check_check_all_options_below_section",
+  "validation_type",
+  "sample_invoice_to_test",
+  "check_compliance",
+  "production__csid__generation_section",
+  "production_csid",
+  "basic_auth_production"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_and_otp_section",
+   "fieldtype": "Section Break",
+   "label": "Details and OTP"
+  },
+  {
+   "default": "0",
+   "fieldname": "zatca_invoice_enabled",
+   "fieldtype": "Check",
+   "label": "Zatca invoice enabled"
+  },
+  {
+   "fieldname": "send_invoice_to_zatca",
+   "fieldtype": "Select",
+   "label": "Send invoice to zatca",
+   "options": "Live\nBatches"
+  },
+  {
+   "fieldname": "select",
+   "fieldtype": "Select",
+   "label": "Select",
+   "options": "Simulation\nSandbox\nProduction"
+  },
+  {
+   "fieldname": "create_csr",
+   "fieldtype": "Button",
+   "label": "Create CSR"
+  },
+  {
+   "default": "0",
+   "fieldname": "attach_xml_with_invoice",
+   "fieldtype": "Check",
+   "label": "Attach XML with invoice"
+  },
+  {
+   "default": "0",
+   "fieldname": "attach_xml_with_qr_code",
+   "fieldtype": "Check",
+   "label": "Attach XML with QR code"
+  },
+  {
+   "default": "0",
+   "fieldname": "attach_qr_code_doctype",
+   "fieldtype": "Check",
+   "label": "Attach QR code doctype"
+  },
+  {
+   "default": "0",
+   "fieldname": "attach_e_invoice_send_status_with_invoice",
+   "fieldtype": "Check",
+   "label": "Attach e_invoice send status with invoice"
+  },
+  {
+   "default": "0",
+   "fieldname": "pih",
+   "fieldtype": "Small Text",
+   "label": "pih"
+  },
+  {
+   "fieldname": "urls__api_endpoints_section",
+   "fieldtype": "Section Break",
+   "label": "URLs / API EndPoints"
+  },
+  {
+   "fieldname": "sandbox_url",
+   "fieldtype": "Data",
+   "label": "Sandbox URL"
+  },
+  {
+   "fieldname": "simulation_url",
+   "fieldtype": "Data",
+   "label": "Simulation URL"
+  },
+  {
+   "fieldname": "production_url",
+   "fieldtype": "Data",
+   "label": "Production URL"
+  },
+  {
+   "fieldname": "compliance_csid_generation_section",
+   "fieldtype": "Section Break",
+   "label": "Compliance CSID Generation"
+  },
+  {
+   "fieldname": "otp",
+   "fieldtype": "Data",
+   "label": "OTP"
+  },
+  {
+   "fieldname": "csid_attach",
+   "fieldtype": "Button",
+   "label": "Generate Compliance CSID"
+  },
+  {
+   "fieldname": "basic_auth",
+   "fieldtype": "Long Text",
+   "label": "Basic Auth from CSID"
+  },
+  {
+   "fieldname": "compliance_request_id",
+   "fieldtype": "Small Text",
+   "label": "Compliance request id "
+  },
+  {
+   "fieldname": "zatca_compliance_check_check_all_options_below_section",
+   "fieldtype": "Section Break",
+   "label": "Zatca Compliance Check. Check all options below."
+  },
+  {
+   "fieldname": "validation_type",
+   "fieldtype": "Select",
+   "label": "Validation Type",
+   "options": "Simplified Invoice\nStandard Invoice\nSimplified Credit Note\nStandard Credit Note\nSimplified Debit Note\nStandard Debit Note"
+  },
+  {
+   "fieldname": "check_compliance",
+   "fieldtype": "Button",
+   "label": "Check Compliance"
+  },
+  {
+   "fieldname": "production__csid__generation_section",
+   "fieldtype": "Section Break",
+   "label": "Production  CSID  Generation"
+  },
+  {
+   "fieldname": "production_csid",
+   "fieldtype": "Button",
+   "label": "Generate Production CSID"
+  },
+  {
+   "fieldname": "basic_auth_production",
+   "fieldtype": "Long Text",
+   "label": "Basic Auth from production"
+  },
+  {
+   "fieldname": "csr_data",
+   "fieldtype": "Long Text",
+   "label": "CSR Data"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "sample_invoice_to_test",
+   "fieldtype": "Data",
+   "label": "Sample Invoice Number to Test"
+  },
+  {
+   "default": "0",
+   "fieldname": "background",
+   "fieldtype": "Check",
+   "label": "Send Einvoice background"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-05-09 14:04:20.193350",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "Zatca ERPgulf Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

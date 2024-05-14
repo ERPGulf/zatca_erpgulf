@@ -214,3 +214,17 @@ app_license = "mit"
 # auth_hooks = [
 #	"zatca_erpgulf.auth.validate"
 # ]
+
+doc_events = {
+    "Sales Invoice": {
+        "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+        "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
+        "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Background_on_submit"
+    }
+}
+doctype_js = {
+    "Sales Invoice" : "public/js/our_sales_invoice.js" ,
+    }
+
+
+fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "zatca_erpgulf"]] }]
