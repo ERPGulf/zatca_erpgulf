@@ -412,7 +412,7 @@ def delivery_And_PaymentMeans(invoice,sales_invoice_doc, is_return):
                 cbc_ActualDeliveryDate.text = str(sales_invoice_doc.due_date)
                 cac_PaymentMeans = ET.SubElement(invoice, "cac:PaymentMeans")
                 cbc_PaymentMeansCode = ET.SubElement(cac_PaymentMeans, "cbc:PaymentMeansCode")
-                cbc_PaymentMeansCode.text = "32"
+                cbc_PaymentMeansCode.text = "30"
                 
                 if is_return == 1:
                     cbc_InstructionNote = ET.SubElement(cac_PaymentMeans, "cbc:InstructionNote")
@@ -427,7 +427,7 @@ def delivery_And_PaymentMeans_for_Compliance(invoice,sales_invoice_doc, complian
                 cbc_ActualDeliveryDate.text = str(sales_invoice_doc.due_date)
                 cac_PaymentMeans = ET.SubElement(invoice, "cac:PaymentMeans")
                 cbc_PaymentMeansCode = ET.SubElement(cac_PaymentMeans, "cbc:PaymentMeansCode")
-                cbc_PaymentMeansCode.text = "32"
+                cbc_PaymentMeansCode.text = "30"
                 
                 if compliance_type == "3" or compliance_type == "4" or compliance_type == "5" or compliance_type == "6":
                     cbc_InstructionNote = ET.SubElement(cac_PaymentMeans, "cbc:InstructionNote")
