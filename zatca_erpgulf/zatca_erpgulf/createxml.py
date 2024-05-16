@@ -369,10 +369,10 @@ def customer_Data(invoice,sales_invoice_doc):
                 cbc_ID_4 = ET.SubElement(cac_PartyIdentification_1, "cbc:ID")
                 cbc_ID_4.set("schemeID", "CRN")
                 cbc_ID_4.text =customer_doc.tax_id
-                if int(frappe.__version__.split('.')[0]) == 15:
-                    address = frappe.get_doc("Address", customer_doc.customer_primary_address)    
+                if int(frappe.__version__.split('.')[0]) == 13:
+                    address = frappe.get_doc("Address", sales_invoice_doc.customer_address)    
                 else:
-                    address = frappe.get_doc("Address", sales_invoice_doc.customer_address)
+                    address = frappe.get_doc("Address", customer_doc.customer_primary_address)
                 cac_PostalAddress_1 = ET.SubElement(cac_Party_2, "cac:PostalAddress")
                 cbc_StreetName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:StreetName")
                 cbc_StreetName_1.text = address.address_line1
@@ -619,13 +619,13 @@ def xml_structuring(invoice,sales_invoice_doc):
             try:
                 xml_declaration = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 tree = ET.ElementTree(invoice)
-                with open(f"xml_files.xml", 'wb') as file:
+                with open(frappe.local.site + "/private/files/xml_files.xml", 'wb') as file:
                     tree.write(file, encoding='utf-8', xml_declaration=True)
-                with open(f"xml_files.xml", 'r') as file:
+                with open(frappe.local.site + "/private/files/xml_files.xml", 'r') as file:
                     xml_string = file.read()
                 xml_dom = minidom.parseString(xml_string)
                 pretty_xml_string = xml_dom.toprettyxml(indent="  ")   # created xml into formatted xml form 
-                with open(f"finalzatcaxml.xml", 'w') as file:
+                with open(frappe.local.site + "/private/files/finalzatcaxml.xml", 'w') as file:
                     file.write(pretty_xml_string)
                           # Attach the getting xml for each invoice
                 try:

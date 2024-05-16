@@ -46,3 +46,5 @@ Goto Help->About and make sure you have Zatca app installaed.
 We have published a video tutorial on how to use this . ( https://www.youtube.com/watch?v=P0ChplXoKYg )
 
 Please contact support@ERPGulf.com for implementation support or customization.
+
+Husna M

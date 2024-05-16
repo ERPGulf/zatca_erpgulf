@@ -20,6 +20,11 @@
   "attach_qr_code_doctype",
   "attach_e_invoice_send_status_with_invoice",
   "pih",
+  "keys_for_zatca_section",
+  "csr_config",
+  "private_key",
+  "public_key",
+  "certificate",
   "urls__api_endpoints_section",
   "sandbox_url",
   "simulation_url",
@@ -193,12 +198,41 @@
    "fieldname": "background",
    "fieldtype": "Check",
    "label": "Send Einvoice background"
+  },
+  {
+   "default": "0",
+   "fieldname": "private_key",
+   "fieldtype": "Small Text",
+   "label": "Private key"
+  },
+  {
+   "fieldname": "keys_for_zatca_section",
+   "fieldtype": "Section Break",
+   "label": "Keys & Certificate For Zatca"
+  },
+  {
+   "default": "0",
+   "fieldname": "certificate",
+   "fieldtype": "Long Text",
+   "label": "certificate"
+  },
+  {
+   "default": "0",
+   "fieldname": "public_key",
+   "fieldtype": "Small Text",
+   "label": "public key"
+  },
+  {
+   "default": "0",
+   "fieldname": "csr_config",
+   "fieldtype": "Long Text",
+   "label": "CSR Config"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-05-09 14:04:20.193350",
+ "modified": "2024-05-16 13:08:04.092061",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "Zatca ERPgulf Setting",
