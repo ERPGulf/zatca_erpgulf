@@ -22,9 +22,7 @@ from cryptography.hazmat.primitives import serialization
 
 def get_csr_data():
     try:
-    # Read the properties file
-    
-            # with open('sdkcsrconfig.properties', 'r') as file:
+   
             settings = frappe.get_doc('Zatca ERPgulf Setting')
             file = settings.csr_config
             lines = file.splitlines()
@@ -79,8 +77,7 @@ def create_private_keys():
                 company_name = frappe.db.get_value("Company", company, "abbr")
                 settings.set("private_key",private_key_pem.decode('utf-8'))
                 settings.save(ignore_permissions=True)
-                # with open(f'{company_name}-privatekey.pem', 'w') as file:
-                #     file.write(private_key_pem.decode('utf-8')) 
+                
                 return private_key_pem
             except Exception as e:
                     frappe.throw(" error in creating private key: "+ str(e) )
@@ -225,9 +222,9 @@ def create_CSID():
                     'Content-Type': 'application/json',
                     'Cookie': 'TS0106293e=0132a679c07382ce7821148af16b99da546c13ce1dcddbef0e19802eb470e539a4d39d5ef63d5c8280b48c529f321e8b0173890e4f'
                     }
-                    # frappe.throw(csr_contents)
+                    
                     response = requests.request("POST", url=get_API_url(base_url="compliance"), headers=headers, data=payload)
-                    # response.status_code = 400
+                
                     if response.status_code == 400:
                         frappe.throw("Error: " + "OTP is not valid", response.text)
                     if response.status_code != 200:
@@ -235,11 +232,9 @@ def create_CSID():
                     
                     frappe.msgprint(str(response.content))
                     data=json.loads(response.text)
-                    # compliance_cert =get_auth_headers(data["binarySecurityToken"],data["secret"])
+                    
                     concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
                     encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-                    # with open(f"{company_name}.pem", 'w') as file:   #attaching X509 certificate
-                    #     file.write(base64.b64decode(data["binarySecurityToken"]).decode('utf-8'))
                     settings.set("certificate",base64.b64decode(data["binarySecurityToken"]).decode('utf-8'))
                     settings.save(ignore_permissions=True)
                     basic_auth = settings.get("basic_auth", "{}")
@@ -275,8 +270,6 @@ def create_public_key():
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
                 company = settings.company
                 company_name = frappe.db.get_value("Company", company, "abbr")
-                # with open(f"{company_name}.pem", 'r') as file:
-                #             base_64= file.read()
                 base_64 = settings.certificate
                 cert_base64 = """
                 -----BEGIN CERTIFICATE-----
@@ -286,8 +279,7 @@ def create_public_key():
                 cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
                 public_key = cert.public_key()
                 public_key_pem = public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
-                # with open(f'{company_name}-public.pem', 'wb') as f:
-                #     f.write(public_key_pem)
+                
                 settings.set("public_key",public_key_pem)
                 settings.save(ignore_permissions=True)
             except Exception as e:
@@ -348,12 +340,11 @@ def digital_signature(hash1):
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
                         company = settings.company
                         company_name = frappe.db.get_value("Company", company, "abbr")
-                        # with open(f'{company_name}-privatekey.pem', "rb") as key_file:
+                        
                         key_file = settings.private_key
                         private_key_bytes = key_file.encode('utf-8')
                         private_key = serialization.load_pem_private_key(private_key_bytes, password=None, backend=default_backend())
                         hash_bytes = bytes.fromhex(hash1)
-                        # private_key = serialization.load_pem_private_key(key_file, password=None, backend=default_backend())
                         signature = private_key.sign(hash_bytes, ec.ECDSA(hashes.SHA256()))
                         encoded_signature = base64.b64encode(signature).decode()
                         return encoded_signature
@@ -367,17 +358,12 @@ def extract_certificate_details():
                     settings = frappe.get_doc('Zatca ERPgulf Setting')  
                     company = settings.company
                     company_name = frappe.db.get_value("Company", company, "abbr")
-                    # with open(f'{company_name}.pem', 'r') as file:
                     certificate_content = settings.certificate
                     formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
                     formatted_certificate += "\n".join(certificate_content[i:i+64] for i in range(0, len(certificate_content), 64))
                     formatted_certificate += "\n-----END CERTIFICATE-----\n"
-                    # print(formatted_certificate)
                     certificate_bytes = formatted_certificate.encode('utf-8')
                     cert = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
-                    # with open("certificatejavaa2.pem", 'rb') as cert_file:
-                    #     pem_data = cert_file.read()
-                    # cert = x509.load_pem_x509_certificate(pem_data, default_backend())
                     formatted_issuer_name = cert.issuer.rfc4514_string()
                     issuer_name = ", ".join([x.strip() for x in formatted_issuer_name.split(',')])
                     serial_number = cert.serial_number
@@ -392,8 +378,6 @@ def certificate_hash():
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
                 company = settings.company
                 company_name = frappe.db.get_value("Company", company, "abbr")
-                # with open(f'{company_name}.pem', 'rb') as f:
-                #     certificate_data = f.read().decode('utf-8')
                 certificate_data= settings.certificate
                 certificate_data_bytes = certificate_data.encode('utf-8')
                 sha256_hash = hashlib.sha256(certificate_data_bytes).hexdigest()
@@ -477,7 +461,6 @@ def populate_The_UBL_Extensions_Output(encoded_signature,namespaces,signed_prope
             settings = frappe.get_doc('Zatca ERPgulf Setting')
             company = settings.company
             company_name = frappe.db.get_value("Company", company, "abbr")
-            # with open(f'{company_name}.pem', "r") as file:
             content = settings.certificate
             xpath_signvalue = ("ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignatureValue")
             xpath_x509certi = ("ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate")
@@ -507,13 +490,7 @@ def extract_public_key_data():
                 key_data = ''.join(lines[1:-1])
                 key_data = key_data.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
                 key_data = key_data.replace(' ', '').replace('\n', '')
-                # with open(f'{company_name}-public.pem', 'r') as file:
-                #     lines = file.readlines()
-                #     print(lines)
-                #     key_data = ''.join(lines[1:-1])  
-                # key_data = key_data.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
-                # key_data = key_data.replace(' ', '').replace('\n', '')
-                # print(key_data)
+                
                 return key_data
             except Exception as e:
                     frappe.throw(" error in extracting public key data: "+ str(e) )
@@ -554,8 +531,7 @@ def tag8_publickey():
 
 def tag9_signature_ecdsa():
             try:
-                # with open('certificatejavaa2.pem', 'rb') as cert_file:
-                    # cert_data = cert_file.read()
+
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
                 certificate_content = settings.certificate
                 formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
@@ -568,9 +544,7 @@ def tag9_signature_ecdsa():
                 signature_hex = "".join("{:02x}".format(byte) for byte in signature)
                 signature_bytes = bytes.fromhex(signature_hex)
                 signature_base64 = base64.b64encode(signature_bytes).decode()
-                # print(f"Signature Algorithm: {cert.signature_algorithm_oid._name}")
-                # print(f"Signature Value (Hex): {signature_hex}")
-                # print(f"Signature Value (Base64): {signature_base64}")
+
                 return signature_bytes
             except Exception as e:
                     frappe.throw(" error in tag 9 (signaturetag): "+ str(e) )
