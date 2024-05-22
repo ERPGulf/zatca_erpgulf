@@ -25,7 +25,6 @@ def get_csr_data():
    
             settings = frappe.get_doc('Zatca ERPgulf Setting')
             file = settings.csr_config
-            frappe.msgprint(file)
             lines = file.splitlines()
             # Initialize variables
             csr_common_name = None
@@ -44,7 +43,6 @@ def get_csr_data():
                     key, value = parts
                     if key == 'csr.common.name':
                         csr_common_name = value
-                        frappe.msgprint(csr_common_name)
                     elif key == 'csr.serial.number':
                         csr_serial_number = value
                     elif key == 'csr.organization.identifier':
@@ -108,15 +106,9 @@ def create_csr(portal_type):
             frappe.throw("Error in private key : " + str(e))
         try:
             custom_oid_string = "2.5.9.3.7.1.982.20.2"
-            try:
-                custom_value = customoid
-            except Exception as e:
-                frappe.throw("Error in customoid : " + str(e)) 
-            try:  
-                oid = ObjectIdentifier(custom_oid_string)
-                custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value)
-            except Exception as e:
-                frappe.throw("Error in oid and string : " + str(e))   
+            custom_value = customoid 
+            oid = ObjectIdentifier(custom_oid_string)
+            custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value) 
             dn = x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),  # csr.common.name
                 x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),   # csr.country.name -  has to be two digits 
