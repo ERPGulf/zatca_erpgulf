@@ -677,7 +677,7 @@ def get_csid_for_company(basic_auth_data, company_name):
 
 def compliance_api_call(uuid1,encoded_hash,signed_xmlfile_name):
                 try:
-                    settings = frappe.get_doc('Zatca setting')
+                    settings = frappe.get_doc('Zatca ERPgulf Setting')
                     payload = json.dumps({
                         "invoiceHash": encoded_hash,
                         "uuid": uuid1,
