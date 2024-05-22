@@ -86,47 +86,59 @@ def create_private_keys():
 @frappe.whitelist(allow_guest=True)
 def create_csr(portal_type):
     try:
-        csr_common_name,csr_serial_number,csr_organization_identifier,csr_organization_unit_name,csr_organization_name,csr_country_name,csr_invoice_type,csr_location_address,csr_industry_business_category = get_csr_data()
-        if portal_type == "Sandbox":
-            customoid = b"..TESTZATCA-Code-Signing"
-        elif portal_type == "Simulation":
-            customoid = b"..PREZATCA-Code-Signing"
-        else:
-            customoid = b"..ZATCA-Code-Signing"
-
-        private_key_pem = create_private_keys()
-        private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
-        
-        custom_oid_string = "2.5.9.3.7.1.982.20.2"
-        custom_value = customoid
-        oid = ObjectIdentifier(custom_oid_string)
-        custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value)
-        
-        dn = x509.Name([
-            x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),  # csr.common.name
-            x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),   # csr.country.name -  has to be two digits 
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),   # csr.organization.name
-            x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, csr_organization_unit_name), # csr.organization.unit.name
-        ])
-        alt_name = x509.SubjectAlternativeName({
-            x509.DirectoryName(x509.Name([
-                x509.NameAttribute(NameOID.SURNAME, csr_serial_number),   # csr.serial.number-- has to be this format 
-                x509.NameAttribute(NameOID.USER_ID, csr_organization_identifier),   # csr.organization.identifier - has to be 13 digit with starting and ending digit 3  
-                x509.NameAttribute(NameOID.TITLE, csr_invoice_type),  # csr.invoice.type - has to be 1100
-                x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category + "/registeredAddress=" + csr_location_address),   # csr.location.address
-            ])),
-        })
-
-        csr = (
-            x509.CertificateSigningRequestBuilder()
-            .subject_name(dn)
-            .add_extension(custom_extension, critical=False)
-            .add_extension(alt_name, critical=False)
-            .sign(private_key, hashes.SHA256(), backend=default_backend())
-        )
-        mycsr = csr.public_bytes(serialization.Encoding.PEM)
-        base64csr = base64.b64encode(mycsr)
-        encoded_string = base64csr.decode('utf-8')
+        try:
+            csr_common_name,csr_serial_number,csr_organization_identifier,csr_organization_unit_name,csr_organization_name,csr_country_name,csr_invoice_type,csr_location_address,csr_industry_business_category = get_csr_data()
+        except Exception as e:
+            frappe.throw("Error in retrieving CSR data: " + str(e))  
+        try:
+            if portal_type == "Sandbox":
+                customoid = b"..TESTZATCA-Code-Signing"
+            elif portal_type == "Simulation":
+                customoid = b"..PREZATCA-Code-Signing"
+            else:
+                customoid = b"..ZATCA-Code-Signing"
+        except Exception as e:
+            frappe.throw("Error in portal type: " + str(e)) 
+        try:
+            private_key_pem = create_private_keys()
+            private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
+        except Exception as e:
+            frappe.throw("Error in private key : " + str(e))
+        try:
+            custom_oid_string = "2.5.9.3.7.1.982.20.2"
+            custom_value = customoid
+            oid = ObjectIdentifier(custom_oid_string)
+            custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value)
+            
+            dn = x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),  # csr.common.name
+                x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),   # csr.country.name -  has to be two digits 
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),   # csr.organization.name
+                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, csr_organization_unit_name), # csr.organization.unit.name
+            ])
+            alt_name = x509.SubjectAlternativeName({
+                x509.DirectoryName(x509.Name([
+                    x509.NameAttribute(NameOID.SURNAME, csr_serial_number),   # csr.serial.number-- has to be this format 
+                    x509.NameAttribute(NameOID.USER_ID, csr_organization_identifier),   # csr.organization.identifier - has to be 13 digit with starting and ending digit 3  
+                    x509.NameAttribute(NameOID.TITLE, csr_invoice_type),  # csr.invoice.type - has to be 1100
+                    x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category + "/registeredAddress=" + csr_location_address),   # csr.location.address
+                ])),
+            })
+        except Exception as e:
+                    frappe.throw(" error in csr creating values: "+ str(e) )
+        try:
+            csr = (
+                x509.CertificateSigningRequestBuilder()
+                .subject_name(dn)
+                .add_extension(custom_extension, critical=False)
+                .add_extension(alt_name, critical=False)
+                .sign(private_key, hashes.SHA256(), backend=default_backend())
+            )
+            mycsr = csr.public_bytes(serialization.Encoding.PEM)
+            base64csr = base64.b64encode(mycsr)
+            encoded_string = base64csr.decode('utf-8')
+        except Exception as e:
+                    frappe.throw(" error in encoding csr string: "+ str(e) )
         settings = frappe.get_doc('Zatca ERPgulf Setting')
         settings.set("csr_data", encoded_string)
         settings.save(ignore_permissions=True)
