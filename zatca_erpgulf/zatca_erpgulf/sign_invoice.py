@@ -106,10 +106,15 @@ def create_csr(portal_type):
             frappe.throw("Error in private key : " + str(e))
         try:
             custom_oid_string = "2.5.9.3.7.1.982.20.2"
-            custom_value = customoid
-            oid = ObjectIdentifier(custom_oid_string)
-            custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value)
-            
+            try:
+                custom_value = customoid
+            except Exception as e:
+                frappe.throw("Error in customoid : " + str(e)) 
+            try:  
+                oid = ObjectIdentifier(custom_oid_string)
+                custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value)
+            except Exception as e:
+                frappe.throw("Error in oid and string : " + str(e))   
             dn = x509.Name([
                 x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),  # csr.common.name
                 x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),   # csr.country.name -  has to be two digits 
