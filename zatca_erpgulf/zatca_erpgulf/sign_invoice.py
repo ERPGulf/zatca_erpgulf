@@ -25,6 +25,7 @@ def get_csr_data():
    
             settings = frappe.get_doc('Zatca ERPgulf Setting')
             file = settings.csr_config
+            frappe.msgprint(file)
             lines = file.splitlines()
             # Initialize variables
             csr_common_name = None
@@ -43,6 +44,7 @@ def get_csr_data():
                     key, value = parts
                     if key == 'csr.common.name':
                         csr_common_name = value
+                        frappe.msgprint(csr_common_name)
                     elif key == 'csr.serial.number':
                         csr_serial_number = value
                     elif key == 'csr.organization.identifier':
@@ -147,7 +149,6 @@ def create_csr(portal_type):
         settings = frappe.get_doc('Zatca ERPgulf Setting')
         settings.set("csr_data", encoded_string)
         settings.save(ignore_permissions=True)
-
         frappe.msgprint("CSR generation successful.CSR saved")
         
         return encoded_string
