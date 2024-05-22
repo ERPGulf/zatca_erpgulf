@@ -706,7 +706,6 @@ def compliance_api_call(uuid1,encoded_hash,signed_xmlfile_name):
                     frappe.throw("ERROR in clearance invoice ,zatca validation:  " + str(e) )
                                 
 def get_request_id_for_company(compliance_request_id_data, company_name):
-                
                 try:
                     for entry in compliance_request_id_data.get("data", []):
                         if entry.get("company") == company_name:
@@ -773,6 +772,7 @@ def get_Reporting_Status(result):
                     except Exception as e:
                         print(e) 
 
+
 def success_Log(response,uuid1,invoice_number):
                     try:
                         current_time = frappe.utils.now()
@@ -804,6 +804,7 @@ def get_production_csid_for_company(basic_auth_production_data, company_name):
                         return None
                     except Exception as e:
                             frappe.throw("Error in getting production csid of company for api   " + str(e)) 
+
 
 def update_json_data_pih(existing_data, company_name, pih):
                     try:
