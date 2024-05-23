@@ -279,7 +279,7 @@ def get_pih_for_company(pih_data, company_name):
 
 def additional_Reference(invoice):
             try:
-                settings=frappe.get_doc('Zatca setting')
+                settings = frappe.get_doc('Zatca ERPgulf Setting')
                 cac_AdditionalDocumentReference2 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
                 cbc_ID_1_1 = ET.SubElement(cac_AdditionalDocumentReference2, "cbc:ID")
                 cbc_ID_1_1.text = "PIH"
@@ -287,7 +287,7 @@ def additional_Reference(invoice):
                 cbc_EmbeddedDocumentBinaryObject = ET.SubElement(cac_Attachment, "cbc:EmbeddedDocumentBinaryObject")
                 cbc_EmbeddedDocumentBinaryObject.set("mimeCode", "text/plain")
                 
-                settings = frappe.get_doc('Zatca ERPgulf Setting')
+                
                 company = settings.company
                 company_name = frappe.db.get_value("Company", company, "abbr")
                 pih_data_raw = settings.get("pih", "{}")
