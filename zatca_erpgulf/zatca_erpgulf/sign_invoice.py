@@ -1192,7 +1192,7 @@ def zatca_Background(invoice_number):
                         for item in sales_invoice_doc.items:
                             if item.item_tax_template:
                                 item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
-                                zatca_tax_category = item_tax_template.zatca_tax_category
+                                zatca_tax_category = item_tax_template.custom_zatca_tax_category
                                 for tax in item_tax_template.taxes:
                                     tax_rate = float(tax.tax_rate)
                                     
@@ -1253,7 +1253,7 @@ def zatca_Background_on_submit(doc, method=None):
                         for item in sales_invoice_doc.items:
                             if item.item_tax_template:
                                 item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
-                                zatca_tax_category = item_tax_template.zatca_tax_category
+                                zatca_tax_category = item_tax_template.custom_zatca_tax_category
                                 for tax in item_tax_template.taxes:
                                     tax_rate = float(tax.tax_rate)
                                     

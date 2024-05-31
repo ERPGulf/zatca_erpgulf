@@ -598,8 +598,8 @@ def tax_Data_with_template(invoice,sales_invoice_doc):
                         continue
                     processed_tax_templates.add(item.item_tax_template)
 
-                    zatca_tax_category = item_tax_template.zatca_tax_category
-                    exemption_reason_code = item_tax_template.exemption_reason_code
+                    zatca_tax_category = item_tax_template.custom_zatca_tax_category
+                    exemption_reason_code = item_tax_template.custom_exemption_reason_code
                     
                     for tax in item_tax_template.taxes:
                         item_tax_percentage = item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
@@ -755,7 +755,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             
             cac_ClassifiedTaxCategory = ET.SubElement(cac_Item, "cac:ClassifiedTaxCategory")
             cbc_ID_11 = ET.SubElement(cac_ClassifiedTaxCategory, "cbc:ID")
-            zatca_tax_category = item_tax_template.zatca_tax_category
+            zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_ID_11.text = "S"
             elif zatca_tax_category == "Zero Rated":
