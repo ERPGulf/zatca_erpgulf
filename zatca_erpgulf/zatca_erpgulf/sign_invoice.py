@@ -834,6 +834,22 @@ def update_json_data_pih(existing_data, company_name, pih):
                     except Exception as e:
                                         frappe.throw("Error in json data of pih  " + str(e)) 
 
+def attach_QR_Image(qrCodeB64,sales_invoice_doc):
+                    try:
+                        qr = pyqrcode.create(qrCodeB64)
+                        temp_file_path = "qr_code.png"
+                        qr_image=qr.png(temp_file_path, scale=5)
+                        file = frappe.get_doc({
+                            "doctype": "File",
+                            "file_name": f"QR_image_{sales_invoice_doc.name}.png",
+                            "attached_to_doctype": sales_invoice_doc.doctype,
+                            "attached_to_name": sales_invoice_doc.name,
+                            "content": open(temp_file_path, "rb").read()
+                           
+                        })
+                        file.save(ignore_permissions=True)
+                    except Exception as e:
+                        frappe.throw("error in qrcode from xml:  " + str(e) )
 
 def reporting_API(uuid1,encoded_hash,signed_xmlfile_name,invoice_number,sales_invoice_doc):
                     try:
@@ -1088,11 +1104,14 @@ def zatca_Call(invoice_number, compliance_type="0", any_item_has_tax_template= F
                             if compliance_type == "0":
                                 if customer_doc.custom_b2c == 1:
                                     reporting_API(uuid1, encoded_hash, signed_xmlfile_name,invoice_number,sales_invoice_doc)
+                                    attach_QR_Image(qrCodeB64,sales_invoice_doc)
                                 else:
                                     xml_cleared=clearance_API(uuid1, encoded_hash, signed_xmlfile_name,invoice_number,sales_invoice_doc)
+                                    attach_QR_Image(qrCodeB64,sales_invoice_doc)
                             else:  # if it a compliance test
                                 # frappe.msgprint("Compliance test")
                                 compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name)
+                                attach_QR_Image(qrCodeB64,sales_invoice_doc)
                     except:       
                             frappe.log_error(title='Zatca invoice call failed', message=frappe.get_traceback())
                             
@@ -1183,6 +1202,7 @@ def zatca_Background(invoice_number):
                         # sales_invoice_doc = doc
                         # invoice_number = sales_invoice_doc.name
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
+                        sales_invoice_doc= frappe.get_doc("Sales Invoice",invoice_number )
                         any_item_has_tax_template = any(item.item_tax_template for item in sales_invoice_doc.items)
 
                         if any_item_has_tax_template:
@@ -1208,7 +1228,6 @@ def zatca_Background(invoice_number):
                         if not frappe.db.exists("Sales Invoice", invoice_number):
                                 frappe.throw("Please save and submit the invoice before sending to Zatca:  " + str(invoice_number))
                                 
-                        sales_invoice_doc= frappe.get_doc("Sales Invoice",invoice_number )
             
                         if sales_invoice_doc.docstatus in [0,2]:
                             frappe.throw("Please submit the invoice before sending to Zatca:  " + str(invoice_number))
@@ -1237,6 +1256,7 @@ def zatca_Background_on_submit(doc, method=None):
                     try:
                         sales_invoice_doc = doc
                         invoice_number = sales_invoice_doc.name
+                        sales_invoice_doc= frappe.get_doc("Sales Invoice",invoice_number )
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
                         any_item_has_tax_template = False
         
@@ -1269,7 +1289,7 @@ def zatca_Background_on_submit(doc, method=None):
                         if not frappe.db.exists("Sales Invoice", invoice_number):
                                 frappe.throw("Please save and submit the invoice before sending to Zatca:  " + str(invoice_number))
                                                 
-                        sales_invoice_doc= frappe.get_doc("Sales Invoice",invoice_number )
+                        
             
                         if sales_invoice_doc.docstatus in [0,2]:
                             frappe.throw("Please submit the invoice before sending to Zatca:  " + str(invoice_number))
