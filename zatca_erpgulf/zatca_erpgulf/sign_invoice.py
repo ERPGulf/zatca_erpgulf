@@ -20,49 +20,53 @@ import json
 import requests
 from cryptography.hazmat.primitives import serialization
 
+
+def update_json_data_private_key(existing_data, company_name, private_key_pem):
+                try:
+                    private_key_str = private_key_pem.decode('utf-8')
+                    
+                    company_exists = False
+                    for entry in existing_data["companies"]:
+                        if entry["company"] == company_name:
+                            entry["private_key_data"] = private_key_str
+                            company_exists = True
+                            break
+                    if not company_exists:
+                        existing_data["companies"].append({
+                            "company": company_name,
+                            "private_key_data": private_key_str
+                        })
+                    return existing_data
+                except Exception as e:
+                    frappe.throw("Error updating JSON data for private key: " + str(e))
+
 def get_csr_data():
     try:
-   
-            settings = frappe.get_doc('Zatca ERPgulf Setting')
-            file = settings.csr_config
-            lines = file.splitlines()
-            # Initialize variables
-            csr_common_name = None
-            csr_serial_number = None
-            csr_organization_identifier = None
-            csr_organization_unit_name = None
-            csr_organization_name = None
-            csr_country_name = None
-            csr_invoice_type = None
-            csr_location_address = None
-            csr_industry_business_category = None
-
-            for line in lines:
-                parts = line.split('=')
-                if len(parts) == 2:
-                    key, value = parts
-                    if key == 'csr.common.name':
-                        csr_common_name = value
-                    elif key == 'csr.serial.number':
-                        csr_serial_number = value
-                    elif key == 'csr.organization.identifier':
-                        csr_organization_identifier = value
-                    elif key == 'csr.organization.unit.name':
-                        csr_organization_unit_name = value
-                    elif key == 'csr.organization.name':
-                        csr_organization_name = value
-                    elif key == 'csr.country.name':
-                        csr_country_name = value
-                    elif key == 'csr.invoice.type':
-                        csr_invoice_type = value
-                    elif key == 'csr.location.address':
-                        csr_location_address = value
-                    elif key == 'csr.industry.business.category':
-                        csr_industry_business_category = value
-
-            return csr_common_name,csr_serial_number,csr_organization_identifier,csr_organization_unit_name,csr_organization_name,csr_country_name,csr_invoice_type,csr_location_address,csr_industry_business_category
+        settings = frappe.get_doc('Zatca ERPgulf Setting')
+        csr_config = settings.csr_config
+        if isinstance(csr_config, str):
+            csr_config = json.loads(csr_config)
+        csr_data = csr_config.get("data", [])
+        if not csr_data:
+            frappe.throw("No CSR data found in settings")
+        csr_values = {}
+        for item in csr_data:
+            company = item.get("company")
+            csr_values[company] = {
+                "csr.common.name": item.get("csr_config", {}).get("csr.common.name"),
+                "csr.serial.number": item.get("csr_config", {}).get("csr.serial.number"),
+                "csr.organization.identifier": item.get("csr_config", {}).get("csr.organization.identifier"),
+                "csr.organization.unit.name": item.get("csr_config", {}).get("csr.organization.unit.name"),
+                "csr.organization.name": item.get("csr_config", {}).get("csr.organization.name"),
+                "csr.country.name": item.get("csr_config", {}).get("csr.country.name"),
+                "csr.invoice.type": item.get("csr_config", {}).get("csr.invoice.type"),
+                "csr.location.address": item.get("csr_config", {}).get("csr.location.address"),
+                "csr.industry.business.category": item.get("csr_config", {}).get("csr.industry.business.category"),
+            }
+        
+        return csr_values
     except Exception as e:
-                frappe.throw(" error in get csr data: "+ str(e) )
+        frappe.throw("Error in get csr data: " + str(e))
 
 def create_private_keys():
             try:
@@ -75,78 +79,111 @@ def create_private_keys():
                     encryption_algorithm=serialization.NoEncryption()
                 )
                 company_name = frappe.db.get_value("Company", company, "abbr")
-                settings.set("private_key",private_key_pem.decode('utf-8'))
-                settings.save(ignore_permissions=True)
+                if not settings.private_key:
+                    settings.private_key = {"companies": []}
                 
+                if isinstance(settings.private_key, str):
+                    settings.private_key = json.loads(settings.private_key)
+                
+                updated_data = update_json_data_private_key(settings.private_key, company_name, private_key_pem)
+                settings.private_key = json.dumps(updated_data)  
+                settings.save(ignore_permissions=True)      
                 return private_key_pem
+
             except Exception as e:
                     frappe.throw(" error in creating private key: "+ str(e) )
 
+def update_json_data_csr(existing_data, company_name, csr_data):
+            try:
+                company_exists = False
+                for entry in existing_data["companies"]:
+                    if entry["company"] == company_name:
+                        entry["csr"] = csr_data
+                        company_exists = True
+                        break
+                if not company_exists:
+                    existing_data["companies"].append({
+                        "company": company_name,
+                        "csr": csr_data
+                    })
+                return existing_data
+            except Exception as e:
+                frappe.throw("Error updating JSON data for CSR: " + str(e))
 
 @frappe.whitelist(allow_guest=True)
 def create_csr(portal_type):
     try:
-        try:
-            csr_common_name,csr_serial_number,csr_organization_identifier,csr_organization_unit_name,csr_organization_name,csr_country_name,csr_invoice_type,csr_location_address,csr_industry_business_category = get_csr_data()
-        except Exception as e:
-            frappe.throw("Error in retrieving CSR data: " + str(e))  
-        try:
-            if portal_type == "Sandbox":
-                customoid = b"..TESTZATCA-Code-Signing"
-            elif portal_type == "Simulation":
-                customoid = b"..PREZATCA-Code-Signing"
-            else:
-                customoid = b"..ZATCA-Code-Signing"
-        except Exception as e:
-            frappe.throw("Error in portal type: " + str(e)) 
-        try:
-            private_key_pem = create_private_keys()
-            private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
-        except Exception as e:
-            frappe.throw("Error in private key : " + str(e))
-        try:
-            custom_oid_string = "2.5.9.3.7.1.982.20.2"
-            custom_value = customoid 
-            oid = ObjectIdentifier(custom_oid_string)
-            custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value) 
-            dn = x509.Name([
-                x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),  # csr.common.name
-                x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),   # csr.country.name -  has to be two digits 
-                x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),   # csr.organization.name
-                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, csr_organization_unit_name), # csr.organization.unit.name
-            ])
-            alt_name = x509.SubjectAlternativeName({
-                x509.DirectoryName(x509.Name([
-                    x509.NameAttribute(NameOID.SURNAME, csr_serial_number),   # csr.serial.number-- has to be this format 
-                    x509.NameAttribute(NameOID.USER_ID, csr_organization_identifier),   # csr.organization.identifier - has to be 13 digit with starting and ending digit 3  
-                    x509.NameAttribute(NameOID.TITLE, csr_invoice_type),  # csr.invoice.type - has to be 1100
-                    x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category + "/registeredAddress=" + csr_location_address),   # csr.location.address
-                ])),
-            })
-        except Exception as e:
-                    frappe.throw(" error in csr creating values: "+ str(e) )
-        try:
-            csr = (
-                x509.CertificateSigningRequestBuilder()
-                .subject_name(dn)
-                .add_extension(custom_extension, critical=False)
-                .add_extension(alt_name, critical=False)
-                .sign(private_key, hashes.SHA256(), backend=default_backend())
-            )
-            mycsr = csr.public_bytes(serialization.Encoding.PEM)
-            base64csr = base64.b64encode(mycsr)
-            encoded_string = base64csr.decode('utf-8')
-        except Exception as e:
-                    frappe.throw(" error in encoding csr string: "+ str(e) )
+        csr_values = get_csr_data()
         settings = frappe.get_doc('Zatca ERPgulf Setting')
-        settings.set("csr_data", encoded_string)
+        company = settings.company
+        company_name = frappe.db.get_value("Company", company, "abbr")
+        company_csr_data = csr_values.get(company_name, {})
+        csr_common_name = company_csr_data.get("csr.common.name")
+        csr_serial_number = company_csr_data.get("csr.serial.number")
+        csr_organization_identifier = company_csr_data.get("csr.organization.identifier")
+        csr_organization_unit_name = company_csr_data.get("csr.organization.unit.name")
+        csr_organization_name = company_csr_data.get("csr.organization.name")
+        csr_country_name = company_csr_data.get("csr.country.name")
+        csr_invoice_type = company_csr_data.get("csr.invoice.type")
+        csr_location_address = company_csr_data.get("csr.location.address")
+        csr_industry_business_category = company_csr_data.get("csr.industry.business.category")
+
+        if portal_type == "Sandbox":
+            customoid = b"..TESTZATCA-Code-Signing"
+        elif portal_type == "Simulation":
+            customoid = b"..PREZATCA-Code-Signing"
+        else:
+            customoid = b"..ZATCA-Code-Signing"
+        
+        private_key_pem = create_private_keys()
+        private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
+
+        custom_oid_string = "2.5.9.3.7.1.982.20.2"
+        custom_value = customoid 
+        oid = ObjectIdentifier(custom_oid_string)
+        custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value) 
+        dn = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),
+            x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, csr_organization_unit_name),
+        ])
+        alt_name = x509.SubjectAlternativeName({
+            x509.DirectoryName(x509.Name([
+                x509.NameAttribute(NameOID.SURNAME, csr_serial_number),
+                x509.NameAttribute(NameOID.USER_ID, csr_organization_identifier),
+                x509.NameAttribute(NameOID.TITLE, csr_invoice_type),
+                x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category + "/registeredAddress=" + csr_location_address),
+            ])),
+        })
+        
+        csr = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(dn)
+            .add_extension(custom_extension, critical=False)
+            .add_extension(alt_name, critical=False)
+            .sign(private_key, hashes.SHA256(), backend=default_backend())
+        )
+        mycsr = csr.public_bytes(serialization.Encoding.PEM)
+        base64csr = base64.b64encode(mycsr)
+        encoded_string = base64csr.decode('utf-8')
+
+        settings = frappe.get_doc('Zatca ERPgulf Setting')
+        company = settings.company
+        company_name = frappe.db.get_value("Company", company, "abbr")
+        if not settings.csr_data:
+            settings.csr_data = {"companies": []}
+        if isinstance(settings.csr_data, str):
+            settings.csr_data = json.loads(settings.csr_data)
+        updated_data = update_json_data_csr(settings.csr_data, company_name, encoded_string)
+        settings.csr_data = json.dumps(updated_data)  
         settings.save(ignore_permissions=True)
         frappe.msgprint("CSR generation successful.CSR saved")
         
         return encoded_string
     
     except Exception as e:
-                    frappe.throw(" error in creating csr: "+ str(e) )
+        frappe.throw("Error in creating csr: " + str(e))
 
 def get_API_url(base_url):
                 try:
@@ -215,13 +252,30 @@ def update_json_data_production_csid(existing_data, company_name, production_csi
                     except Exception as e:
                                 frappe.throw("error json data of production csid: " + str(e))
 
+def get_csr_for_company(data, company_name):
+                    try:
+                        for entry in data.get("companies", []):
+                            if entry.get("company") == company_name:
+                                return entry.get("csr")
+                        return None
+                    except Exception as e:
+                        frappe.throw("Error in getting CSR for company: " + str(e))
+
 @frappe.whitelist(allow_guest=True)
 def create_CSID():
             try:
                     settings = frappe.get_doc('Zatca ERPgulf Setting')
                     company = settings.company
                     company_name = frappe.db.get_value("Company", company, "abbr")
-                    csr_contents = settings.csr_data
+                    csr_data_str = settings.get("csr_data", "{}")
+                    try:
+                        csr_data = json.loads(csr_data_str)
+                    except json.JSONDecodeError:
+                        frappe.throw("CSR data field contains invalid JSON")
+                    
+                    csr_contents = get_csr_for_company(csr_data, company_name)
+                    if not csr_contents:
+                        frappe.throw(f"No CSR found for company {company_name}")
                     payload = json.dumps({
                     "csr": csr_contents
                     })
@@ -245,7 +299,22 @@ def create_CSID():
                     
                     concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
                     encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-                    settings.set("certificate",base64.b64decode(data["binarySecurityToken"]).decode('utf-8'))
+                    if not settings.certificate:
+                        settings.certificate = {"data": []}
+                    
+                    if isinstance(settings.certificate, str):
+                        try:
+                            settings.certificate = json.loads(settings.certificate)
+                        except json.JSONDecodeError:
+                            frappe.throw("certificate field contains invalid JSON")
+                    
+                    updated_certificate_data = update_json_data_certificate(
+                        settings.certificate, 
+                        company_name, 
+                        base64.b64decode(data["binarySecurityToken"]).decode('utf-8')
+                    )
+                    settings.set("certificate", json.dumps(updated_certificate_data))
+                    
                     settings.save(ignore_permissions=True)
                     basic_auth = settings.get("basic_auth", "{}")
                     # frappe.msgprint(basic_auth)
@@ -274,26 +343,62 @@ def create_CSID():
             except Exception as e:
                     frappe.throw(" error in creating CSID: "+ str(e) )
 
+def update_json_data_public_key(existing_data, company_name, public_key):
+                try:
+                    if "data" not in existing_data:
+                        existing_data["data"] = []
+
+                    company_exists = False
+                    for entry in existing_data["data"]:
+                        if entry["company"] == company_name:
+                            entry["public_key_data"] = public_key
+                            company_exists = True
+                            break
+                    if not company_exists:
+                        existing_data["data"].append({
+                            "company": company_name,
+                            "public_key_data": public_key
+                        })
+
+                    return existing_data
+                except Exception as e:
+                    frappe.throw("Error updating JSON data for public key: " + str(e))
 
 def create_public_key():
-            try:
-                settings = frappe.get_doc('Zatca ERPgulf Setting')
-                company = settings.company
-                company_name = frappe.db.get_value("Company", company, "abbr")
-                base_64 = settings.certificate
-                cert_base64 = """
-                -----BEGIN CERTIFICATE-----
-                {base_64}
-                -----END CERTIFICATE-----
-                """.format(base_64=base_64)
-                cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
-                public_key = cert.public_key()
-                public_key_pem = public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
-                
-                settings.set("public_key",public_key_pem)
-                settings.save(ignore_permissions=True)
-            except Exception as e:
-                    frappe.throw(" error in public key creation: "+ str(e) )
+                try:
+                    settings = frappe.get_doc('Zatca ERPgulf Setting')
+                    company = settings.company
+                    company_name = frappe.db.get_value("Company", company, "abbr")
+                    certificate_data_str = settings.get("certificate", "{}")
+                    try:
+                        certificate_data = json.loads(certificate_data_str)
+                    except json.JSONDecodeError:
+                        frappe.throw("Certificate field contains invalid JSON")
+                    
+                    base_64 = get_certificate_for_company(certificate_data, company_name)
+                    if not base_64:
+                        frappe.throw(f"No certificate found for company in public key creation{company_name}")
+                    cert_base64 = """
+                    -----BEGIN CERTIFICATE-----
+                    {base_64}
+                    -----END CERTIFICATE-----
+                    """.format(base_64=base_64)
+                    cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
+                    public_key = cert.public_key()
+                    public_key_pem = public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo).decode()  # Convert bytes to string
+                            
+                    if not settings.public_key:
+                        settings.public_key = {}
+                    
+                    if isinstance(settings.public_key, str):
+                        settings.public_key = json.loads(settings.public_key)
+                    
+                    updated_data = update_json_data_public_key(settings.public_key, company_name, public_key_pem)
+                    settings.public_key = json.dumps(updated_data)
+                    settings.save(ignore_permissions=True)
+                except Exception as e:
+                    frappe.throw(" error in public key creation: "+ str(e))
+
 
 def removeTags(finalzatcaxml):
                 try:
@@ -344,14 +449,25 @@ def getInvoiceHash(canonicalized_xml):
         except Exception as e:
                     frappe.throw(" error in Invoice hash of xml: "+ str(e) )
     
-    
+
+def get_private_key_for_company(private_key_data, company_name):
+                    try:     
+                        for entry in private_key_data.get("companies", []):
+                            if entry.get("company") == company_name:
+                                return entry.get("private_key_data")
+                        return None
+                    except Exception as e:
+                        frappe.throw("Error in getting private key for company: " + str(e))
+
+
 def digital_signature(hash1):
                     try:
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
                         company = settings.company
                         company_name = frappe.db.get_value("Company", company, "abbr")
-                        
-                        key_file = settings.private_key
+                        basic_auth = settings.get("private_key", "{}")
+                        private_key_data   = json.loads(basic_auth)
+                        key_file = get_private_key_for_company(private_key_data, company_name)
                         private_key_bytes = key_file.encode('utf-8')
                         private_key = serialization.load_pem_private_key(private_key_bytes, password=None, backend=default_backend())
                         hash_bytes = bytes.fromhex(hash1)
@@ -361,6 +477,15 @@ def digital_signature(hash1):
                     except Exception as e:
                              frappe.throw(" error in digital signature: "+ str(e) )
 
+def get_certificate_for_company(certificate_content, company_name):
+                    try:
+                        for entry in certificate_content.get("data", []):
+                            if entry.get("company") == company_name:
+                                return entry.get("certificate")
+                        return None
+                    except Exception as e:
+                        frappe.throw("Error in getting certificate for company: " + str(e))
+
 
 def extract_certificate_details():
             
@@ -368,7 +493,15 @@ def extract_certificate_details():
                     settings = frappe.get_doc('Zatca ERPgulf Setting')  
                     company = settings.company
                     company_name = frappe.db.get_value("Company", company, "abbr")
-                    certificate_content = settings.certificate
+                    certificate_data_str = settings.get("certificate", "{}")
+                    try:
+                        certificate_data = json.loads(certificate_data_str)
+                    except json.JSONDecodeError:
+                        frappe.throw("Certificate field contains invalid JSON")
+                    
+                    certificate_content = get_certificate_for_company(certificate_data, company_name)
+                    if not certificate_content:
+                        frappe.throw(f"No certificate found for company {company_name}")
                     formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
                     formatted_certificate += "\n".join(certificate_content[i:i+64] for i in range(0, len(certificate_content), 64))
                     formatted_certificate += "\n-----END CERTIFICATE-----\n"
@@ -388,7 +521,14 @@ def certificate_hash():
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
                 company = settings.company
                 company_name = frappe.db.get_value("Company", company, "abbr")
-                certificate_data= settings.certificate
+                certificate_data_str = settings.get("certificate", "{}")
+                try:
+                        certificate_data = json.loads(certificate_data_str)
+                except json.JSONDecodeError:
+                        frappe.throw("Certificate field contains invalid JSON")   
+                certificate_data = get_certificate_for_company(certificate_data, company_name)
+                if not certificate_data:
+                        frappe.throw(f"No certificate found for company in certificate hash {company_name}")
                 certificate_data_bytes = certificate_data.encode('utf-8')
                 sha256_hash = hashlib.sha256(certificate_data_bytes).hexdigest()
                 base64_encoded_hash = base64.b64encode(sha256_hash.encode('utf-8')).decode('utf-8')
@@ -471,7 +611,15 @@ def populate_The_UBL_Extensions_Output(encoded_signature,namespaces,signed_prope
             settings = frappe.get_doc('Zatca ERPgulf Setting')
             company = settings.company
             company_name = frappe.db.get_value("Company", company, "abbr")
-            content = settings.certificate
+            certificate_data_str = settings.get("certificate", "{}")
+            try:
+                certificate_data = json.loads(certificate_data_str)
+            except json.JSONDecodeError:
+                frappe.throw("Certificate field contains invalid JSON")
+            
+            content= get_certificate_for_company(certificate_data, company_name)
+            if not content:
+                frappe.throw(f"No certificate found for company in ubl extension output {company_name}")
             xpath_signvalue = ("ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignatureValue")
             xpath_x509certi = ("ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate")
             xpath_digvalue = ("ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignedInfo/ds:Reference[@URI='#xadesSignedProperties']/ds:DigestValue")
@@ -489,13 +637,31 @@ def populate_The_UBL_Extensions_Output(encoded_signature,namespaces,signed_prope
         except Exception as e:
                     frappe.throw(" error in populate ubl extension output: "+ str(e) )
 
+
+def get_public_key_for_company(data, company_name):
+            try:
+                for entry in data.get("data", []):
+                    if entry.get("company") == company_name:
+                        return entry.get("public_key_data")
+                return None
+            except Exception as e:
+                frappe.throw("Error in getting public key for company: " + str(e))
+
+
 def extract_public_key_data():
             try:
-
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
                 company = settings.company
                 company_name = frappe.db.get_value("Company", company, "abbr")
-                public_key_pem = settings.public_key
+                public_key_data_str = settings.get("public_key", "{}")
+        
+                try:
+                    public_key_data = json.loads(public_key_data_str)
+                except json.JSONDecodeError:
+                    frappe.throw("Public key field contains invalid JSON")
+                public_key_pem = get_public_key_for_company(public_key_data, company_name)
+                if not public_key_pem:
+                    frappe.throw(f"No public key found for company {company_name}")
                 lines = public_key_pem.splitlines()
                 key_data = ''.join(lines[1:-1])
                 key_data = key_data.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
@@ -543,7 +709,18 @@ def tag9_signature_ecdsa():
             try:
 
                 settings = frappe.get_doc('Zatca ERPgulf Setting')
-                certificate_content = settings.certificate
+                company = settings.company
+                company_name = frappe.db.get_value("Company", company, "abbr")
+                certificate_data_str = settings.get("certificate", "{}")
+                try:
+                    certificate_data = json.loads(certificate_data_str)
+                except json.JSONDecodeError:
+                    frappe.throw("Certificate field contains invalid JSON")
+                
+                # Get the certificate for the specific company
+                certificate_content= get_certificate_for_company(certificate_data, company_name)
+                if not certificate_content:
+                    frappe.throw(f"No certificate found for company in tag9 {company_name}")
                 formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
                 formatted_certificate += "\n".join(certificate_content[i:i+64] for i in range(0, len(certificate_content), 64))
                 formatted_certificate += "\n-----END CERTIFICATE-----\n"
@@ -724,6 +901,23 @@ def get_request_id_for_company(compliance_request_id_data, company_name):
                 except Exception as e:
                         frappe.throw("Error in getting request id of company for production:  " + str(e) )
 
+def update_json_data_certificate(existing_data, company_name, certificate):
+                    try:
+                        company_exists = False
+                        for entry in existing_data["data"]:
+                            if entry["company"] == company_name:
+                                entry["certificate"] = certificate
+                                company_exists = True
+                                break
+                        if not company_exists:
+                            existing_data["data"].append({
+                                "company": company_name,
+                                "certificate": certificate
+                            })
+                        return existing_data
+                    except Exception as e:
+                        frappe.throw("Error updating JSON data for certificate: " + str(e))
+
 @frappe.whitelist(allow_guest=True)                   
 def production_CSID():    
                 try:
@@ -755,7 +949,24 @@ def production_CSID():
                     concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
                     encoded_value = base64.b64encode(concatenated_value.encode()).decode()
 
-                    settings.set("certificate",base64.b64decode(data["binarySecurityToken"]).decode('utf-8'))
+                    # frappe.msgprint("certificate: " + str(settings.certificate))
+        
+                    if not settings.certificate:
+                        settings.certificate = {"data": []}
+                    
+                    if isinstance(settings.certificate, str):
+                        try:
+                            settings.certificate = json.loads(settings.certificate)
+                        except json.JSONDecodeError:
+                            frappe.throw("certificate field contains invalid JSON")
+                    
+                    updated_certificate_data = update_json_data_certificate(
+                        settings.certificate, 
+                        company_name, 
+                        base64.b64decode(data["binarySecurityToken"]).decode('utf-8')
+                    )
+                    settings.set("certificate", json.dumps(updated_certificate_data))
+                    
                     settings.save(ignore_permissions=True)
                     basic_auth_production = settings.get("basic_auth_production", "{}")
                     try:

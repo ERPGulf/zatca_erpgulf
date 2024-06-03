@@ -599,7 +599,7 @@ def tax_Data_with_template(invoice,sales_invoice_doc):
                     processed_tax_templates.add(item.item_tax_template)
 
                     zatca_tax_category = item_tax_template.custom_zatca_tax_category
-                    exemption_reason_code = item_tax_template.custom_exemption_reason_code
+                    exemption_reason_code = item_tax_template.custom_exemption_reason_code 
                     
                     for tax in item_tax_template.taxes:
                         item_tax_percentage = item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
