@@ -141,19 +141,23 @@ def create_csr(portal_type):
         custom_oid_string = "2.5.9.3.7.1.982.20.2"
         custom_value = customoid 
         oid = ObjectIdentifier(custom_oid_string)
+        OID_REGISTERED_ADDRESS = ObjectIdentifier("2.5.4.26")
         custom_extension = x509.extensions.UnrecognizedExtension(oid, custom_value) 
         dn = x509.Name([
-            x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),
             x509.NameAttribute(NameOID.COUNTRY_NAME, csr_country_name),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),
             x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, csr_organization_unit_name),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, csr_organization_name),
+            x509.NameAttribute(NameOID.COMMON_NAME, csr_common_name),
+            
         ])
         alt_name = x509.SubjectAlternativeName({
             x509.DirectoryName(x509.Name([
                 x509.NameAttribute(NameOID.SURNAME, csr_serial_number),
                 x509.NameAttribute(NameOID.USER_ID, csr_organization_identifier),
                 x509.NameAttribute(NameOID.TITLE, csr_invoice_type),
-                x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category + "/registeredAddress=" + csr_location_address),
+                x509.NameAttribute(OID_REGISTERED_ADDRESS, csr_location_address),
+                x509.NameAttribute(NameOID.BUSINESS_CATEGORY, csr_industry_business_category)
+                #+ "/registeredAddress=" + csr_location_address),
             ])),
         })
         
@@ -288,13 +292,15 @@ def create_CSID():
                     }
                     
                     response = requests.request("POST", url=get_API_url(base_url="compliance"), headers=headers, data=payload)
-                
+                    # frappe.throw(response.text)
+                    frappe.throw(response.status_code)
                     if response.status_code == 400:
                         frappe.throw("Error: " + "OTP is not valid", response.text)
                     if response.status_code != 200:
                         frappe.throw("Error: " + "Error in Certificate or OTP: " + "<br> <br>" + response.text)
                     
-                    frappe.msgprint(str(response.content))
+                    frappe.msgprint(str(response.text))
+                    
                     data=json.loads(response.text)
                     
                     concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
