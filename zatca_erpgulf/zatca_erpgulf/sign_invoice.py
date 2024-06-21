@@ -293,7 +293,7 @@ def create_CSID():
                     
                     response = requests.request("POST", url=get_API_url(base_url="compliance"), headers=headers, data=payload)
                     # frappe.throw(response.text)
-                    frappe.throw(response.status_code)
+                    # frappe.throw(response.status_code)
                     if response.status_code == 400:
                         frappe.throw("Error: " + "OTP is not valid", response.text)
                     if response.status_code != 200:
