@@ -19,7 +19,18 @@ from cryptography.hazmat.primitives.asymmetric import ec
 import json
 import requests
 from cryptography.hazmat.primitives import serialization
+import asn1
 
+def encode_customoid(custom_string):
+    # Create an encoder
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    # Encode the string as an OCTET STRING
+    encoder.write(custom_string, asn1.Numbers.UTF8String)
+
+    # Get the encoded byte string
+    return encoder.output()
 
 def update_json_data_private_key(existing_data, company_name, private_key_pem):
                 try:
@@ -129,16 +140,16 @@ def create_csr(portal_type):
         csr_industry_business_category = company_csr_data.get("csr.industry.business.category")
 
         if portal_type == "Sandbox":
-            customoid = b"..TESTZATCA-Code-Signing"
+            customoid = customoid = encode_customoid("TESTZATCA-Code-Signing")
         elif portal_type == "Simulation":
-            customoid = b"..PREZATCA-Code-Signing"
+            customoid = customoid = encode_customoid("PREZATCA-Code-Signing")
         else:
-            customoid = b"..ZATCA-Code-Signing"
+            customoid = customoid = encode_customoid("ZATCA-Code-Signing")
         
         private_key_pem = create_private_keys()
         private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
 
-        custom_oid_string = "2.5.9.3.7.1.982.20.2"
+        custom_oid_string = "1.3.6.1.4.1.311.20.2"
         custom_value = customoid 
         oid = ObjectIdentifier(custom_oid_string)
         OID_REGISTERED_ADDRESS = ObjectIdentifier("2.5.4.26")
