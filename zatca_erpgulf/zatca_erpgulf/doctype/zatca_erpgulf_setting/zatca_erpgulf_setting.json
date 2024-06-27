@@ -96,7 +96,7 @@
    "label": "Attach e_invoice send status with invoice"
   },
   {
-   "default": "0",
+   "default": "{\"data\": [{\"company\": \"PD\", \"pih\": \"Z2MUlF0UMgOBHH2bdcyBlwNnocmeWR+ZWzOiHTfGyoQ=\"}]}",
    "fieldname": "pih",
    "fieldtype": "Small Text",
    "label": "pih"
@@ -107,16 +107,19 @@
    "label": "URLs / API EndPoints"
   },
   {
+   "default": "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal/",
    "fieldname": "sandbox_url",
    "fieldtype": "Data",
    "label": "Sandbox URL"
   },
   {
+   "default": "https://gw-fatoora.zatca.gov.sa/e-invoicing/simulation/",
    "fieldname": "simulation_url",
    "fieldtype": "Data",
    "label": "Simulation URL"
   },
   {
+   "default": " https://gw-fatoora.zatca.gov.sa/e-invoicing/core/",
    "fieldname": "production_url",
    "fieldtype": "Data",
    "label": "Production URL"
@@ -200,7 +203,6 @@
    "label": "Send Einvoice background"
   },
   {
-   "default": "0",
    "fieldname": "private_key",
    "fieldtype": "Small Text",
    "label": "Private key"
@@ -211,13 +213,11 @@
    "label": "Keys & Certificate For Zatca"
   },
   {
-   "default": "0",
    "fieldname": "certificate",
    "fieldtype": "Long Text",
    "label": "certificate"
   },
   {
-   "default": "0",
    "fieldname": "public_key",
    "fieldtype": "Small Text",
    "label": "public key"
@@ -232,7 +232,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-05-22 15:48:29.840716",
+ "modified": "2024-06-27 05:05:58.741723",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "Zatca ERPgulf Setting",
