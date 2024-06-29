@@ -1083,7 +1083,7 @@ def reporting_API(uuid1,encoded_hash,signed_xmlfile_name,invoice_number,sales_in
                     try:
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
                         company = settings.company
-                        company_name = frappe.db.get_value("Company", company, "abbr")
+                        company_name = frappe.db.get_value("Company", sales_invoice_doc.company, "abbr")
                         payload = json.dumps({
                         "invoiceHash": encoded_hash,
                         "uuid": uuid1,
@@ -1172,7 +1172,7 @@ def clearance_API(uuid1,encoded_hash,signed_xmlfile_name,invoice_number,sales_in
                         # frappe.msgprint("Clearance API")
                         settings = frappe.get_doc('Zatca ERPgulf Setting')
                         company = settings.company
-                        company_name = frappe.db.get_value("Company", company, "abbr")
+                        company_name = frappe.db.get_value("Company", sales_invoice_doc.company, "abbr")
                         payload = json.dumps({
                         "invoiceHash": encoded_hash,
                         "uuid": uuid1,
