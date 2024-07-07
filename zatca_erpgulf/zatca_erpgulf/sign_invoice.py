@@ -1376,8 +1376,16 @@ def zatca_Call_compliance(invoice_number, compliance_type="0",any_item_has_tax_t
                                 frappe.throw("Invoice Number is NOT Valid:  " + str(invoice_number))
                             
                             
+                            
                             invoice= xml_tags()
                             invoice,uuid1,sales_invoice_doc=salesinvoice_data(invoice,invoice_number)
+                            
+                            any_item_has_tax_template = any(item.item_tax_template for item in sales_invoice_doc.items)
+
+                            if any_item_has_tax_template:
+                                if not all(item.item_tax_template for item in sales_invoice_doc.items):
+                                    frappe.throw("If any one item has an Item Tax Template, all items must have an Item Tax Template.")
+
                             
                             customer_doc= frappe.get_doc("Customer",sales_invoice_doc.customer)
                             
