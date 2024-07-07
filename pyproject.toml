@@ -4,7 +4,7 @@ authors = [
     { name = "ERPGulf", email = "support@ERPGulf.com"}
 ]
 description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
-requires-python = ">=3.80"
+#requires-python = ">=3.80"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
