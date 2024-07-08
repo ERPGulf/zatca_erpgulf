@@ -803,7 +803,8 @@ def generate_tlv_xml():
                             result_dict[8] = tag8_publickey()
                             
                             result_dict[9] = tag9_signature_ecdsa()
-                            
+                            result_dict[1] = result_dict[1].encode('utf-8') # Handling Arabic company name in QR Code
+                            # frappe.throw(result_dict[1])
                             return result_dict
                     except Exception as e:
                         frappe.throw(" error in getting the entire tlv data: "+ str(e) )
