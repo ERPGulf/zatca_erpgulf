@@ -3,7 +3,7 @@ A Frappe ERPNext App for users in Saudi Arabia, to be compliant with country tax
 
 Features:
 
-Creates CSR by sending API to Zatca
+Creates CSR by sending API to Zatca server
 
 Creates Compliance token
 
