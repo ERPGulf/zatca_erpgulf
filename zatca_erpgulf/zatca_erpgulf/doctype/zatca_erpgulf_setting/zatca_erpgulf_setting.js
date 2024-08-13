@@ -1,7 +1,7 @@
 // Copyright (c) 2024, ERPGulf and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Zatca ERPgulf Setting", {
+frappe.ui.form.on("Company", {
 	refresh(frm) {
        
     },
@@ -31,9 +31,9 @@ frappe.ui.form.on("Zatca ERPgulf Setting", {
                 },
             });
         },
-    create_csr: function (frm) {
+    custom_create_csr: function (frm) {
         frappe.call({
-            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.create_csr",
+            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.custom_create_csr",
             args: {
                 "portal_type":  frm.doc.select
             },

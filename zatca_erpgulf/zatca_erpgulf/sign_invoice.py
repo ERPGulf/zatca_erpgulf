@@ -51,33 +51,66 @@ def update_json_data_private_key(existing_data, company_name, private_key_pem):
                 except Exception as e:
                     frappe.throw("Error updating JSON data for private key: " + str(e))
 
+# def get_csr_data():
+#     try:
+#         settings = frappe.get_doc('Zatca ERPgulf Setting')
+#         csr_config = settings.csr_config
+#         if isinstance(csr_config, str):
+#             csr_config = json.loads(csr_config)
+#         csr_data = csr_config.get("data", [])
+#         if not csr_data:
+#             frappe.throw("No CSR data found in settings")
+#         csr_values = {}
+#         for item in csr_data:
+#             company = item.get("company")
+#             csr_values[company] = {
+#                 "csr.common.name": item.get("csr_config", {}).get("csr.common.name"),
+#                 "csr.serial.number": item.get("csr_config", {}).get("csr.serial.number"),
+#                 "csr.organization.identifier": item.get("csr_config", {}).get("csr.organization.identifier"),
+#                 "csr.organization.unit.name": item.get("csr_config", {}).get("csr.organization.unit.name"),
+#                 "csr.organization.name": item.get("csr_config", {}).get("csr.organization.name"),
+#                 "csr.country.name": item.get("csr_config", {}).get("csr.country.name"),
+#                 "csr.invoice.type": item.get("csr_config", {}).get("csr.invoice.type"),
+#                 "csr.location.address": item.get("csr_config", {}).get("csr.location.address"),
+#                 "csr.industry.business.category": item.get("csr_config", {}).get("csr.industry.business.category"),
+#             }
+        
+#         return csr_values
+#     except Exception as e:
+#         frappe.throw("Error in get csr data: " + str(e))
+
 def get_csr_data():
     try:
-        settings = frappe.get_doc('Zatca ERPgulf Setting')
-        csr_config = settings.csr_config
-        if isinstance(csr_config, str):
-            csr_config = json.loads(csr_config)
-        csr_data = csr_config.get("data", [])
-        if not csr_data:
-            frappe.throw("No CSR data found in settings")
+        # Fetch all companies from the Company doctype
+        companies = frappe.get_all('Company', fields=['abbr', 'custom_csr_config'])
+
         csr_values = {}
-        for item in csr_data:
-            company = item.get("company")
-            csr_values[company] = {
-                "csr.common.name": item.get("csr_config", {}).get("csr.common.name"),
-                "csr.serial.number": item.get("csr_config", {}).get("csr.serial.number"),
-                "csr.organization.identifier": item.get("csr_config", {}).get("csr.organization.identifier"),
-                "csr.organization.unit.name": item.get("csr_config", {}).get("csr.organization.unit.name"),
-                "csr.organization.name": item.get("csr_config", {}).get("csr.organization.name"),
-                "csr.country.name": item.get("csr_config", {}).get("csr.country.name"),
-                "csr.invoice.type": item.get("csr_config", {}).get("csr.invoice.type"),
-                "csr.location.address": item.get("csr_config", {}).get("csr.location.address"),
-                "csr.industry.business.category": item.get("csr_config", {}).get("csr.industry.business.category"),
+        for company in companies:
+            abbr = company.get("abbr")
+            csr_config = company.get("custom_csr_config")
+            if isinstance(csr_config, str):
+                csr_config = json.loads(csr_config)
+            
+            if not csr_config:
+                frappe.throw(f"No CSR config found for company {abbr}")
+
+            csr_values[abbr] = {
+                "csr.common.name": csr_config.get("csr.common.name"),
+                "csr.serial.number": csr_config.get("csr.serial.number"),
+                "csr.organization.identifier": csr_config.get("csr.organization.identifier"),
+                "csr.organization.unit.name": csr_config.get("csr.organization.unit.name"),
+                "csr.organization.name": csr_config.get("csr.organization.name"),
+                "csr.country.name": csr_config.get("csr.country.name"),
+                "csr.invoice.type": csr_config.get("csr.invoice.type"),
+                "csr.location.address": csr_config.get("csr.location.address"),
+                "csr.industry.business.category": csr_config.get("csr.industry.business.category"),
             }
-        
+
         return csr_values
+
     except Exception as e:
-        frappe.throw("Error in get csr data: " + str(e))
+        frappe.throw("Error in get_csr_data: " + str(e))
+
 
 def create_private_keys():
             try:
