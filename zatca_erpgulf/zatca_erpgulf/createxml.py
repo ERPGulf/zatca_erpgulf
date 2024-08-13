@@ -506,7 +506,7 @@ def tax_Data(invoice,sales_invoice_doc):
                 cbc_TaxAmount_2 = ET.SubElement(cac_TaxSubtotal, "cbc:TaxAmount")
                 cbc_TaxAmount_2.set("currencyID", sales_invoice_doc.currency)
                 
-                cbc_TaxAmount_2.text = str(tax_amount_without_retention) # str(abs(sales_invoice_doc.base_total_taxes_and_charges))
+                cbc_TaxAmount_2.text = str(round( tax_amount_without_retention,2))# str(abs(sales_invoice_doc.base_total_taxes_and_charges))
                 cac_TaxCategory_1 = ET.SubElement(cac_TaxSubtotal, "cac:TaxCategory")
                 cbc_ID_8 = ET.SubElement(cac_TaxCategory_1, "cbc:ID")
                 if sales_invoice_doc.custom_zatca_tax_category == "Standard":
@@ -724,7 +724,9 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
             cbc_TaxableAmount.text = str(totals["taxable_amount"])
             cbc_TaxAmount_2 = ET.SubElement(cac_TaxSubtotal, "cbc:TaxAmount")
             cbc_TaxAmount_2.set("currencyID", sales_invoice_doc.currency)
-            cbc_TaxAmount_2.text = str(totals["tax_amount"])
+            tax_amount_without_retention = round(abs(total_tax), 2)
+            # cbc_TaxAmount_2.text = str(totals["tax_amount"])
+            cbc_TaxAmount_2.text = str(round(tax_amount_without_retention, 2))
 
             cac_TaxCategory_1 = ET.SubElement(cac_TaxSubtotal, "cac:TaxCategory")
             cbc_ID_8 = ET.SubElement(cac_TaxCategory_1, "cbc:ID")
