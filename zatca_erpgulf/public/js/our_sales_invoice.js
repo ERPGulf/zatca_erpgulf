@@ -7,6 +7,7 @@ frappe.ui.form.on("Sales Invoice", {
                         method:"zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Background",
                         args: {
                             "invoice_number": frm.doc.name
+                            
                         },
                         callback: function(response) {
                             if (response.message) {  

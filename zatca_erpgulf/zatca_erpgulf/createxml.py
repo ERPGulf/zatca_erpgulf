@@ -277,54 +277,102 @@ def get_pih_for_company(pih_data, company_name):
                         frappe.throw("Error in getting PIH of company for production:  " + str(e) )
 
 
-def additional_Reference(invoice):
-            try:
-                settings = frappe.get_doc('Zatca ERPgulf Setting')
-                cac_AdditionalDocumentReference2 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
-                cbc_ID_1_1 = ET.SubElement(cac_AdditionalDocumentReference2, "cbc:ID")
-                cbc_ID_1_1.text = "PIH"
-                cac_Attachment = ET.SubElement(cac_AdditionalDocumentReference2, "cac:Attachment")
-                cbc_EmbeddedDocumentBinaryObject = ET.SubElement(cac_Attachment, "cbc:EmbeddedDocumentBinaryObject")
-                cbc_EmbeddedDocumentBinaryObject.set("mimeCode", "text/plain")
+# def additional_Reference(invoice):
+#             try:
+#                 settings = frappe.get_doc('Zatca ERPgulf Setting')
+#                 cac_AdditionalDocumentReference2 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
+#                 cbc_ID_1_1 = ET.SubElement(cac_AdditionalDocumentReference2, "cbc:ID")
+#                 cbc_ID_1_1.text = "PIH"
+#                 cac_Attachment = ET.SubElement(cac_AdditionalDocumentReference2, "cac:Attachment")
+#                 cbc_EmbeddedDocumentBinaryObject = ET.SubElement(cac_Attachment, "cbc:EmbeddedDocumentBinaryObject")
+#                 cbc_EmbeddedDocumentBinaryObject.set("mimeCode", "text/plain")
                 
                 
-                company = settings.company
-                company_name = frappe.db.get_value("Company", company, "abbr")
-                pih_data_raw = settings.get("pih", "{}")
-                pih_data = json.loads(pih_data_raw)
-                pih = get_pih_for_company(pih_data, company_name)
+#                 company = settings.company
+#                 company_name = frappe.db.get_value("Company", company, "abbr")
+#                 pih_data_raw = settings.get("pih", "{}")
+#                 pih_data = json.loads(pih_data_raw)
+#                 pih = get_pih_for_company(pih_data, company_name)
                 
-                cbc_EmbeddedDocumentBinaryObject.text = pih
-                # cbc_EmbeddedDocumentBinaryObject.text = "L0Awl814W4ycuFvjDVL/vIW08mNRNAwqfdlF5i/3dpU="
-            # QR CODE ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                cac_AdditionalDocumentReference22 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
-                cbc_ID_1_12 = ET.SubElement(cac_AdditionalDocumentReference22, "cbc:ID")
-                cbc_ID_1_12.text = "QR"
-                cac_Attachment22 = ET.SubElement(cac_AdditionalDocumentReference22, "cac:Attachment")
-                cbc_EmbeddedDocumentBinaryObject22 = ET.SubElement(cac_Attachment22, "cbc:EmbeddedDocumentBinaryObject")
-                cbc_EmbeddedDocumentBinaryObject22.set("mimeCode", "text/plain")
-                cbc_EmbeddedDocumentBinaryObject22.text = "GsiuvGjvchjbFhibcDhjv1886G"
-            #END  QR CODE ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                cac_sign = ET.SubElement(invoice, "cac:Signature")
-                cbc_id_sign = ET.SubElement(cac_sign, "cbc:ID")
-                cbc_method_sign = ET.SubElement(cac_sign, "cbc:SignatureMethod")
-                cbc_id_sign.text = "urn:oasis:names:specification:ubl:signature:Invoice"
-                cbc_method_sign.text = "urn:oasis:names:specification:ubl:dsig:enveloped:xades"
-                return invoice
-            except Exception as e:
-                    frappe.throw("error occured in additional refrences" + str(e) )
+#                 cbc_EmbeddedDocumentBinaryObject.text = pih
+#                 # cbc_EmbeddedDocumentBinaryObject.text = "L0Awl814W4ycuFvjDVL/vIW08mNRNAwqfdlF5i/3dpU="
+#             # QR CODE ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#                 cac_AdditionalDocumentReference22 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
+#                 cbc_ID_1_12 = ET.SubElement(cac_AdditionalDocumentReference22, "cbc:ID")
+#                 cbc_ID_1_12.text = "QR"
+#                 cac_Attachment22 = ET.SubElement(cac_AdditionalDocumentReference22, "cac:Attachment")
+#                 cbc_EmbeddedDocumentBinaryObject22 = ET.SubElement(cac_Attachment22, "cbc:EmbeddedDocumentBinaryObject")
+#                 cbc_EmbeddedDocumentBinaryObject22.set("mimeCode", "text/plain")
+#                 cbc_EmbeddedDocumentBinaryObject22.text = "GsiuvGjvchjbFhibcDhjv1886G"
+#             #END  QR CODE ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#                 cac_sign = ET.SubElement(invoice, "cac:Signature")
+#                 cbc_id_sign = ET.SubElement(cac_sign, "cbc:ID")
+#                 cbc_method_sign = ET.SubElement(cac_sign, "cbc:SignatureMethod")
+#                 cbc_id_sign.text = "urn:oasis:names:specification:ubl:signature:Invoice"
+#                 cbc_method_sign.text = "urn:oasis:names:specification:ubl:dsig:enveloped:xades"
+#                 return invoice
+#             except Exception as e:
+#                     frappe.throw("error occured in additional refrences" + str(e) )
+
+def additional_Reference(invoice, company_abbr):
+    try:
+        company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+        if not company_name:
+            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+
+        company_doc = frappe.get_doc('Company', company_name)
+
+        # Create the first AdditionalDocumentReference element for PIH
+        cac_AdditionalDocumentReference2 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
+        cbc_ID_1_1 = ET.SubElement(cac_AdditionalDocumentReference2, "cbc:ID")
+        cbc_ID_1_1.text = "PIH"
+        cac_Attachment = ET.SubElement(cac_AdditionalDocumentReference2, "cac:Attachment")
+        cbc_EmbeddedDocumentBinaryObject = ET.SubElement(cac_Attachment, "cbc:EmbeddedDocumentBinaryObject")
+        cbc_EmbeddedDocumentBinaryObject.set("mimeCode", "text/plain")
+
+        # Directly retrieve the PIH data without JSON parsing
+        pih = company_doc.custom_pih  # Assuming this is already in the correct format
+        
+        cbc_EmbeddedDocumentBinaryObject.text = pih
+
+        # Create the second AdditionalDocumentReference element for QR
+        cac_AdditionalDocumentReference22 = ET.SubElement(invoice, "cac:AdditionalDocumentReference")
+        cbc_ID_1_12 = ET.SubElement(cac_AdditionalDocumentReference22, "cbc:ID")
+        cbc_ID_1_12.text = "QR"
+        cac_Attachment22 = ET.SubElement(cac_AdditionalDocumentReference22, "cac:Attachment")
+        cbc_EmbeddedDocumentBinaryObject22 = ET.SubElement(cac_Attachment22, "cbc:EmbeddedDocumentBinaryObject")
+        cbc_EmbeddedDocumentBinaryObject22.set("mimeCode", "text/plain")
+        cbc_EmbeddedDocumentBinaryObject22.text = "GsiuvGjvchjbFhibcDhjv1886G"  # Example QR code
+
+        # Create the Signature element
+        cac_sign = ET.SubElement(invoice, "cac:Signature")
+        cbc_id_sign = ET.SubElement(cac_sign, "cbc:ID")
+        cbc_method_sign = ET.SubElement(cac_sign, "cbc:SignatureMethod")
+        cbc_id_sign.text = "urn:oasis:names:specification:ubl:signature:Invoice"
+        cbc_method_sign.text = "urn:oasis:names:specification:ubl:dsig:enveloped:xades"
+
+        return invoice
+
+    except Exception as e:
+        frappe.throw(f"Error occurred in additional references: {str(e)}")
+
+
+
 
 def company_Data(invoice,sales_invoice_doc):
             try:
                 company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
+                # frappe.throw(str(company_doc))
                 customer_doc= frappe.get_doc("Customer",sales_invoice_doc.customer)
                 cac_AccountingSupplierParty = ET.SubElement(invoice, "cac:AccountingSupplierParty")
                 cac_Party_1 = ET.SubElement(cac_AccountingSupplierParty, "cac:Party")
                 cac_PartyIdentification = ET.SubElement(cac_Party_1, "cac:PartyIdentification")
                 cbc_ID_2 = ET.SubElement(cac_PartyIdentification, "cbc:ID")
                 cbc_ID_2.set("schemeID", "CRN")
-                cbc_ID_2.text =company_doc.custom_company_registration   # COmpany CR - Need to have a field in company doctype called company_registration 
+                cbc_ID_2.text =company_doc.custom_company_registration
+                # frappe.throw(cbc_ID_2.text)   # COmpany CR - Need to have a field in company doctype called company_registration 
                 address_list = frappe.get_list("Address", filters={"is_your_company_address": "1"}, fields=["address_line1", "address_line2","city","pincode","state"])
+                # frappe.throw(str(address_list))
                 if len(address_list) == 0:
                     frappe.throw("Zatca requires proper address. Please add your company address in address master")
                 for address in address_list:
@@ -347,15 +395,19 @@ def company_Data(invoice,sales_invoice_doc):
                 cac_Country = ET.SubElement(cac_PostalAddress, "cac:Country")
                 cbc_IdentificationCode = ET.SubElement(cac_Country, "cbc:IdentificationCode")
                 cbc_IdentificationCode.text = "SA"
+                #frappe.throw(f"cac:Country element created with cbc:IdentificationCode set to {cbc_IdentificationCode.text}")
                 cac_PartyTaxScheme = ET.SubElement(cac_Party_1, "cac:PartyTaxScheme")
                 cbc_CompanyID = ET.SubElement(cac_PartyTaxScheme, "cbc:CompanyID")
                 cbc_CompanyID.text = company_doc.tax_id
+                # frappe.throw(f"Company Tax ID set to: {cbc_CompanyID.text}")
                 cac_TaxScheme = ET.SubElement(cac_PartyTaxScheme, "cac:TaxScheme")
                 cbc_ID_3 = ET.SubElement(cac_TaxScheme, "cbc:ID")
                 cbc_ID_3.text = "VAT"
+                # frappe.throw(f"Tax Scheme ID set to: {cbc_ID_3.text}")
                 cac_PartyLegalEntity = ET.SubElement(cac_Party_1, "cac:PartyLegalEntity")
                 cbc_RegistrationName = ET.SubElement(cac_PartyLegalEntity, "cbc:RegistrationName")
                 cbc_RegistrationName.text = sales_invoice_doc.company
+                # frappe.throw(f"Registration Name set to: {cbc_RegistrationName.text}")
                 return invoice
             except Exception as e:
                     frappe.throw("error occured in company data"+ str(e) )
@@ -363,12 +415,14 @@ def company_Data(invoice,sales_invoice_doc):
 def customer_Data(invoice,sales_invoice_doc):
             try:
                 customer_doc= frappe.get_doc("Customer",sales_invoice_doc.customer)
+                # frappe.throw(str(customer_doc))
                 cac_AccountingCustomerParty = ET.SubElement(invoice, "cac:AccountingCustomerParty")
                 cac_Party_2 = ET.SubElement(cac_AccountingCustomerParty, "cac:Party")
                 cac_PartyIdentification_1 = ET.SubElement(cac_Party_2, "cac:PartyIdentification")
                 cbc_ID_4 = ET.SubElement(cac_PartyIdentification_1, "cbc:ID")
                 cbc_ID_4.set("schemeID", "CRN")
                 cbc_ID_4.text =customer_doc.tax_id
+                # frappe.throw(f"Customer Tax ID set to: {cbc_ID_4.text}")
                 if int(frappe.__version__.split('.')[0]) == 13:
                     address = frappe.get_doc("Address", sales_invoice_doc.customer_address)    
                 else:

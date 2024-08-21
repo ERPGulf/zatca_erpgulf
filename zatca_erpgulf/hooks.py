@@ -224,6 +224,7 @@ doc_events = {
 }
 doctype_js = {
     "Sales Invoice" : "public/js/our_sales_invoice.js" ,
+    "Company": "public/js/company.js"
     }
 
 
