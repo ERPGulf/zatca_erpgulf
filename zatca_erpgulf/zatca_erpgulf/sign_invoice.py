@@ -1011,12 +1011,13 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
 def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sales_invoice_doc):
     try:
         # Retrieve the company name based on the abbreviation in the Sales Invoice
-        company_name = frappe.db.get_value("Company", {"abbr": sales_invoice_doc.company}, "name")
-        if not company_name:
-            frappe.throw(f"Company with abbreviation {sales_invoice_doc.company} not found.")
-        
+        company_abbr = frappe.db.get_value("Company", {"name": sales_invoice_doc.company}, "abbr")
+        if not company_abbr:
+            frappe.throw(f"There is a problem with company name in invoice  {sales_invoice_doc.company} not found.")
+       
         # Retrieve the Company document using the company name
-        company_doc = frappe.get_doc('Company', company_name)
+        # company_doc = frappe.get_doc('Company', company_abbr)
+        company_doc = frappe.get_doc('Company', {"abbr": company_abbr})
 
         # Directly retrieve the production CSID from the specific field in the Company's document
         production_csid = company_doc.custom_basic_auth_from_production or ""
@@ -1039,10 +1040,11 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 'Cookie': 'TS0106293e=0132a679c03c628e6c49de86c0f6bb76390abb4416868d6368d6d7c05da619c8326266f5bc262b7c0c65a6863cd3b19081d64eee99'
             }
         else:
-            frappe.throw(f"Production CSID for company {company_name} not found.")
+            frappe.throw(f"Production CSID for company {company_abbr} not found.")
 
+        
         response = requests.post(
-            url=get_API_url(company_name, base_url="invoices/clearance/single"), 
+            url=get_API_url(company_abbr, base_url="invoices/clearance/single"), 
             headers=headers, 
             json=payload
         )
@@ -1075,7 +1077,7 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
 
             # Update PIH in the Company doctype without JSON formatting
             pih_data = company_doc.custom_pih or {}
-            pih_data[company_name] = encoded_hash
+            pih_data[company_abbr] = encoded_hash
             company_doc.custom_pih = pih_data
             company_doc.save(ignore_permissions=True)
 
