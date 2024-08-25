@@ -989,9 +989,7 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 frappe.msgprint(msg)
                 
                 # Update PIH data without JSON formatting
-                pih_data = company_doc.get("custom_pih", {})
-                pih_data[sales_invoice_doc.company] = encoded_hash
-                company_doc.set("custom_pih", pih_data)
+                company_doc.custom_pih = encoded_hash
                 company_doc.save(ignore_permissions=True)
                 
                 invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
@@ -1076,9 +1074,7 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
             frappe.msgprint(msg)
 
             # Update PIH in the Company doctype without JSON formatting
-            pih_data = company_doc.custom_pih or {}
-            pih_data[company_abbr] = encoded_hash
-            company_doc.custom_pih = pih_data
+            company_doc.custom_pih = encoded_hash
             company_doc.save(ignore_permissions=True)
 
             # Update the Sales Invoice with the UUID and status
