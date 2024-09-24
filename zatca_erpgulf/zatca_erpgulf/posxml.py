@@ -282,7 +282,6 @@ def get_pih_for_company(pih_data, company_name):
 
 def additional_Reference(invoice, company_abbr):
     try:
-
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
@@ -296,7 +295,6 @@ def additional_Reference(invoice, company_abbr):
         cac_Attachment = ET.SubElement(cac_AdditionalDocumentReference2, "cac:Attachment")
         cbc_EmbeddedDocumentBinaryObject = ET.SubElement(cac_Attachment, "cbc:EmbeddedDocumentBinaryObject")
         cbc_EmbeddedDocumentBinaryObject.set("mimeCode", "text/plain")
-
 
         # Directly retrieve the PIH data without JSON parsing
         pih = company_doc.custom_pih  # Assuming this is already in the correct format
@@ -320,7 +318,6 @@ def additional_Reference(invoice, company_abbr):
         cbc_method_sign.text = "urn:oasis:names:specification:ubl:dsig:enveloped:xades"
 
         return invoice
-
     except Exception as e:
         frappe.throw(f"Error occurred in additional references: {str(e)}")
 
