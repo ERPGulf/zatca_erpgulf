@@ -5,7 +5,7 @@ import lxml.etree as MyTree
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import frappe
-from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,get_tax_total_from_items,tax_Data_with_template,item_data_with_template
+from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,add_document_level_discount_with_tax_template,add_document_level_discount_with_tax,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,get_tax_total_from_items,tax_Data_with_template,item_data_with_template
 import pyqrcode
 # frappe.init(site="prod.erpgulf.com")
 # frappe.connect()
@@ -1135,7 +1135,10 @@ def zatca_Call(invoice_number, compliance_type="0", any_item_has_tax_template=Fa
         invoice = company_Data(invoice, sales_invoice_doc)
         invoice = customer_Data(invoice, sales_invoice_doc)
         invoice = delivery_And_PaymentMeans(invoice, sales_invoice_doc, sales_invoice_doc.is_return)
-
+        if not any_item_has_tax_template:
+            invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        else:
+            invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
         if not any_item_has_tax_template:
             invoice = tax_Data(invoice, sales_invoice_doc)
         else:
@@ -1143,8 +1146,10 @@ def zatca_Call(invoice_number, compliance_type="0", any_item_has_tax_template=Fa
 
         if not any_item_has_tax_template:
             invoice = item_data(invoice, sales_invoice_doc)
+            
         else:
             invoice = item_data_with_template(invoice, sales_invoice_doc)
+            
 
         pretty_xml_string = xml_structuring(invoice, sales_invoice_doc)
 
@@ -1242,8 +1247,10 @@ def zatca_Call_compliance(invoice_number, company_abbr, compliance_type="0", any
         invoice = company_Data(invoice, sales_invoice_doc)
         invoice = customer_Data(invoice, sales_invoice_doc)
         invoice = delivery_And_PaymentMeans_for_Compliance(invoice, sales_invoice_doc, compliance_type)
-        
-
+        if not any_item_has_tax_template:
+            invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        else:
+            invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
         # Add tax and item data
         if not any_item_has_tax_template:
             invoice = tax_Data(invoice, sales_invoice_doc)
@@ -1252,8 +1259,10 @@ def zatca_Call_compliance(invoice_number, company_abbr, compliance_type="0", any
 
         if not any_item_has_tax_template:
             invoice = item_data(invoice, sales_invoice_doc)
+            
         else:
             item_data_with_template(invoice, sales_invoice_doc)
+            
               
 
         # Generate and process the XML data
@@ -1308,11 +1317,12 @@ def zatca_Background(invoice_number):
         any_item_has_tax_template = any(item.item_tax_template for item in sales_invoice_doc.items)
         if any_item_has_tax_template and not all(item.item_tax_template for item in sales_invoice_doc.items):
             frappe.throw("If any one item has an Item Tax Template, all items must have an Item Tax Template.")
-
+        tax_categories = set()
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
                 item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
                 zatca_tax_category = item_tax_template.custom_zatca_tax_category
+                tax_categories.add(zatca_tax_category)  
                 for tax in item_tax_template.taxes:
                     tax_rate = float(tax.tax_rate)
 
@@ -1321,7 +1331,9 @@ def zatca_Background(invoice_number):
 
                     if f"{tax_rate:.2f}" == '15.00' and zatca_tax_category != "Standard":
                         frappe.throw("Check the Zatca category code and enable it as standard.")
-
+        base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)                
+        if len(tax_categories) > 1 and base_discount_amount>0:
+            frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc-level discount. Please ensure all items have the same tax category.")
         if not frappe.db.exists("Sales Invoice", invoice_number):
             frappe.throw("Please save and submit the invoice before sending to Zatca: " + str(invoice_number))
 
@@ -1367,11 +1379,12 @@ def zatca_Background_on_submit(doc, method=None):
             for item in sales_invoice_doc.items:
                 if not item.item_tax_template:
                     frappe.throw("If any one item has an Item Tax Template, all items must have an Item Tax Template.")
-
+        tax_categories = set()
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
                 item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
                 zatca_tax_category = item_tax_template.custom_zatca_tax_category
+                tax_categories.add(zatca_tax_category)
                 for tax in item_tax_template.taxes:
                     tax_rate = float(tax.tax_rate)
                     
@@ -1380,7 +1393,9 @@ def zatca_Background_on_submit(doc, method=None):
                     
                     if f"{tax_rate:.2f}" == '15.00' and zatca_tax_category != "Standard":
                         frappe.throw("Check the Zatca category code and enable it as standard.")
-
+        base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)                  
+        if len(tax_categories) > 1 and base_discount_amount >0:
+            frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc level discount. Please ensure all items have the same tax category.")
         # Check if Zatca Invoice is enabled in the Company document
         company_doc = frappe.get_doc('Company', {"abbr": company_abbr})
         if company_doc.custom_zatca_invoice_enabled != 1:

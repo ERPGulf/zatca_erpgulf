@@ -220,11 +220,17 @@ doc_events = {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
         "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Background_on_submit"
+    },
+    "POS Invoice": {
+        "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+        "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
+        "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_Background_on_submit"
     }
 }
 doctype_js = {
     "Sales Invoice" : "public/js/our_sales_invoice.js" ,
-    "Company": "public/js/company.js"
+    "Company": "public/js/company.js",
+    "POS Invoice" : "public/js/our_pos_invoice.js",
     }
 
 
