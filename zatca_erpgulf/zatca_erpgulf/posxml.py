@@ -126,7 +126,9 @@ def xml_tags():
                 X509IssuerName.text = "CN=TSZEINVOICE-SubCA-1, DC=extgazt, DC=gov, DC=local"
                 X509SerialNumber.text = "2475382886904809774818644480820936050208702411"
                 return invoice
+            
             except Exception as e:
+                    
                     frappe.throw("error in xml tags formation:  "+ str(e) )
 
 def salesinvoice_data(invoice,invoice_number):
@@ -243,6 +245,7 @@ def doc_Reference(invoice,pos_invoice_doc,invoice_number):
                     frappe.throw("Error occured in  reference doc" + str(e) )
 
 
+
 def doc_Reference_compliance(invoice,pos_invoice_doc,invoice_number, compliance_type):
             try:
                 cbc_DocumentCurrencyCode = ET.SubElement(invoice, "cbc:DocumentCurrencyCode")
@@ -279,6 +282,7 @@ def get_pih_for_company(pih_data, company_name):
 
 def additional_Reference(invoice, company_abbr):
     try:
+        
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
