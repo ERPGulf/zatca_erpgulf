@@ -1334,6 +1334,9 @@ def zatca_Background(invoice_number):
         base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)                
         if len(tax_categories) > 1 and base_discount_amount>0:
             frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc-level discount. Please ensure all items have the same tax category.")
+        if base_discount_amount > 0 and sales_invoice_doc.apply_discount_on != "Net Total":
+            frappe.throw("You cannot put discount on Grand total as the tax is already calculated. Please make sure your discount is in Net total field.")
+
         if not frappe.db.exists("Sales Invoice", invoice_number):
             frappe.throw("Please save and submit the invoice before sending to Zatca: " + str(invoice_number))
 
@@ -1396,7 +1399,9 @@ def zatca_Background_on_submit(doc, method=None):
         base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)                  
         if len(tax_categories) > 1 and base_discount_amount >0:
             frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc level discount. Please ensure all items have the same tax category.")
-        # Check if Zatca Invoice is enabled in the Company document
+    
+        if base_discount_amount > 0 and sales_invoice_doc.apply_discount_on != "Net Total":
+            frappe.throw("You cannot put discount on Grand total as the tax is already calculated. Please make sure your discount is in Net total field.")
         company_doc = frappe.get_doc('Company', {"abbr": company_abbr})
         if company_doc.custom_zatca_invoice_enabled != 1:
             frappe.throw("Zatca Invoice is not enabled in the Company settings, Please contact your system administrator")

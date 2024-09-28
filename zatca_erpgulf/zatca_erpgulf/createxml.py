@@ -2,6 +2,7 @@
 
 import frappe
 import os
+import math
 # frappe.init(site="prod.erpgulf.com")
 # frappe.connect()
 import xml.etree.ElementTree as ET
@@ -960,7 +961,7 @@ def tax_Data(invoice, sales_invoice_doc):
 
         cbc_TaxInclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxInclusiveAmount")
         cbc_TaxInclusiveAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_TaxInclusiveAmount.text = str(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)) + abs(tax_amount_without_retention))
+        cbc_TaxInclusiveAmount.text = str(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)) + abs(round(tax_amount_without_retention, 2)))
 
         cbc_AllowanceTotalAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:AllowanceTotalAmount")
         cbc_AllowanceTotalAmount.set("currencyID", sales_invoice_doc.currency)
@@ -968,7 +969,7 @@ def tax_Data(invoice, sales_invoice_doc):
 
         cbc_PayableAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:PayableAmount")
         cbc_PayableAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_PayableAmount.text = str(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)) + abs(tax_amount_without_retention))
+        cbc_PayableAmount.text = str(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)) + abs(round(tax_amount_without_retention, 2)))
 
         return invoice
 
@@ -1159,11 +1160,12 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         # Subtract the base discount from the taxable amount of the first tax category
         tax_category_totals[first_tax_category]["taxable_amount"] -= base_discount_amount
 
-        total_tax = sum(
+        total_taxs = sum(
             tax_category_totals[zatca_tax_category]["taxable_amount"] * (tax_category_totals[zatca_tax_category]["tax_rate"] / 100)
             for zatca_tax_category in tax_category_totals
         )
-
+        total_tax = math.ceil(total_taxs * 100) / 100
+        
         # For foreign currency
         
 
