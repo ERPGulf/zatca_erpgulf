@@ -1160,11 +1160,11 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         # Subtract the base discount from the taxable amount of the first tax category
         tax_category_totals[first_tax_category]["taxable_amount"] -= base_discount_amount
 
-        total_taxs = sum(
+        total_tax= sum(
             tax_category_totals[zatca_tax_category]["taxable_amount"] * (tax_category_totals[zatca_tax_category]["tax_rate"] / 100)
             for zatca_tax_category in tax_category_totals
         )
-        total_tax = math.ceil(total_taxs * 100) / 100
+        # total_tax = math.ceil(total_taxs * 100) / 100
         
         # For foreign currency
         
@@ -1242,7 +1242,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
             cac_TaxSubtotal = ET.SubElement(cac_TaxTotal, "cac:TaxSubtotal")
             cbc_TaxableAmount = ET.SubElement(cac_TaxSubtotal, "cbc:TaxableAmount")
             cbc_TaxableAmount.set("currencyID", sales_invoice_doc.currency)
-            cbc_TaxableAmount.text = str(totals["taxable_amount"])
+            cbc_TaxableAmount.text = str(round(totals["taxable_amount"], 2))
 
             cbc_TaxAmount_2 = ET.SubElement(cac_TaxSubtotal, "cbc:TaxAmount")
             cbc_TaxAmount_2.set("currencyID", sales_invoice_doc.currency)
@@ -1285,7 +1285,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         # Tax-Exclusive Amount (base_total - base_discount_amount)
         cbc_TaxExclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxExclusiveAmount")
         cbc_TaxExclusiveAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_TaxExclusiveAmount.text = str(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)))
+        cbc_TaxExclusiveAmount.text = str(round(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)), 2))
 
         # Tax-Inclusive Amount (Tax-Exclusive Amount + tax_amount_without_retention)
         cbc_TaxInclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxInclusiveAmount")
@@ -1380,6 +1380,30 @@ def item_data(invoice,sales_invoice_doc):
                 return invoice
             except Exception as e:
                     frappe.throw("error occured in item data"+ str(e) )
+from decimal import Decimal, ROUND_DOWN
+
+def custom_round(value):
+    # Convert the value to a Decimal for accurate handling
+    decimal_value = Decimal(str(value))
+    
+    # Check if the number has less than 3 decimal places
+    if decimal_value.as_tuple().exponent >= -2:
+        # If there are less than 3 decimal places, return the original value as float
+        return float(decimal_value)
+    
+    # Extract the third decimal digit accurately
+    third_digit = int((decimal_value * 1000) % 10)
+    
+    # Check if the third digit is strictly greater than 5
+    if third_digit > 5:
+        # Increment the rounded result by 0.01 to ensure rounding up
+        return float(decimal_value.quantize(Decimal('0.01')))
+    elif third_digit == 5:
+        # If the third digit is exactly 5, ensure we round down as desired
+        return float(decimal_value.quantize(Decimal('0.01'), rounding=ROUND_DOWN))
+    else:
+        # Otherwise, round normally to 2 decimal places using ROUND_DOWN
+        return float(decimal_value.quantize(Decimal('0.01'), rounding=ROUND_DOWN))
 
 def item_data_with_template(invoice, sales_invoice_doc):
     try:
@@ -1403,7 +1427,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             cbc_TaxAmount_3.text = str(abs(round(item_tax_percentage * single_item.amount / 100, 2)))
             cbc_RoundingAmount = ET.SubElement(cac_TaxTotal_2, "cbc:RoundingAmount")
             cbc_RoundingAmount.set("currencyID", sales_invoice_doc.currency)
-            cbc_RoundingAmount.text = str(abs(round(single_item.amount + (item_tax_percentage * single_item.amount / 100), 2)))
+            cbc_RoundingAmount.text = str(abs(custom_round(single_item.amount + (item_tax_percentage * single_item.amount / 100))))
             
             cac_Item = ET.SubElement(cac_InvoiceLine, "cac:Item")
             cbc_Name = ET.SubElement(cac_Item, "cbc:Name")
