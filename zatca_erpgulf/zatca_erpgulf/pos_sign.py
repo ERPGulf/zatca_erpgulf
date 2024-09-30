@@ -427,6 +427,8 @@ def zatca_Background_(invoice_number):
             frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc-level discount. Please ensure all items have the same tax category.")
         if not frappe.db.exists("POS Invoice", invoice_number):
             frappe.throw("Please save and submit the invoice before sending to Zatca: " + str(invoice_number))
+        if base_discount_amount < 0:
+            frappe.throw("Additional discount cannot be negative. Please enter a positive value.")
 
         if pos_invoice_doc.docstatus in [0, 2]:
             frappe.throw("Please submit the invoice before sending to Zatca: " + str(invoice_number))
@@ -494,7 +496,9 @@ def zatca_Background_on_submit(doc, method=None):
         
         if not frappe.db.exists("POS Invoice", invoice_number):
             frappe.throw("Please save and submit the invoice before sending to Zatca:  " + str(invoice_number))
-        
+        if base_discount_amount < 0:
+            frappe.throw("Additional discount cannot be negative. Please enter a positive value.")
+ 
         if pos_invoice_doc.docstatus in [0, 2]:
             frappe.throw("Please submit the invoice before sending to Zatca:  " + str(invoice_number))
             

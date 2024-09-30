@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "warning",
   "company",
   "details_and_otp_section",
   "zatca_invoice_enabled",
@@ -52,6 +53,7 @@
    "default": "0",
    "fieldname": "zatca_invoice_enabled",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Zatca invoice enabled"
   },
   {
@@ -64,7 +66,8 @@
    "fieldname": "select",
    "fieldtype": "Select",
    "label": "Select",
-   "options": "Simulation\nSandbox\nProduction"
+   "options": "Simulation\nSandbox\nProduction",
+   "read_only": 1
   },
   {
    "fieldname": "create_csr",
@@ -183,7 +186,8 @@
   {
    "fieldname": "csr_data",
    "fieldtype": "Long Text",
-   "label": "CSR Data"
+   "label": "CSR Data",
+   "read_only": 1
   },
   {
    "fieldname": "company",
@@ -205,7 +209,8 @@
   {
    "fieldname": "private_key",
    "fieldtype": "Small Text",
-   "label": "Private key"
+   "label": "Private key",
+   "read_only": 1
   },
   {
    "fieldname": "keys_for_zatca_section",
@@ -226,13 +231,19 @@
    "default": "0",
    "fieldname": "csr_config",
    "fieldtype": "Long Text",
-   "label": "CSR Config"
+   "label": "CSR Config",
+   "read_only": 1
+  },
+  {
+   "fieldname": "warning",
+   "fieldtype": "Heading",
+   "label": "This page is maintained for backward compatibility only. Please use zatca setting inside company settings"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-27 05:05:58.741723",
+ "modified": "2024-09-30 15:52:58.677726",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "Zatca ERPgulf Setting",
