@@ -1212,10 +1212,10 @@ def item_data(invoice,sales_invoice_doc):
                     company_name = sales_invoice_doc.company
                     settings = frappe.get_doc('Company', company_name)
                     if settings.custom_submit_line_item_discount_to_zatca != 1:
-                          cbc_PriceAmount.text =  "{:.6f}".format(abs(single_item.rate))
+                          cbc_PriceAmount.text =  str(abs(single_item.rate))
                     
                     if settings.custom_submit_line_item_discount_to_zatca == 1:            
-                        cbc_PriceAmount.text = "{:.6f}".format(abs(single_item.rate))
+                        cbc_PriceAmount.text = str(abs(single_item.rate))
 
                         cbc_BaseQuantity = ET.SubElement(cac_Price, "cbc:BaseQuantity", unitCode=str(single_item.uom))
                         cbc_BaseQuantity.text = "1"
