@@ -953,7 +953,7 @@ def tax_Data(invoice, sales_invoice_doc):
         cac_LegalMonetaryTotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
         cbc_LineExtensionAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:LineExtensionAmount")
         cbc_LineExtensionAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_LineExtensionAmount.text = str(abs(sales_invoice_doc.total))
+        cbc_LineExtensionAmount.text = str(round(abs(sales_invoice_doc.total),2))
 
         cbc_TaxExclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxExclusiveAmount")
         cbc_TaxExclusiveAmount.set("currencyID", sales_invoice_doc.currency)
@@ -1126,7 +1126,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         cac_LegalMonetaryTotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
         cbc_LineExtensionAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:LineExtensionAmount")
         cbc_LineExtensionAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_LineExtensionAmount.text = str(abs(sales_invoice_doc.total))
+        cbc_LineExtensionAmount.text = str(round(abs(sales_invoice_doc.total),2))
 
         # Tax-Exclusive Amount (base_total - base_discount_amount)
         cbc_TaxExclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxExclusiveAmount")

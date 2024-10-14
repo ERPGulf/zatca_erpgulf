@@ -834,11 +834,11 @@ def tax_Data(invoice, pos_invoice_doc):
         cac_LegalMonetaryTotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
         cbc_LineExtensionAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:LineExtensionAmount")
         cbc_LineExtensionAmount.set("currencyID", pos_invoice_doc.currency)
-        cbc_LineExtensionAmount.text = str(abs(pos_invoice_doc.total))
+        cbc_LineExtensionAmount.text = str(round(abs(pos_invoice_doc.total),2))
 
         cbc_TaxExclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxExclusiveAmount")
         cbc_TaxExclusiveAmount.set("currencyID", pos_invoice_doc.currency)
-        cbc_TaxExclusiveAmount.text = str(abs(pos_invoice_doc.total - pos_invoice_doc.get('discount_amount', 0.0)))
+        cbc_TaxExclusiveAmount.text = str(round(abs(pos_invoice_doc.total - pos_invoice_doc.get('discount_amount', 0.0)), 2))
 
         cbc_TaxInclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxInclusiveAmount")
         cbc_TaxInclusiveAmount.set("currencyID", pos_invoice_doc.currency)
@@ -1040,11 +1040,15 @@ def tax_Data_with_template(invoice, pos_invoice_doc):
         # Subtract the base discount from the taxable amount of the first tax category
         tax_category_totals[first_tax_category]["taxable_amount"] -= base_discount_amount
 
+        for zatca_tax_category in tax_category_totals:
+            tax_category_totals[zatca_tax_category]["tax_amount"] = abs(
+                round(tax_category_totals[zatca_tax_category]["taxable_amount"] * tax_category_totals[zatca_tax_category]["tax_rate"] / 100, 2)
+            )
+
         total_tax = sum(
-            tax_category_totals[zatca_tax_category]["taxable_amount"] * (tax_category_totals[zatca_tax_category]["tax_rate"] / 100)
+            tax_category_totals[zatca_tax_category]["tax_amount"]
             for zatca_tax_category in tax_category_totals
         )
-
         # For foreign currency
         
 
@@ -1164,7 +1168,7 @@ def tax_Data_with_template(invoice, pos_invoice_doc):
         # Tax-Exclusive Amount (base_total - base_discount_amount)
         cbc_TaxExclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxExclusiveAmount")
         cbc_TaxExclusiveAmount.set("currencyID", pos_invoice_doc.currency)
-        cbc_TaxExclusiveAmount.text = str(abs(pos_invoice_doc.total - pos_invoice_doc.get('discount_amount', 0.0)))
+        cbc_TaxExclusiveAmount.text = str(round(abs(pos_invoice_doc.total - pos_invoice_doc.get('discount_amount', 0.0)), 2))
 
         # Tax-Inclusive Amount (Tax-Exclusive Amount + tax_amount_without_retention)
         cbc_TaxInclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxInclusiveAmount")
