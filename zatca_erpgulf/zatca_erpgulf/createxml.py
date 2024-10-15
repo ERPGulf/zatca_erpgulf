@@ -552,10 +552,10 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
         # Assuming this is within your add_document_level_discount_with_tax function
         cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
         if sales_invoice_doc.currency == "SAR":
-            base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)
+            base_discount_amount = abs(sales_invoice_doc.get('base_discount_amount', 0.0))
             cbc_Amount.text = f"{base_discount_amount:.2f}"
         else :    
-            discount_amount = sales_invoice_doc.get('discount_amount', 0.0)
+            discount_amount = abs(sales_invoice_doc.get('discount_amount', 0.0))
             cbc_Amount.text = f"{discount_amount:.2f}"
 
 
@@ -606,7 +606,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
         # cbc_Amount.text = f"{base_discount_amount:.2f}"
         cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
         if sales_invoice_doc.currency == "SAR":
-            base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)
+            base_discount_amount = abs(sales_invoice_doc.get('base_discount_amount', 0.0))
             cbc_Amount.text = f"{base_discount_amount:.2f}"
         else :    
             discount_amount = sales_invoice_doc.get('discount_amount', 0.0)
@@ -1002,7 +1002,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         base_discount_amount = sales_invoice_doc.get('discount_amount', 0.0)
 
         # Subtract the base discount from the taxable amount of the first tax category
-        tax_category_totals[first_tax_category]["taxable_amount"] -= base_discount_amount
+        tax_category_totals[first_tax_category]["taxable_amount"] -= abs(base_discount_amount)
 
         # Calculate the total tax using the same technique as the 3rd place
         for zatca_tax_category in tax_category_totals:
@@ -1063,7 +1063,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
                 tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(item.amount)      
 
         first_tax_category = next(iter(tax_category_totals))
-        tax_category_totals[first_tax_category]["taxable_amount"] -= sales_invoice_doc.get('discount_amount', 0.0)
+        tax_category_totals[first_tax_category]["taxable_amount"] -= abs(sales_invoice_doc.get('discount_amount', 0.0))
 
         for item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
@@ -1136,7 +1136,7 @@ def tax_Data_with_template(invoice, sales_invoice_doc):
         # Tax-Inclusive Amount (Tax-Exclusive Amount + tax_amount_without_retention)
         cbc_TaxInclusiveAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:TaxInclusiveAmount")
         cbc_TaxInclusiveAmount.set("currencyID", sales_invoice_doc.currency)
-        cbc_TaxInclusiveAmount.text = str(round(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0)) + abs(tax_amount_without_retention), 2))
+        cbc_TaxInclusiveAmount.text = str(round(abs(sales_invoice_doc.total - sales_invoice_doc.get('discount_amount', 0.0))+ abs(tax_amount_without_retention), 2))
 
         cbc_AllowanceTotalAmount = ET.SubElement(cac_LegalMonetaryTotal, "cbc:AllowanceTotalAmount")
         cbc_AllowanceTotalAmount.set("currencyID", sales_invoice_doc.currency)
