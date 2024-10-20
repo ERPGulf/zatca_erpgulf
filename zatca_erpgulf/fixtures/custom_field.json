@@ -486,7 +486,7 @@
   "name": "Sales Invoice-custom_exemption_reason_code",
   "no_copy": 0,
   "non_negative": 0,
-  "options": "Standard 15%\nVATEX-SA-29\nVATEX-SA-29-7\nVATEX-SA-30\nVATEX-SA-32\nVATEX-SA-33\nVATEX-SA-34-1\nVATEX-SA-34-2\nVATEX-SA-34-3\nVATEX-SA-34-4\nVATEX-SA-34-5\nVATEX-SA-35\nVATEX-SA-36 \nVATEX-SA-EDU\nVATEX-SA-HEA \nVATEX-SA-MLTRY\nVATEX-SA-OOS",
+  "options": "Standard 15%\nVATEX-SA-29\nVATEX-SA-29-7\nVATEX-SA-30\nVATEX-SA-32\nVATEX-SA-33\nVATEX-SA-34-1\nVATEX-SA-34-2\nVATEX-SA-34-3\nVATEX-SA-34-4\nVATEX-SA-34-5\nVATEX-SA-35\nVATEX-SA-36\nVATEX-SA-EDU\nVATEX-SA-HEA\nVATEX-SA-MLTRY\nVATEX-SA-OOS",
   "permlevel": 0,
   "precision": "",
   "print_hide": 0,

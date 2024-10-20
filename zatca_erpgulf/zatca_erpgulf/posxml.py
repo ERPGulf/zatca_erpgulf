@@ -610,7 +610,7 @@ def get_exemption_reason_map():
         "VATEX-SA-35": "Medicines and medical equipment.",
         "VATEX-SA-36": "Qualifying metals.",
         "VATEX-SA-EDU": "Private education to citizen.",
-        "VATEX-SA-HEA ": "Private healthcare to citizen.",
+        "VATEX-SA-HEA": "Private healthcare to citizen.",
         "VATEX-SA-MLTRY": "Supply of qualified military goods",
         "VATEX-SA-OOS": "The reason is a free text, has to be provided by the taxpayer on case to case basis."
     
