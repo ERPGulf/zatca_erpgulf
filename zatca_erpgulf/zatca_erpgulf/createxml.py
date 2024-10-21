@@ -684,7 +684,7 @@ def add_line_item_discount(cac_Price, single_item, sales_invoice_doc):
     cbc_Amount.text = str(abs(single_item.discount_amount))
 
     cbc_BaseAmount = ET.SubElement(cac_AllowanceCharge, "cbc:BaseAmount", currencyID=sales_invoice_doc.currency)
-    cbc_BaseAmount.text = str(abs(single_item.price_list_rate))
+    cbc_BaseAmount.text = str(abs(single_item.rate)+abs(single_item.discount_amount))
     # If both document-level and item-level discounts are applied
     # if sales_invoice_doc.get('base_discount_amount', 0.0) > 0 and single_item.discount_amount > 0:
     #     # Set base amount to the original item price before any discounts
