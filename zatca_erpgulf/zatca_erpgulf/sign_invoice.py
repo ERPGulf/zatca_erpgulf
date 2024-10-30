@@ -996,6 +996,25 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 invoice_doc.db_set('custom_uuid', uuid1, commit=True, update_modified=True)
                 invoice_doc.db_set('custom_zatca_status', 'REPORTED', commit=True, update_modified=True)
 
+
+                xml_base64 = xml_base64_Decode(signed_xmlfile_name)
+                
+                xml_cleared_data = base64.b64decode(xml_base64).decode('utf-8')
+                # signed_xmlfile_name = frappe.local.site + '/private/files/final_xml_after_indent.xml'
+
+                # Read the content of the XML file
+                # with open(signed_xmlfile_name, 'r') as file:
+                #     file_content = file.read()
+                file = frappe.get_doc({
+                    "doctype": "File",
+                    "file_name": "Cleared reported xml file " + sales_invoice_doc.name,  
+                    "attached_to_doctype": sales_invoice_doc.doctype,
+                    "attached_to_name": sales_invoice_doc.name,
+                    "content":  xml_cleared_data
+                })
+
+                file.save(ignore_permissions=True)
+
                 success_Log(response.text, uuid1, invoice_number)
             else:
                 error_Log()
