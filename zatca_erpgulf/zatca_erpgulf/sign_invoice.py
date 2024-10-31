@@ -907,7 +907,7 @@ def error_Log():
 
 def attach_QR_Image(qrCodeB64,sales_invoice_doc):
                     try:
-                        qr = pyqrcode.create(qrCodeB64,  error='L', version=15, mode='binary')
+                        qr = pyqrcode.create(qrCodeB64,  error='L', version=16, mode='binary')
                         temp_file_path = "qr_code.png"
                         qr_image=qr.png(temp_file_path, scale=15)
                         file = frappe.get_doc({
