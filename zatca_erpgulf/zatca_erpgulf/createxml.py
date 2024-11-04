@@ -1338,18 +1338,18 @@ def xml_structuring(invoice,sales_invoice_doc):
                 except Exception as e:
                     frappe.throw(frappe.get_traceback())
                 
-                try:
-                    fileX = frappe.get_doc(
-                        {   "doctype": "File",        
-                            "file_type": "xml",  
-                            "file_name":  "E-invoice-" + sales_invoice_doc.name + ".xml",
-                            "attached_to_doctype":sales_invoice_doc.doctype,
-                            "attached_to_name":sales_invoice_doc.name, 
-                            "content": pretty_xml_string,
-                            "is_private": 1,})
-                    fileX.save()
-                except Exception as e:
-                    frappe.throw(frappe.get_traceback())
+                # try:
+                #     fileX = frappe.get_doc(
+                #         {   "doctype": "File",        
+                #             "file_type": "xml",  
+                #             "file_name":  "E-invoice-" + sales_invoice_doc.name + ".xml",
+                #             "attached_to_doctype":sales_invoice_doc.doctype,
+                #             "attached_to_name":sales_invoice_doc.name, 
+                #             "content": pretty_xml_string,
+                #             "is_private": 1,})
+                #     fileX.save()
+                # except Exception as e:
+                #     frappe.throw(frappe.get_traceback())
                 
                 try:
                     frappe.db.get_value('File', {'attached_to_name':sales_invoice_doc.name, 'attached_to_doctype': sales_invoice_doc.doctype}, ['file_name'])
