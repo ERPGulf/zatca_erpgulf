@@ -1351,9 +1351,9 @@ def xml_structuring(invoice,sales_invoice_doc):
                 # except Exception as e:
                 #     frappe.throw(frappe.get_traceback())
                 
-                try:
-                    frappe.db.get_value('File', {'attached_to_name':sales_invoice_doc.name, 'attached_to_doctype': sales_invoice_doc.doctype}, ['file_name'])
-                except Exception as e:
-                    frappe.throw(frappe.get_traceback())
+                # try:
+                #     frappe.db.get_value('File', {'attached_to_name':sales_invoice_doc.name, 'attached_to_doctype': sales_invoice_doc.doctype}, ['file_name'])
+                # except Exception as e:
+                #     frappe.throw(frappe.get_traceback())
             except Exception as e:
                     frappe.throw("Error occured in XML structuring and attach. Please contact your system administrator"+ str(e) )
