@@ -361,7 +361,7 @@ def digital_signature(hash1, company_abbr):
         hash_bytes = bytes.fromhex(hash1)
         signature = private_key.sign(hash_bytes, ec.ECDSA(hashes.SHA256()))
         encoded_signature = base64.b64encode(signature).decode()
-
+        
         return encoded_signature
 
     except Exception as e:
@@ -552,7 +552,7 @@ def populate_The_UBL_Extensions_Output(encoded_signature, namespaces, signed_pro
         
         with open(frappe.local.site + "/private/files/final_xml_after_sign.xml", 'wb') as file:
             updated_invoice_xml.write(file, encoding='utf-8', xml_declaration=True)
-
+    
     except Exception as e:
         frappe.throw("Error in populating UBL extension output: " + str(e))
 
@@ -694,7 +694,7 @@ def generate_tlv_xml(company_abbr):
         result_dict[8] = tag8_publickey(company_abbr)  
         result_dict[9] = tag9_signature_ecdsa(company_abbr)  
         result_dict[1] = result_dict[1].encode('utf-8')  # Handling Arabic company name in QR Code
-
+        # ffrappe.throw("Error occurred while processing. Payload: " + str(result_dict))
         return result_dict
     except Exception as e:
         frappe.throw("Error in getting the entire TLV data: " + str(e))
@@ -1007,7 +1007,7 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 #     file_content = file.read()
                 file = frappe.get_doc({
                     "doctype": "File",
-                    "file_name": "Cleared reported xml file " + sales_invoice_doc.name,  
+                    "file_name": "Reported xml file " + sales_invoice_doc.name,  
                     "attached_to_doctype": sales_invoice_doc.doctype,
                     "attached_to_name": sales_invoice_doc.name,
                     "content":  xml_cleared_data
