@@ -1007,7 +1007,7 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 #     file_content = file.read()
                 file = frappe.get_doc({
                     "doctype": "File",
-                    "file_name": "Reported xml file " + sales_invoice_doc.name,  
+                    "file_name": "Reported xml file " + sales_invoice_doc.name + ".xml" ,  
                     "attached_to_doctype": sales_invoice_doc.doctype,
                     "attached_to_name": sales_invoice_doc.name,
                     "content":  xml_cleared_data
@@ -1108,7 +1108,7 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
             # Attach the cleared XML to the Sales Invoice
             file = frappe.get_doc({
                 "doctype": "File",
-                "file_name": "Cleared xml file " + sales_invoice_doc.name,
+                "file_name": "Cleared xml file " + sales_invoice_doc.name + ".xml",
                 "attached_to_doctype": sales_invoice_doc.doctype,
                 "attached_to_name": sales_invoice_doc.name,
                 "content": xml_cleared
