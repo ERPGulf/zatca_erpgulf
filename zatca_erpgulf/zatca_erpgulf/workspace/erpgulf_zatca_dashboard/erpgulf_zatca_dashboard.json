@@ -1,0 +1,42 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"jzr1eu3Blb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ErpGulf Zatca Dashboard</span>\",\"col\":12}},{\"id\":\"eA_vrSANoi\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Cards\",\"col\":12}},{\"id\":\"kdkxtwvw8e\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Status Chart\",\"col\":12}},{\"id\":\"ItJgKaP94R\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Failed Invoice Card\",\"col\":12}}]",
+ "creation": "2024-10-27 10:19:16.450909",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Zatca Cards",
+   "label": "Zatca Cards"
+  },
+  {
+   "custom_block_name": "Zatca Status Chart",
+   "label": "Zatca Status Chart"
+  },
+  {
+   "custom_block_name": "Zatca Failed Invoice Card",
+   "label": "Zatca Failed Invoice Card"
+  }
+ ],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "drag",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "ErpGulf Zatca Dashboard",
+ "links": [],
+ "modified": "2024-11-05 18:25:53.689849",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "ErpGulf Zatca Dashboard",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 28.0,
+ "shortcuts": [],
+ "title": "ErpGulf Zatca Dashboard"
+}

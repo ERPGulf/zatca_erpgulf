@@ -1,0 +1,50 @@
+[
+ {
+  "charts": [],
+  "content": "[{\"id\":\"jzr1eu3Blb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ErpGulf Zatca Dashboard</span>\",\"col\":12}},{\"id\":\"eA_vrSANoi\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Cards\",\"col\":12}},{\"id\":\"kdkxtwvw8e\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Status Chart\",\"col\":12}},{\"id\":\"ItJgKaP94R\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Failed Invoice Card\",\"col\":12}}]",
+  "custom_blocks": [
+   {
+    "custom_block_name": "Zatca Cards",
+    "label": "Zatca Cards",
+    "parent": "ErpGulf Zatca Dashboard",
+    "parentfield": "custom_blocks",
+    "parenttype": "Workspace"
+   },
+   {
+    "custom_block_name": "Zatca Status Chart",
+    "label": "Zatca Status Chart",
+    "parent": "ErpGulf Zatca Dashboard",
+    "parentfield": "custom_blocks",
+    "parenttype": "Workspace"
+   },
+   {
+    "custom_block_name": "Zatca Failed Invoice Card",
+    "label": "Zatca Failed Invoice Card",
+    "parent": "ErpGulf Zatca Dashboard",
+    "parentfield": "custom_blocks",
+    "parenttype": "Workspace"
+   }
+  ],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "drag",
+  "indicator_color": "green",
+  "is_hidden": 0,
+  "label": "ErpGulf Zatca Dashboard",
+  "links": [],
+  "modified": "2024-11-05 18:25:53.689849",
+  "module": "Zatca Erpgulf",
+  "name": "ErpGulf Zatca Dashboard",
+  "number_cards": [],
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [],
+  "sequence_id": 28.0,
+  "shortcuts": [],
+  "title": "ErpGulf Zatca Dashboard"
+ }
+]
