@@ -1457,30 +1457,30 @@ def xml_structuring(invoice,pos_invoice_doc):
                 with open(frappe.local.site + "/private/files/finalzatcaxml.xml", 'w') as file:
                     file.write(pretty_xml_string)
                           # Attach the getting xml for each invoice
-                try:
-                    if frappe.db.exists("File", {"file_name": "E-invoice-" + pos_invoice_doc.name + ".xml"}):
-                        frappe.db.delete("File", {"file_name": "E-invoice-" + pos_invoice_doc.name + ".xml"})
-                    # if frappe.db.exists("File",{ "attached_to_name": pos_invoice_doc.name, "attached_to_doctype": pos_invoice_doc.doctype }):
-                    #     frappe.db.delete("File",{ "attached_to_name":pos_invoice_doc.name, "attached_to_doctype": pos_invoice_doc.doctype })
-                except Exception as e:
-                    frappe.throw(frappe.get_traceback())
+                # try:
+                #     if frappe.db.exists("File", {"file_name": "E-invoice-" + pos_invoice_doc.name + ".xml"}):
+                #         frappe.db.delete("File", {"file_name": "E-invoice-" + pos_invoice_doc.name + ".xml"})
+                #     # if frappe.db.exists("File",{ "attached_to_name": pos_invoice_doc.name, "attached_to_doctype": pos_invoice_doc.doctype }):
+                #     #     frappe.db.delete("File",{ "attached_to_name":pos_invoice_doc.name, "attached_to_doctype": pos_invoice_doc.doctype })
+                # except Exception as e:
+                #     frappe.throw(frappe.get_traceback())
                 
-                try:
-                    fileX = frappe.get_doc(
-                        {   "doctype": "File",        
-                            "file_type": "xml",  
-                            "file_name":  "E-invoice-" + pos_invoice_doc.name + ".xml",
-                            "attached_to_doctype":pos_invoice_doc.doctype,
-                            "attached_to_name":pos_invoice_doc.name, 
-                            "content": pretty_xml_string,
-                            "is_private": 1,})
-                    fileX.save()
-                except Exception as e:
-                    frappe.throw(frappe.get_traceback())
+                # try:
+                #     fileX = frappe.get_doc(
+                #         {   "doctype": "File",        
+                #             "file_type": "xml",  
+                #             "file_name":  "E-invoice-" + pos_invoice_doc.name + ".xml",
+                #             "attached_to_doctype":pos_invoice_doc.doctype,
+                #             "attached_to_name":pos_invoice_doc.name, 
+                #             "content": pretty_xml_string,
+                #             "is_private": 1,})
+                #     fileX.save()
+                # except Exception as e:
+                #     frappe.throw(frappe.get_traceback())
                 
-                try:
-                    frappe.db.get_value('File', {'attached_to_name':pos_invoice_doc.name, 'attached_to_doctype': pos_invoice_doc.doctype}, ['file_name'])
-                except Exception as e:
-                    frappe.throw(frappe.get_traceback())
+                # try:
+                #     frappe.db.get_value('File', {'attached_to_name':pos_invoice_doc.name, 'attached_to_doctype': pos_invoice_doc.doctype}, ['file_name'])
+                # except Exception as e:
+                #     frappe.throw(frappe.get_traceback())
             except Exception as e:
                     frappe.throw("Error occured in XML structuring and attach. Please contact your system administrator"+ str(e) )
