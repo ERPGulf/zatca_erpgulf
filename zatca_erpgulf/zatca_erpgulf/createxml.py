@@ -374,7 +374,15 @@ def company_Data(invoice,sales_invoice_doc):
                 cbc_ID_2.set("schemeID", "CRN")
                 cbc_ID_2.text =company_doc.custom_company_registration
                 # frappe.throw(cbc_ID_2.text)   # COmpany CR - Need to have a field in company doctype called company_registration 
-                address_list = frappe.get_list("Address", filters={"is_your_company_address": "1"}, fields=["address_line1", "address_line2","custom_building_number","city","pincode","state"])
+                # address_list = frappe.get_list("Address", filters={"is_your_company_address": "1"}, fields=["address_line1", "address_line2","custom_building_number","city","pincode","state"])
+                
+                address_list = frappe.get_all("Address",fields=["address_line1", "address_line2","custom_building_number","city","pincode","state"],
+                    filters=[
+                    ["is_your_company_address", "=", "1"],
+                    ["Dynamic Link", "link_name", "=", company_doc.name]
+                    ]
+                    )
+                
                 # frappe.throw(str(address_list))
                 if len(address_list) == 0:
                     frappe.throw("Zatca requires proper address. Please add your company address in address master")
