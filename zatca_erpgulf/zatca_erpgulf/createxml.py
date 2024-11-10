@@ -374,7 +374,7 @@ def company_Data(invoice,sales_invoice_doc):
                 cbc_ID_2.set("schemeID", "CRN")
                 cbc_ID_2.text =company_doc.custom_company_registration
                 # frappe.throw(cbc_ID_2.text)   # COmpany CR - Need to have a field in company doctype called company_registration 
-                address_list = frappe.get_list("Address", filters={"is_your_company_address": "1"}, fields=["address_line1", "address_line2","city","pincode","state"])
+                address_list = frappe.get_list("Address", filters={"is_your_company_address": "1"}, fields=["address_line1", "address_line2","custom_building_number","city","pincode","state"])
                 # frappe.throw(str(address_list))
                 if len(address_list) == 0:
                     frappe.throw("Zatca requires proper address. Please add your company address in address master")
@@ -383,7 +383,7 @@ def company_Data(invoice,sales_invoice_doc):
                     cbc_StreetName = ET.SubElement(cac_PostalAddress, "cbc:StreetName")
                     cbc_StreetName.text = address.address_line1
                     cbc_BuildingNumber = ET.SubElement(cac_PostalAddress, "cbc:BuildingNumber")
-                    cbc_BuildingNumber.text = address.address_line2 
+                    cbc_BuildingNumber.text = address.custom_building_number 
                     cbc_PlotIdentification = ET.SubElement(cac_PostalAddress, "cbc:PlotIdentification")
                     cbc_PlotIdentification.text =  address.address_line1
                     cbc_CitySubdivisionName = ET.SubElement(cac_PostalAddress, "cbc:CitySubdivisionName")
@@ -434,7 +434,7 @@ def customer_Data(invoice,sales_invoice_doc):
                 cbc_StreetName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:StreetName")
                 cbc_StreetName_1.text = address.address_line1
                 cbc_BuildingNumber_1 = ET.SubElement(cac_PostalAddress_1, "cbc:BuildingNumber")
-                cbc_BuildingNumber_1.text = address.address_line2
+                cbc_BuildingNumber_1.text = address.custom_building_number
                 cbc_PlotIdentification_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PlotIdentification")
                 if hasattr(address, 'po_box'):
                     cbc_PlotIdentification_1.text = address.po_box
