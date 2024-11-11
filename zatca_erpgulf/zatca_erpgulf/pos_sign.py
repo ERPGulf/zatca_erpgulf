@@ -69,18 +69,21 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_
                 invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
                 invoice_doc.db_set('custom_uuid', 'Not Submitted', commit=True, update_modified=True)
                 invoice_doc.db_set('custom_zatca_status', 'Not Submitted', commit=True, update_modified=True)
+                invoice_doc.db_set('custom_zatca_full_response', 'Not Submitted', commit=True, update_modified=True)
                 frappe.throw(f"Error: The request you are sending to Zatca is in incorrect format. Please report to system administrator. Status code: {response.status_code}<br><br> {response.text}")
             
             if response.status_code in (401, 403, 407, 451):
                 invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
                 invoice_doc.db_set('custom_uuid', 'Not Submitted', commit=True, update_modified=True)
                 invoice_doc.db_set('custom_zatca_status', 'Not Submitted', commit=True, update_modified=True)
+                invoice_doc.db_set('custom_zatca_full_response', 'Not Submitted', commit=True, update_modified=True)
                 frappe.throw(f"Error: Zatca Authentication failed. Your access token may be expired or not valid. Please contact your system administrator. Status code: {response.status_code}<br><br> {response.text}")
             
             if response.status_code not in (200, 202):
                 invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
                 invoice_doc.db_set('custom_uuid', 'Not Submitted', commit=True, update_modified=True)
                 invoice_doc.db_set('custom_zatca_status', 'Not Submitted', commit=True, update_modified=True)
+                invoice_doc.db_set('custom_zatca_full_response', 'Not Submitted', commit=True, update_modified=True)
                 frappe.throw(f"Error: Zatca server busy or not responding. Try after sometime or contact your system administrator. Status code: {response.status_code}<br><br> {response.text}")
             
             if response.status_code in (200, 202):
@@ -93,6 +96,7 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_
                 company_doc.save(ignore_permissions=True)
                 
                 invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
+                invoice_doc.db_set('custom_zatca_full_response', msg , commit=True, update_modified=True)
                 invoice_doc.db_set('custom_uuid', uuid1, commit=True, update_modified=True)
                 invoice_doc.db_set('custom_zatca_status', 'REPORTED', commit=True, update_modified=True)
 
@@ -169,21 +173,21 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_
             invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
             frappe.throw(f"Error: The request you are sending to Zatca is in incorrect format. Status code: {response.status_code}<br><br>{response.text}")
 
         if response.status_code in (401, 403, 407, 451):
             invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
             frappe.throw(f"Error: Zatca Authentication failed. Status code: {response.status_code}<br><br>{response.text}")
 
         if response.status_code not in (200, 202):
             invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
             frappe.throw(f"Error: Zatca server busy or not responding. Status code: {response.status_code}")
 
         if response.status_code in (200, 202):
@@ -197,6 +201,7 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_
 
             # Update the POs Invoice with the UUID and status
             invoice_doc = frappe.get_doc('POS Invoice', invoice_number)
+            invoice_doc.db_set('custom_zatca_full_response', msg, commit=True, update_modified=True)
             invoice_doc.db_set('custom_uuid', uuid1, commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "CLEARED", commit=True, update_modified=True)
 

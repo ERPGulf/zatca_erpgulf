@@ -9,6 +9,7 @@ from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,add
 import pyqrcode
 # frappe.init(site="prod.erpgulf.com")
 # frappe.connect()
+from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 import binascii
 from cryptography import x509
 from cryptography.hazmat._oid import NameOID
@@ -1374,8 +1375,10 @@ def zatca_Background(invoice_number):
 
         if settings.custom_zatca_invoice_enabled != 1:
             frappe.throw("Zatca Invoice is not enabled in Company Settings, Please contact your system administrator")
-
-        zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        if settings.custom_phase_1_or_2 == "Phase-2":
+            zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        else:
+            create_qr_code(sales_invoice_doc,method=None)
 
     except Exception as e:
         frappe.throw("Error in background call: " + str(e))
@@ -1536,7 +1539,14 @@ def zatca_Background_on_submit(doc, method=None):
             frappe.throw("This invoice has already been submitted to Zakat and Tax Authority.")
 
         # Call the ZATCA submission function
-        zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        company_name = sales_invoice_doc.company
+
+        # Retrieve the company document to access settings
+        settings = frappe.get_doc('Company', company_name)
+        if settings.custom_phase_1_or_2 == "Phase-2":
+            zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        else:
+            create_qr_code(sales_invoice_doc,method=None)
 
     except Exception as e:
         frappe.throw(f"Error in background call: {str(e)}")
