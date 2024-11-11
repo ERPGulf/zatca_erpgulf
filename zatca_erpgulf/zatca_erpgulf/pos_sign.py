@@ -6,6 +6,7 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 import frappe
 from zatca_erpgulf.zatca_erpgulf.posxml import xml_tags,salesinvoice_data,add_document_level_discount_with_tax_template,add_document_level_discount_with_tax,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,tax_Data_with_template,item_data_with_template
+from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 import pyqrcode
 # frappe.init(site="prod.erpgulf.com")
 # frappe.connect()
@@ -460,8 +461,12 @@ def zatca_Background_(invoice_number):
 
         if settings.custom_zatca_invoice_enabled != 1:
             frappe.throw("Zatca Invoice is not enabled in Company Settings, Please contact your system administrator")
-
-        zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        
+        if settings.custom_phase_1_or_2 == "Phase-2":
+             zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        else:
+            create_qr_code(pos_invoice_doc,method=None)
+       
 
     except Exception as e:
         frappe.throw("Error in background call: " + str(e))
@@ -526,9 +531,15 @@ def zatca_Background_on_submit(doc, method=None):
             
         if pos_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw("Already submitted to Zakat and Tax Authority")
+        company_name = pos_invoice_doc.company
+
+        # Retrieve the company document to access settings
+        settings = frappe.get_doc('Company', company_name)
+        if settings.custom_phase_1_or_2 == "Phase-2":
+            zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+        else:
+            create_qr_code(pos_invoice_doc,method=None)
         
-    
-        zatca_Call(invoice_number, "0", any_item_has_tax_template, company_abbr)
         
     except Exception as e:
         frappe.throw("Error in background call: " + str(e))

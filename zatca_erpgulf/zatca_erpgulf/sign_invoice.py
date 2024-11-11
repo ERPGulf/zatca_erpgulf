@@ -7,6 +7,10 @@ import xml.etree.ElementTree as ET
 import frappe
 from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,add_document_level_discount_with_tax_template,add_document_level_discount_with_tax,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,get_tax_total_from_items,tax_Data_with_template,item_data_with_template
 import pyqrcode
+from pyqrcode import create as qr_create
+import io
+import os
+from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 # frappe.init(site="prod.erpgulf.com")
 # frappe.connect()
 from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
@@ -903,25 +907,54 @@ def error_Log():
                         frappe.throw("Error in error log  " + str(e))   
 
 
+def attach_QR_Image(qrCodeB64, sales_invoice_doc):
+    try:
+        # Check if custom field exists; if not, create it
+        if not hasattr(sales_invoice_doc, "ksa_einv_qr"):
+            create_custom_fields(
+                {
+                    sales_invoice_doc.doctype: [
+                        {
+                            "fieldname": "ksa_einv_qr",
+                            "label": "KSA E-Invoicing QR",
+                            "fieldtype": "Attach Image",
+                            "read_only": 1,
+                            "no_copy": 1,
+                            "hidden": 0,  # Set hidden to 0 for testing
+                        }
+                    ]
+                }
+            )
+            frappe.log("Custom field 'ksa_einv_qr' created.")
 
+        # Check if the QR code already exists
+        qr_code = sales_invoice_doc.get("ksa_einv_qr")
+        if qr_code and frappe.db.exists({"doctype": "File", "file_url": qr_code}):
+            return
 
+        # Generate QR code image and save it
+        qr_image = io.BytesIO()
+        qr = qr_create(qrCodeB64, error="L")
+        qr.png(qr_image, scale=8, quiet_zone=1)
 
-def attach_QR_Image(qrCodeB64,sales_invoice_doc):
-                    try:
-                        qr = pyqrcode.create(qrCodeB64,  error='L', version=16, mode='binary')
-                        temp_file_path = "qr_code.png"
-                        qr_image=qr.png(temp_file_path, scale=15)
-                        file = frappe.get_doc({
-                            "doctype": "File",
-                            "file_name": f"QR_image_{sales_invoice_doc.name}.png",
-                            "attached_to_doctype": sales_invoice_doc.doctype,
-                            "attached_to_name": sales_invoice_doc.name,
-                            "content": open(temp_file_path, "rb").read()
-                           
-                        })
-                        file.save(ignore_permissions=True)
-                    except Exception as e:
-                        frappe.throw("error in qrcode from xml:  " + str(e) )
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": f"QR_image_{sales_invoice_doc.name}.png".replace(os.path.sep, "__"),
+            "attached_to_doctype": sales_invoice_doc.doctype,
+            "attached_to_name": sales_invoice_doc.name,
+            "is_private": 0,
+            "content": qr_image.getvalue(),
+            "attached_to_field": "ksa_einv_qr",
+        })
+        file_doc.save(ignore_permissions=True)
+
+        # Link the file to the Sales Invoice
+        sales_invoice_doc.db_set("ksa_einv_qr", file_doc.file_url)
+        sales_invoice_doc.notify_update()
+
+    except Exception as e:
+        frappe.throw("Error in QR code generation: " + str(e))
+
 
 
 def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sales_invoice_doc):
