@@ -112,7 +112,7 @@ def create_qr_code(doc, method=None):
                 name = frappe.generate_hash(doc.name, 5)
 
                 # making file
-                filename = f"QRCode-{name}.png".replace(os.path.sep, "__")
+                filename = f"QR-Phase1-{doc.name}.png".replace(os.path.sep, "__")
                 _file = frappe.get_doc(
                     {
                         "doctype": "File",
