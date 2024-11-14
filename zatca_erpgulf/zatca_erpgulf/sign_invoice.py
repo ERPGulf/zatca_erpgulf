@@ -942,7 +942,7 @@ def attach_QR_Image(qrCodeB64, sales_invoice_doc):
             "file_name": f"QR_image_{sales_invoice_doc.name}.png".replace(os.path.sep, "__"),
             "attached_to_doctype": sales_invoice_doc.doctype,
             "attached_to_name": sales_invoice_doc.name,
-            "is_private": 0,
+            "is_private": 1,
             "content": qr_image.getvalue(),
             "attached_to_field": "ksa_einv_qr",
         })
@@ -1047,6 +1047,7 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                     "doctype": "File",
                     "file_name": "Reported xml file " + sales_invoice_doc.name + ".xml" ,  
                     "attached_to_doctype": sales_invoice_doc.doctype,
+                     "is_private": 1,
                     "attached_to_name": sales_invoice_doc.name,
                     "content":  xml_cleared_data
                 })
@@ -1060,6 +1061,8 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
             frappe.throw(f"Error in reporting API-2: {str(e)}")
     
     except Exception as e:
+        invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
+        invoice_doc.db_set('custom_zatca_full_response', f"Error: {str(e)}", commit=True, update_modified=True)
         frappe.throw(f"Error in reporting API-1: {str(e)}")
 
 
@@ -1108,21 +1111,21 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
             invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted")
             frappe.throw(f"Error: The request you are sending to Zatca is in incorrect format. Status code: {response.status_code}<br><br>{response.text}")
 
         if response.status_code in (401, 403, 407, 451):
             invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted")
             frappe.throw(f"Error: Zatca Authentication failed. Status code: {response.status_code}<br><br>{response.text}")
 
         if response.status_code not in (200, 202):
             invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
             invoice_doc.db_set('custom_uuid', "Not Submitted", commit=True, update_modified=True)
             invoice_doc.db_set('custom_zatca_status', "Not Submitted", commit=True, update_modified=True)
-            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted", commit=True, update_modified=True)
+            invoice_doc.db_set('custom_zatca_full_response', "Not Submitted")
             frappe.throw(f"Error: Zatca server busy or not responding. Status code: {response.status_code}")
 
         if response.status_code in (200, 202):
@@ -1149,18 +1152,24 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
                 "doctype": "File",
                 "file_name": "Cleared xml file " + sales_invoice_doc.name + ".xml",
                 "attached_to_doctype": sales_invoice_doc.doctype,
+                 "is_private": 1,
                 "attached_to_name": sales_invoice_doc.name,
                 "content": xml_cleared
             })
             file.save(ignore_permissions=True)
-
+            sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
             success_Log(response.text, uuid1, invoice_number)
             return xml_cleared
         else:
             error_Log()
 
     except Exception as e:
-        frappe.throw("Error in clearance API: " + str(e))
+        invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
+        invoice_doc.db_set('custom_zatca_full_response', f"Error: {str(e)}", commit=True, update_modified=True)
+        invoice_doc.db_set('custom_zatca_status', "503 Service Unavailable", commit=True, update_modified=True)
+        
+        # Raise the exception after saving the error message
+        frappe.throw(f"Error in clearance API: {str(e)}")
 
 
 
