@@ -1,0 +1,36 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"AKT9aTatxp\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Zatca ERPGulf</span>\",\"col\":12}},{\"id\":\"Q-3qwEez1n\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Zatca Dashboard\",\"col\":3}}]",
+ "creation": "2024-11-18 16:19:55.846128",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Zatca ERPGulf",
+ "links": [],
+ "modified": "2024-11-18 16:21:42.515373",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "Zatca ERPGulf",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 28.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Zatca Dashboard",
+   "link_to": "zatca-dashboard",
+   "type": "Page"
+  }
+ ],
+ "title": "Zatca ERPGulf"
+}

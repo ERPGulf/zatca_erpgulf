@@ -1,42 +1,20 @@
 [
  {
   "charts": [],
-  "content": "[{\"id\":\"jzr1eu3Blb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ErpGulf Zatca Dashboard</span>\",\"col\":12}},{\"id\":\"eA_vrSANoi\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Cards\",\"col\":12}},{\"id\":\"kdkxtwvw8e\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Status Chart\",\"col\":12}},{\"id\":\"ItJgKaP94R\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Zatca Failed Invoice Card\",\"col\":12}}]",
-  "custom_blocks": [
-   {
-    "custom_block_name": "Zatca Cards",
-    "label": "Zatca Cards",
-    "parent": "ErpGulf Zatca Dashboard",
-    "parentfield": "custom_blocks",
-    "parenttype": "Workspace"
-   },
-   {
-    "custom_block_name": "Zatca Status Chart",
-    "label": "Zatca Status Chart",
-    "parent": "ErpGulf Zatca Dashboard",
-    "parentfield": "custom_blocks",
-    "parenttype": "Workspace"
-   },
-   {
-    "custom_block_name": "Zatca Failed Invoice Card",
-    "label": "Zatca Failed Invoice Card",
-    "parent": "ErpGulf Zatca Dashboard",
-    "parentfield": "custom_blocks",
-    "parenttype": "Workspace"
-   }
-  ],
+  "content": "[{\"id\":\"AKT9aTatxp\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Zatca ERPGulf</span>\",\"col\":12}},{\"id\":\"Q-3qwEez1n\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Zatca Dashboard\",\"col\":3}}]",
+  "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
   "for_user": "",
   "hide_custom": 0,
-  "icon": "drag",
+  "icon": null,
   "indicator_color": "green",
   "is_hidden": 0,
-  "label": "ErpGulf Zatca Dashboard",
+  "label": "Zatca ERPGulf",
   "links": [],
-  "modified": "2024-11-05 18:25:53.689849",
+  "modified": "2024-11-18 16:21:42.515373",
   "module": "Zatca Erpgulf",
-  "name": "ErpGulf Zatca Dashboard",
+  "name": "Zatca ERPGulf",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
@@ -44,7 +22,24 @@
   "restrict_to_domain": null,
   "roles": [],
   "sequence_id": 28.0,
-  "shortcuts": [],
-  "title": "ErpGulf Zatca Dashboard"
+  "shortcuts": [
+   {
+    "color": "Grey",
+    "doc_view": "List",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Zatca Dashboard",
+    "link_to": "zatca-dashboard",
+    "parent": "Zatca ERPGulf",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "Page",
+    "url": null
+   }
+  ],
+  "title": "Zatca ERPGulf"
  }
 ]

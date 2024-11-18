@@ -237,5 +237,6 @@ doctype_js = {
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
 fixtures = [
     {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}}
+    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}},
+    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
 ]

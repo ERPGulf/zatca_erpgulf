@@ -241,7 +241,6 @@ def invoice_Typecode_Simplified(invoice, sales_invoice_doc):
         ]
         five_digit_code = "".join("1" if checkbox else "0" for checkbox in checkbox_map)
         final_code = base_code + five_digit_code
-        
         if sales_invoice_doc.is_return == 0:  
             cbc_InvoiceTypeCode.set("name", final_code)
             cbc_InvoiceTypeCode.text = "388"  
@@ -473,52 +472,124 @@ def company_Data(invoice,sales_invoice_doc):
             except Exception as e:
                     frappe.throw("error occured in company data"+ str(e) )
 
-def customer_Data(invoice,sales_invoice_doc):
-            try:
-                customer_doc= frappe.get_doc("Customer",sales_invoice_doc.customer)
-                # frappe.throw(str(customer_doc))
-                cac_AccountingCustomerParty = ET.SubElement(invoice, "cac:AccountingCustomerParty")
-                cac_Party_2 = ET.SubElement(cac_AccountingCustomerParty, "cac:Party")
-                cac_PartyIdentification_1 = ET.SubElement(cac_Party_2, "cac:PartyIdentification")
-                cbc_ID_4 = ET.SubElement(cac_PartyIdentification_1, "cbc:ID")
-                cbc_ID_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
-                cbc_ID_4.text =customer_doc.custom_buyer_id
-                # frappe.throw(f"Customer Tax ID set to: {cbc_ID_4.text}")
-                if int(frappe.__version__.split('.')[0]) == 13:
-                    address = frappe.get_doc("Address", sales_invoice_doc.customer_address)    
-                else:
+# def customer_Data(invoice,sales_invoice_doc):
+#             try:
+#                 customer_doc= frappe.get_doc("Customer",sales_invoice_doc.customer)
+#                 # frappe.throw(str(customer_doc))
+#                 cac_AccountingCustomerParty = ET.SubElement(invoice, "cac:AccountingCustomerParty")
+#                 cac_Party_2 = ET.SubElement(cac_AccountingCustomerParty, "cac:Party")
+#                 cac_PartyIdentification_1 = ET.SubElement(cac_Party_2, "cac:PartyIdentification")
+#                 cbc_ID_4 = ET.SubElement(cac_PartyIdentification_1, "cbc:ID")
+#                 cbc_ID_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
+#                 cbc_ID_4.text =customer_doc.custom_buyer_id
+#                 # frappe.throw(f"Customer Tax ID set to: {cbc_ID_4.text}")
+#                 if int(frappe.__version__.split('.')[0]) == 13:
+#                     address = frappe.get_doc("Address", sales_invoice_doc.customer_address)    
+#                 else:
+#                     address = frappe.get_doc("Address", customer_doc.customer_primary_address)
+#                 cac_PostalAddress_1 = ET.SubElement(cac_Party_2, "cac:PostalAddress")
+#                 cbc_StreetName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:StreetName")
+#                 cbc_StreetName_1.text = address.address_line1
+#                 cbc_BuildingNumber_1 = ET.SubElement(cac_PostalAddress_1, "cbc:BuildingNumber")
+#                 cbc_BuildingNumber_1.text = address.custom_building_number
+#                 cbc_PlotIdentification_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PlotIdentification")
+#                 if hasattr(address, 'po_box'):
+#                     cbc_PlotIdentification_1.text = address.po_box
+#                 else:
+#                     cbc_PlotIdentification_1.text = address.address_line1
+#                 cbc_CitySubdivisionName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CitySubdivisionName")
+#                 cbc_CitySubdivisionName_1.text = address.address_line2
+#                 cbc_CityName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CityName")
+#                 cbc_CityName_1.text = address.city
+#                 cbc_PostalZone_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PostalZone")
+#                 cbc_PostalZone_1.text =address.pincode
+#                 cbc_CountrySubentity_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CountrySubentity")
+#                 cbc_CountrySubentity_1.text =address.state
+#                 cac_Country_1 = ET.SubElement(cac_PostalAddress_1, "cac:Country")
+#                 cbc_IdentificationCode_1 = ET.SubElement(cac_Country_1, "cbc:IdentificationCode")
+#                 cbc_IdentificationCode_1.text = "SA" 
+#                 cac_PartyTaxScheme_1 = ET.SubElement(cac_Party_2, "cac:PartyTaxScheme")
+#                 cac_TaxScheme_1 = ET.SubElement(cac_PartyTaxScheme_1, "cac:TaxScheme")
+#                 cbc_ID_5 = ET.SubElement(cac_TaxScheme_1, "cbc:ID")
+#                 cbc_ID_5.text = "VAT"
+#                 cac_PartyLegalEntity_1 = ET.SubElement(cac_Party_2, "cac:PartyLegalEntity")
+#                 cbc_RegistrationName_1 = ET.SubElement(cac_PartyLegalEntity_1, "cbc:RegistrationName")
+#                 cbc_RegistrationName_1.text = sales_invoice_doc.customer
+#                 return invoice
+#             except Exception as e:
+#                     frappe.throw("error occured in customer data"+ str(e) )
+
+
+def customer_Data(invoice, sales_invoice_doc):
+    try:
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        # frappe.throw(str(customer_doc))
+        cac_AccountingCustomerParty = ET.SubElement(invoice, "cac:AccountingCustomerParty")
+        cac_Party_2 = ET.SubElement(cac_AccountingCustomerParty, "cac:Party")
+        cac_PartyIdentification_1 = ET.SubElement(cac_Party_2, "cac:PartyIdentification")
+        cbc_ID_4 = ET.SubElement(cac_PartyIdentification_1, "cbc:ID")
+        cbc_ID_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
+        cbc_ID_4.text = customer_doc.custom_buyer_id
+
+        address = None
+        if customer_doc.custom_b2c != 1:  
+            if int(frappe.__version__.split('.')[0]) == 13:
+                if sales_invoice_doc.customer_address:  
+                    address = frappe.get_doc("Address", sales_invoice_doc.customer_address)
+            else:
+                if customer_doc.customer_primary_address:
                     address = frappe.get_doc("Address", customer_doc.customer_primary_address)
-                cac_PostalAddress_1 = ET.SubElement(cac_Party_2, "cac:PostalAddress")
+
+            if not address:
+                frappe.throw("Customer address is mandatory for non-B2C customers.")
+
+            cac_PostalAddress_1 = ET.SubElement(cac_Party_2, "cac:PostalAddress")
+
+            if address.address_line1:
                 cbc_StreetName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:StreetName")
                 cbc_StreetName_1.text = address.address_line1
+
+            if hasattr(address, 'custom_building_number') and address.custom_building_number:
                 cbc_BuildingNumber_1 = ET.SubElement(cac_PostalAddress_1, "cbc:BuildingNumber")
                 cbc_BuildingNumber_1.text = address.custom_building_number
-                cbc_PlotIdentification_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PlotIdentification")
-                if hasattr(address, 'po_box'):
-                    cbc_PlotIdentification_1.text = address.po_box
-                else:
-                    cbc_PlotIdentification_1.text = address.address_line1
+
+            cbc_PlotIdentification_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PlotIdentification")
+            if hasattr(address, 'po_box') and address.po_box:
+                cbc_PlotIdentification_1.text = address.po_box
+            elif address.address_line1:
+                cbc_PlotIdentification_1.text = address.address_line1
+
+            if address.address_line2:
                 cbc_CitySubdivisionName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CitySubdivisionName")
                 cbc_CitySubdivisionName_1.text = address.address_line2
+
+            if address.city:
                 cbc_CityName_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CityName")
                 cbc_CityName_1.text = address.city
+
+            if address.pincode:
                 cbc_PostalZone_1 = ET.SubElement(cac_PostalAddress_1, "cbc:PostalZone")
-                cbc_PostalZone_1.text =address.pincode
+                cbc_PostalZone_1.text = address.pincode
+
+            if address.state:
                 cbc_CountrySubentity_1 = ET.SubElement(cac_PostalAddress_1, "cbc:CountrySubentity")
-                cbc_CountrySubentity_1.text =address.state
-                cac_Country_1 = ET.SubElement(cac_PostalAddress_1, "cac:Country")
-                cbc_IdentificationCode_1 = ET.SubElement(cac_Country_1, "cbc:IdentificationCode")
-                cbc_IdentificationCode_1.text = "SA" 
-                cac_PartyTaxScheme_1 = ET.SubElement(cac_Party_2, "cac:PartyTaxScheme")
-                cac_TaxScheme_1 = ET.SubElement(cac_PartyTaxScheme_1, "cac:TaxScheme")
-                cbc_ID_5 = ET.SubElement(cac_TaxScheme_1, "cbc:ID")
-                cbc_ID_5.text = "VAT"
-                cac_PartyLegalEntity_1 = ET.SubElement(cac_Party_2, "cac:PartyLegalEntity")
-                cbc_RegistrationName_1 = ET.SubElement(cac_PartyLegalEntity_1, "cbc:RegistrationName")
-                cbc_RegistrationName_1.text = sales_invoice_doc.customer
-                return invoice
-            except Exception as e:
-                    frappe.throw("error occured in customer data"+ str(e) )
+                cbc_CountrySubentity_1.text = address.state
+
+            cac_Country_1 = ET.SubElement(cac_PostalAddress_1, "cac:Country")
+            cbc_IdentificationCode_1 = ET.SubElement(cac_Country_1, "cbc:IdentificationCode")
+            cbc_IdentificationCode_1.text = "SA"
+
+        cac_PartyTaxScheme_1 = ET.SubElement(cac_Party_2, "cac:PartyTaxScheme")
+        cac_TaxScheme_1 = ET.SubElement(cac_PartyTaxScheme_1, "cac:TaxScheme")
+        cbc_ID_5 = ET.SubElement(cac_TaxScheme_1, "cbc:ID")
+        cbc_ID_5.text = "VAT"
+        cac_PartyLegalEntity_1 = ET.SubElement(cac_Party_2, "cac:PartyLegalEntity")
+        cbc_RegistrationName_1 = ET.SubElement(cac_PartyLegalEntity_1, "cbc:RegistrationName")
+        cbc_RegistrationName_1.text = sales_invoice_doc.customer
+
+        return invoice
+    except Exception as e:
+        frappe.throw("Error occurred in customer data: " + str(e))
 
 def delivery_And_PaymentMeans(invoice,sales_invoice_doc, is_return):
             try:
@@ -605,7 +676,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
 
         # AllowanceChargeReason
         cbc_AllowanceChargeReason = ET.SubElement(cac_AllowanceCharge, "cbc:AllowanceChargeReason")
-        cbc_AllowanceChargeReason.text = "Discount"
+        cbc_AllowanceChargeReason.text = str(sales_invoice_doc.custom_zatca_discount_reason)
 
         # Assuming this is within your add_document_level_discount_with_tax function
         cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
@@ -657,7 +728,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
 
         # AllowanceChargeReason
         cbc_AllowanceChargeReason = ET.SubElement(cac_AllowanceCharge, "cbc:AllowanceChargeReason")
-        cbc_AllowanceChargeReason.text = "Discount"
+        cbc_AllowanceChargeReason.text = str(sales_invoice_doc.custom_zatca_discount_reason)
 
         # cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
         # base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)
@@ -709,6 +780,124 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
     except Exception as e:
         frappe.throw("Error occurred while processing allowance charge data: " + str(e))
 
+def add_nominal_discount_tax(invoice, sales_invoice_doc):
+      try:
+        # Create the AllowanceCharge element
+        cac_AllowanceCharge = ET.SubElement(invoice, "cac:AllowanceCharge")
+        
+        # ChargeIndicator
+        cbc_ChargeIndicator = ET.SubElement(cac_AllowanceCharge, "cbc:ChargeIndicator")
+        cbc_ChargeIndicator.text = "false"  # Indicates a discount
+
+        # AllowanceChargeReason
+        cbc_AllowanceChargeReason = ET.SubElement(cac_AllowanceCharge, "cbc:AllowanceChargeReason")
+        cbc_AllowanceChargeReason.text =str(sales_invoice_doc.custom_zatca_discount_reason)
+
+        # Assuming this is within your add_document_level_discount_with_tax function
+        cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
+        if sales_invoice_doc.currency == "SAR":
+            base_discount_amount = "0.0"
+            cbc_Amount.text = f"{base_discount_amount:.2f}"
+        else :    
+            discount_amount = '0.0'
+            cbc_Amount.text = f"{discount_amount:.2f}"
+
+
+        # Tax Category Section
+        cac_TaxCategory = ET.SubElement(cac_AllowanceCharge, "cac:TaxCategory")
+        cbc_ID = ET.SubElement(cac_TaxCategory, "cbc:ID")
+
+        # Determine the VAT category code from the sales_invoice_doc
+        if sales_invoice_doc.custom_zatca_tax_category == "Standard":
+                    cbc_ID.text = "S"
+        elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+                    cbc_ID.text = "Z"
+        elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
+                    cbc_ID.text = "E"
+        elif sales_invoice_doc.custom_zatca_tax_category == "Services outside scope of tax / Not subject to VAT":
+                    cbc_ID.text = "O"
+        # Retrieve the VAT percentage from the first tax entry in the sales_invoice_doc
+        tax_percentage = float(sales_invoice_doc.get('taxes', [{}])[0].get('rate', 0))
+        cbc_Percent = ET.SubElement(cac_TaxCategory, "cbc:Percent")
+        cbc_Percent.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
+
+
+
+        cac_TaxScheme = ET.SubElement(cac_TaxCategory, "cac:TaxScheme")
+        cbc_TaxSchemeID = ET.SubElement(cac_TaxScheme, "cbc:ID")
+        cbc_TaxSchemeID.text = "VAT"
+
+        return invoice
+      
+      except Exception as e:
+        frappe.throw("Error occurred nominal discount in tax : " + str(e))
+
+def add_nominal_discount_tax_template(invoice, sales_invoice_doc):
+    try:
+        cac_AllowanceCharge = ET.SubElement(invoice, "cac:AllowanceCharge")
+        
+        # ChargeIndicator
+        cbc_ChargeIndicator = ET.SubElement(cac_AllowanceCharge, "cbc:ChargeIndicator")
+        cbc_ChargeIndicator.text = "false"  # Indicates a discount
+
+        # AllowanceChargeReason
+        cbc_AllowanceChargeReason = ET.SubElement(cac_AllowanceCharge, "cbc:AllowanceChargeReason")
+        cbc_AllowanceChargeReason.text = str(sales_invoice_doc.custom_zatca_discount_reason)
+
+        # cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
+        # base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)
+        # cbc_Amount.text = f"{base_discount_amount:.2f}"
+        cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
+        if sales_invoice_doc.currency == "SAR":
+            base_discount_amount = " 0.0"
+            cbc_Amount.text = f"{base_discount_amount:.2f}"
+        else :    
+            discount_amount =  "0.0"
+            cbc_Amount.text = f"{discount_amount:.2f}"
+
+        # Tax Category Section
+        cac_TaxCategory = ET.SubElement(cac_AllowanceCharge, "cac:TaxCategory")
+        cbc_ID = ET.SubElement(cac_TaxCategory, "cbc:ID")
+
+        # Retrieve the VAT category code from the first applicable tax template in the items
+        vat_category = 'Standard'
+        tax_percentage = 0.0
+        for item in sales_invoice_doc.items:
+            item_tax_template = frappe.get_doc('Item Tax Template', item.item_tax_template)
+            vat_category = item_tax_template.custom_zatca_tax_category
+            tax_percentage = item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
+            break  # Assuming that all items will have the same tax category and percentage
+
+        # Set VAT category code in the XML
+        if vat_category == "Standard":
+            cbc_ID.text = "S"
+        elif vat_category == "Zero Rated":
+            cbc_ID.text = "Z"
+        elif vat_category == "Exempted":
+            cbc_ID.text = "E"
+        elif vat_category == "Services outside scope of tax / Not subject to VAT":
+            cbc_ID.text = "O"
+        else:
+            frappe.throw("Invalid VAT category code. Must be one of 'Standard', 'Zero Rated', 'Exempted', or 'Services outside scope of tax / Not subject to VAT'.")
+
+        # Set VAT percentage in the XML
+        cbc_Percent = ET.SubElement(cac_TaxCategory, "cbc:Percent")
+        cbc_Percent.text = f"{tax_percentage:.2f}"
+
+        # Tax Scheme
+        cac_TaxScheme = ET.SubElement(cac_TaxCategory, "cac:TaxScheme")
+        cbc_TaxSchemeID = ET.SubElement(cac_TaxScheme, "cbc:ID")
+        cbc_TaxSchemeID.text = "VAT"
+
+        return invoice
+
+
+    except Exception as e:
+        frappe.throw("Error occurred nominal discount in tax template: " + str(e))
+
+
+
+
 # def add_line_item_discount(cac_Price,single_item,sales_invoice_doc):
 #     cac_AllowanceCharge = ET.SubElement(cac_Price, "cac:AllowanceCharge")
 
@@ -736,7 +925,7 @@ def add_line_item_discount(cac_Price, single_item, sales_invoice_doc):
     cbc_ChargeIndicator.text = "false"  # Indicates a discount
 
     cbc_AllowanceChargeReason = ET.SubElement(cac_AllowanceCharge, "cbc:AllowanceChargeReason")
-    cbc_AllowanceChargeReason.text = "discount"
+    cbc_AllowanceChargeReason.text = str(sales_invoice_doc.custom_zatca_discount_reason)
 
     cbc_Amount = ET.SubElement(cac_AllowanceCharge, "cbc:Amount", currencyID=sales_invoice_doc.currency)
     cbc_Amount.text = str(abs(single_item.discount_amount))
