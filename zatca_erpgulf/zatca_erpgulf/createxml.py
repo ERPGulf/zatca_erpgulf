@@ -203,30 +203,80 @@ def invoice_Typecode_Compliance(invoice,compliance_type):
                     frappe.throw("error occured in Compliance typecode"+ str(e) )
 
 
-def invoice_Typecode_Simplified(invoice,sales_invoice_doc):
-            try:                             
-                cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
-                if sales_invoice_doc.is_return == 0:         
-                    cbc_InvoiceTypeCode.set("name", "0200000") # Simplified
-                    cbc_InvoiceTypeCode.text = "388"
-                elif sales_invoice_doc.is_return == 1:       # return items and simplified invoice
-                    cbc_InvoiceTypeCode.set("name", "0200000")  # Simplified
-                    cbc_InvoiceTypeCode.text = "381"  # Credit note
-                return invoice
-            except Exception as e:
-                    frappe.throw("error occured in simplified invoice typecode"+ str(e) )
+# def invoice_Typecode_Simplified(invoice,sales_invoice_doc):
+#             try:                             
+#                 cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+#                 if sales_invoice_doc.is_return == 0:         
+#                     cbc_InvoiceTypeCode.set("name", "0200000") # Simplified
+#                     cbc_InvoiceTypeCode.text = "388"
+#                 elif sales_invoice_doc.is_return == 1:       # return items and simplified invoice
+#                     cbc_InvoiceTypeCode.set("name", "0200000")  # Simplified
+#                     cbc_InvoiceTypeCode.text = "381"  # Credit note
+#                 return invoice
+#             except Exception as e:
+#                     frappe.throw("error occured in simplified invoice typecode"+ str(e) )
 
-def invoice_Typecode_Standard(invoice,sales_invoice_doc):
-            try:
-                    cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
-                    cbc_InvoiceTypeCode.set("name", "0100000") # Standard
-                    if sales_invoice_doc.is_return == 0:
-                        cbc_InvoiceTypeCode.text = "388"
-                    elif sales_invoice_doc.is_return == 1:     # return items and simplified invoice
-                        cbc_InvoiceTypeCode.text = "381" # Credit note
-                    return invoice
-            except Exception as e:
-                    frappe.throw("Error in standard invoice type code: "+ str(e))
+# def invoice_Typecode_Standard(invoice,sales_invoice_doc):
+#             try:
+#                     cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+#                     cbc_InvoiceTypeCode.set("name", "0100000") # Standard
+#                     if sales_invoice_doc.is_return == 0:
+#                         cbc_InvoiceTypeCode.text = "388"
+#                     elif sales_invoice_doc.is_return == 1:     # return items and simplified invoice
+#                         cbc_InvoiceTypeCode.text = "381" # Credit note
+#                     return invoice
+#             except Exception as e:
+#                     frappe.throw("Error in standard invoice type code: "+ str(e))
+
+def invoice_Typecode_Simplified(invoice, sales_invoice_doc):
+    try:
+        cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+        base_code = "02"
+        checkbox_map = [
+            sales_invoice_doc.custom_zatca_third_party_invoice,
+            sales_invoice_doc.custom_zatca_nominal_invoice,
+            sales_invoice_doc.custom_zatca_export_invoice,
+            sales_invoice_doc.custom_summary_invoice,
+            sales_invoice_doc.custom_self_billed_invoice,
+        ]
+        five_digit_code = "".join("1" if checkbox else "0" for checkbox in checkbox_map)
+        final_code = base_code + five_digit_code
+        
+        if sales_invoice_doc.is_return == 0:  
+            cbc_InvoiceTypeCode.set("name", final_code)
+            cbc_InvoiceTypeCode.text = "388"  
+        elif sales_invoice_doc.is_return == 1:  
+            cbc_InvoiceTypeCode.set("name", final_code)
+            cbc_InvoiceTypeCode.text = "381"  
+        
+        return invoice
+    except Exception as e:
+        frappe.throw("Error occurred in simplified invoice typecode: " + str(e))
+
+def invoice_Typecode_Standard(invoice, sales_invoice_doc):
+    try:
+        cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+        base_code = "01" 
+        checkbox_map = [
+            sales_invoice_doc.custom_zatca_third_party_invoice,
+            sales_invoice_doc.custom_zatca_nominal_invoice,
+            sales_invoice_doc.custom_zatca_export_invoice,
+            sales_invoice_doc.custom_summary_invoice,
+            sales_invoice_doc.custom_self_billed_invoice,
+        ]
+
+        five_digit_code = "".join("1" if checkbox else "0" for checkbox in checkbox_map)
+        final_code = base_code + five_digit_code
+        if sales_invoice_doc.is_return == 0:  
+            cbc_InvoiceTypeCode.set("name", final_code)
+            cbc_InvoiceTypeCode.text = "388" 
+        elif sales_invoice_doc.is_return == 1:  
+            cbc_InvoiceTypeCode.set("name", final_code)
+            cbc_InvoiceTypeCode.text = "381"  
+        return invoice
+    except Exception as e:
+        frappe.throw("Error in standard invoice type code: " + str(e))
+
                     
 def doc_Reference(invoice,sales_invoice_doc,invoice_number):
             try:
