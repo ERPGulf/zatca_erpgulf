@@ -9,7 +9,7 @@ Creates Compliance token
 
 Do system compliance test as per Zatca UBL formats
 
-Send API compliance test
+Send API Compliance test
 
 Get Production token
 
