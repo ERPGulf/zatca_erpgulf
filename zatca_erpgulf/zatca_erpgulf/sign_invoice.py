@@ -5,7 +5,7 @@ import lxml.etree as MyTree
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import frappe
-from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,add_document_level_discount_with_tax_template,add_document_level_discount_with_tax,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,get_tax_total_from_items,tax_Data_with_template,item_data_with_template
+from zatca_erpgulf.zatca_erpgulf.createxml import xml_tags,salesinvoice_data,add_document_level_discount_with_tax_template,tax_Data_nominal,tax_Data_with_template_nominal,add_document_level_discount_with_tax,invoice_Typecode_Simplified,invoice_Typecode_Standard,doc_Reference,additional_Reference ,company_Data,customer_Data,delivery_And_PaymentMeans,tax_Data,item_data,xml_structuring,invoice_Typecode_Compliance,delivery_And_PaymentMeans_for_Compliance,doc_Reference_compliance,get_tax_total_from_items,tax_Data_with_template,item_data_with_template,add_nominal_discount_tax
 import pyqrcode
 from pyqrcode import create as qr_create
 import io
@@ -1202,14 +1202,33 @@ def zatca_Call(invoice_number, compliance_type="0", any_item_has_tax_template=Fa
         invoice = company_Data(invoice, sales_invoice_doc)
         invoice = customer_Data(invoice, sales_invoice_doc)
         invoice = delivery_And_PaymentMeans(invoice, sales_invoice_doc, sales_invoice_doc.is_return)
-        if not any_item_has_tax_template:
-            invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        # if not any_item_has_tax_template:
+        #     invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        # else:
+        #     invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
+            # Add document-level discount with tax
+            invoice = add_nominal_discount_tax(invoice, sales_invoice_doc)
+            
+        elif not any_item_has_tax_template:
+            # Add nominal discount tax
+             invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
         else:
+            # Add document-level discount with tax template
             invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
-        if not any_item_has_tax_template:
-            invoice = tax_Data(invoice, sales_invoice_doc)
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
+            if not any_item_has_tax_template:
+                invoice = tax_Data_nominal(invoice, sales_invoice_doc)
+            else:
+                invoice = tax_Data_with_template_nominal(invoice, sales_invoice_doc)
         else:
-            invoice = tax_Data_with_template(invoice, sales_invoice_doc)
+            if not any_item_has_tax_template:
+                invoice = tax_Data(invoice, sales_invoice_doc)
+            else:
+                invoice = tax_Data_with_template(invoice, sales_invoice_doc)
+
 
         if not any_item_has_tax_template:
             invoice = item_data(invoice, sales_invoice_doc)
@@ -1314,15 +1333,33 @@ def zatca_Call_compliance(invoice_number, company_abbr, compliance_type="0", any
         invoice = company_Data(invoice, sales_invoice_doc)
         invoice = customer_Data(invoice, sales_invoice_doc)
         invoice = delivery_And_PaymentMeans_for_Compliance(invoice, sales_invoice_doc, compliance_type)
-        if not any_item_has_tax_template:
-            invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        # if not any_item_has_tax_template:
+        #     invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
+        # else:
+        #     invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
+            # Add document-level discount with tax
+            invoice = add_nominal_discount_tax(invoice, sales_invoice_doc)
+            
+        elif not any_item_has_tax_template:
+            # Add nominal discount tax
+             invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
         else:
+            # Add document-level discount with tax template
             invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
-        # Add tax and item data
-        if not any_item_has_tax_template:
-            invoice = tax_Data(invoice, sales_invoice_doc)
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
+            if not any_item_has_tax_template:
+                invoice = tax_Data_nominal(invoice, sales_invoice_doc)
+            else:
+                invoice = tax_Data_with_template_nominal(invoice, sales_invoice_doc)
         else:
-            invoice = tax_Data_with_template(invoice, sales_invoice_doc)
+            if not any_item_has_tax_template:
+                invoice = tax_Data(invoice, sales_invoice_doc)
+            else:
+                invoice = tax_Data_with_template(invoice, sales_invoice_doc)
+
 
         if not any_item_has_tax_template:
             invoice = item_data(invoice, sales_invoice_doc)
@@ -1398,11 +1435,23 @@ def zatca_Background(invoice_number):
 
                     if f"{tax_rate:.2f}" == '15.00' and zatca_tax_category != "Standard":
                         frappe.throw("Check the Zatca category code and enable it as standard.")
-        base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)                
+        base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)      
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('base_discount_amount', 0.0) < 0:
+            frappe.throw("only the document level discount is possible for ZATCA nominal invoices. Please ensure the discount is applied correctly.")
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('additional_discount_percentage', 0.0) != 100:
+            frappe.throw("Only a 100% discount is allowed for ZATCA nominal invoices. Please ensure the additional discount percentage is set to 100.")
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('custom_submit_line_item_discount_to_zatca'):
+            frappe.throw("For nominal invoices, please disable line item discounts by unchecking 'Submit Line Item Discount to ZATCA'.")
+
+
+
         if len(tax_categories) > 1 and base_discount_amount>0:
             frappe.throw("ZATCA does not respond for multiple items with multiple tax categories with doc-level discount. Please ensure all items have the same tax category.")
         if base_discount_amount > 0 and sales_invoice_doc.apply_discount_on != "Net Total":
             frappe.throw("You cannot put discount on Grand total as the tax is already calculated. Please make sure your discount is in Net total field.")
+
         if base_discount_amount < 0 and sales_invoice_doc.is_return==0:
             frappe.throw("Additional discount cannot be negative. Please enter a positive value.")
 
@@ -1550,8 +1599,17 @@ def zatca_Background_on_submit(doc, method=None):
                         frappe.throw("Check the Zatca category code and enable it as Standard.")
 
         base_discount_amount = sales_invoice_doc.get('base_discount_amount', 0.0)
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('base_discount_amount', 0.0) < 0:
+            frappe.throw("only the document level discount is possible for ZATCA nominal invoices. Please ensure the discount is applied correctly.")
+
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('additional_discount_percentage', 0.0) != 100:
+            frappe.throw("Only a 100% discount is allowed for ZATCA nominal invoices. Please ensure the additional discount percentage is set to 100.")
+        
+        if sales_invoice_doc.custom_zatca_nominal_invoice == 1 and sales_invoice_doc.get('custom_submit_line_item_discount_to_zatca'):
+            frappe.throw("For nominal invoices, please disable line item discounts by unchecking 'Submit Line Item Discount to ZATCA'.")
 
         # Ensure ZATCA compliance for discounts and tax categories
+
         if len(tax_categories) > 1 and base_discount_amount > 0:
             frappe.throw(
                 "ZATCA does not respond for multiple items with multiple tax categories "
