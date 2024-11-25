@@ -233,12 +233,14 @@ def create_CSID(company_abbr):
             'Cookie': 'TS0106293e=0132a679c07382ce7821148af16b99da546c13ce1dcddbef0e19802eb470e539a4d39d5ef63d5c8280b48c529f321e8b0173890e4f'
         }
         
+        frappe.publish_realtime('show_gif', {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"})
+        
         response = requests.post(
             url=get_API_url(company_abbr, base_url="compliance"), 
             headers=headers, 
             data=payload
         )
-
+        frappe.publish_realtime('hide_gif')
         
         if response.status_code == 400:
             frappe.throw("Error: OTP is not valid. " + response.text)
@@ -849,8 +851,13 @@ def production_CSID(company_abbr):
         }
         
         # Make the API request
+        
+        frappe.publish_realtime('show_gif', {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"})  
+        
         response = requests.post(url=get_API_url(company_abbr, base_url="production/csids"), headers=headers, json=payload)
+        frappe.publish_realtime('hide_gif')
         frappe.msgprint(response.text)
+        
         
         if response.status_code != 200:
             frappe.throw("Error in production: " + response.text)
@@ -993,12 +1000,13 @@ def reporting_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
             frappe.throw(f"Production CSID for company {company_abbr} not found.")
         
         try:
+            frappe.publish_realtime('show_gif', {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"})  
             response = requests.post(
                 url=get_API_url(company_abbr, base_url="invoices/reporting/single"), 
                 headers=headers, 
                 json=payload
             )
-            
+            frappe.publish_realtime('hide_gif')
             if response.status_code in (400, 405, 406, 409):
                 invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
                 invoice_doc.db_set('custom_uuid', 'Not Submitted', commit=True, update_modified=True)
@@ -1100,12 +1108,13 @@ def clearance_API(uuid1, encoded_hash, signed_xmlfile_name, invoice_number, sale
         else:
             frappe.throw(f"Production CSID for company {company_abbr} not found.")
 
-        
+        frappe.publish_realtime('show_gif', {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"})        
         response = requests.post(
             url=get_API_url(company_abbr, base_url="invoices/clearance/single"), 
             headers=headers, 
             json=payload
         )
+        frappe.publish_realtime('hide_gif')
 
         if response.status_code in (400, 405, 406, 409):
             invoice_doc = frappe.get_doc('Sales Invoice', invoice_number)
