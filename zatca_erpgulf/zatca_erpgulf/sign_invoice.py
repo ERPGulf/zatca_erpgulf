@@ -175,7 +175,7 @@ def create_csr(portal_type, company_abbr):
         company_doc.save(ignore_permissions=True)
 
 # Notify the user that the CSR generation was successful
-        frappe.msgprint("CSR generation successful. CSR saved")
+        # frappe.msgprint("CSR generation successful. CSR saved")
         
         return encoded_string
     

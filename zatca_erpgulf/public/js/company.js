@@ -1,3 +1,25 @@
+frappe.realtime.on('hide_gif', () => {
+    $('#custom-gif-overlay').remove();
+});
+
+frappe.realtime.on('show_gif', (data) => {
+    const gifHtml = `
+        <div id="custom-gif-overlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;">
+            <img src="${data.gif_url}" alt="Loading..." style="width: 100px; height: 100px;">
+        </div>`;
+    $('body').append(gifHtml);
+});
+
 // frappe.ui.form.on("Company", {
 //     refresh(frm) {
 //         // Refresh logic if any
