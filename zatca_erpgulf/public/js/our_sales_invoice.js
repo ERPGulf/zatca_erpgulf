@@ -1,4 +1,51 @@
+function applyTooltips(context, fieldsWithTooltips) {
+    fieldsWithTooltips.forEach((field) => {
+        let fieldContainer;
+        if (context.fields_dict && context.fields_dict[field.fieldname]) {
+            fieldContainer = context.fields_dict[field.fieldname];
+        }
+        else if (context.dialog && context.dialog.fields_dict && context.dialog.fields_dict[field.fieldname]) {
+            fieldContainer = context.dialog.fields_dict[field.fieldname];
+        }
+        else if (context.page) {
+            fieldContainer = $(context.page).find(`[data-fieldname="${field.fieldname}"]`).closest('.frappe-control');
+        }
+        if (!fieldContainer) {
+            console.error(`Field '${field.fieldname}' not found in the provided context.`);
+            return;
+        }
+        const fieldWrapper = fieldContainer.$wrapper || $(fieldContainer); // Handle both Doctype/Dialog and Page contexts
+        if (!fieldWrapper || fieldWrapper.length === 0) {
+            console.error(`Field wrapper for '${field.fieldname}' not found.`);
+            return;
+        }
+        let labelElement;
+        if (fieldWrapper.find('label').length > 0) {
+            labelElement = fieldWrapper.find('label').first();
+        } else if (fieldWrapper.find('.control-label').length > 0) {
+            labelElement = fieldWrapper.find('.control-label').first();
+        }
+        if (!labelElement && (context.dialog || context.page)) {
+            labelElement = fieldWrapper.find('.form-control').first();
+        }
 
+        if (!labelElement || labelElement.length === 0) {
+            console.error(`Label for field '${field.fieldname}' not found.`);
+            return;
+        }
+        const tooltipContainer = labelElement.next('.tooltip-container');
+        if (tooltipContainer.length === 0) {
+            const tooltip = new Tooltip({
+                containerClass: "tooltip-container",
+                tooltipClass: "custom-tooltip",
+                iconClass: "info-icon",
+                text: field.text,
+                links: field.links,
+            });
+            tooltip.renderTooltip(labelElement[0]);
+        }
+    });
+}
 frappe.realtime.on('hide_gif', () => {
     $('#custom-gif-overlay').remove();
 });
@@ -56,6 +103,59 @@ frappe.ui.form.on("Sales Invoice", {
 
 frappe.ui.form.on('Sales Invoice', {
     refresh: function(frm) {
+        const fieldsWithTooltips = [
+            {
+                fieldname: "custom_zatca_third_party_invoice",
+                text: `
+                    An external party such as an accounting firm can issue invoices on behalf of the seller after fulfilling specific requirements as mentioned in the VAT legislation.
+                `,
+                links: [
+                    "https://example.com/view-inventory",
+                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                ],
+            },
+            {
+                fieldname: "custom_zatca_nominal_invoice",
+                text: `
+                    A taxable person provides goods or services to a customer at no cost or at a reduced price, typically as part of a promotional activity.
+                `,
+                links: [
+                    "https://example.com/view-inventory",
+                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                ],
+            },
+            {
+                fieldname: "custom_zatca_export_invoice",
+                text: `
+                    The supplier and customer both intend that the goods are transported outside the GCC territory as a consequence of that supply.
+                `,
+                links: [
+                    "https://example.com/view-inventory",
+                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                ],
+            },
+            {
+                fieldname: "custom_summary_invoice",
+                text: `
+                    Summary tax invoices are issued where there is more than one supply of goods or services.
+                `,
+                links: [
+                    "https://example.com/view-inventory",
+                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                ],
+            },
+            {
+                fieldname: "custom_self_billed_invoice",
+                text: `
+                    Self-billing is a case where the buyer raises a tax invoice for the goods and services received on behalf of the vendor.
+                `,
+                links: [
+                    "https://example.com/view-inventory",
+                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                ],
+            },
+        ];
+        applyTooltips(frm, fieldsWithTooltips);
         const css = `
             .popover-content {
                 font-family: Arial, sans-serif;
@@ -101,33 +201,7 @@ frappe.ui.form.on('Sales Invoice', {
         };
 
         // Attach popovers to specific fields
-        attachPopover(
-            "custom_zatca_third_party_invoice",
-            "Zatca 3rd Party Invoice",
-            "An external party such as an accounting firm can issue invoices on behalf of the seller after fulfilling specific requirements as mentioned in the VAT legislation."
-        );
-
-        attachPopover(
-            "custom_zatca_nominal_invoice",
-            "Zatca NOMINAL Invoice",
-            "A taxable person provides goods or services to a customer at no cost or at a reduced price, typically as part of a promotional activity."
-        );
-        attachPopover(
-            "custom_zatca_export_invoice",
-            "Zatca EXPORT Invoice",
-            "The supplier and customer both intend that the goods are transported outside the GCC territory as a consequence of that supply."
-        );
-        attachPopover(
-            "custom_summary_invoice",
-            "Zatca SUMMARY Invoice",
-            "Summary tax invoices are issued where there is more than one supply of goods or services."
-        );
-        attachPopover(
-            "custom_self_billed_invoice",
-            "Zatca SELF-BILLED Invoice",
-            "Self-billing is a case where the buyer raises a tax invoice for the goods and services received on behalf of the vendor."
-        );
-
+        
     }
 });
 

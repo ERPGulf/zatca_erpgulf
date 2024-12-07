@@ -259,6 +259,8 @@ def create_CSID(company_abbr):
         company_doc.custom_compliance_request_id_ = data["requestID"]
         
         company_doc.save(ignore_permissions=True)
+
+        return (response.text)
     
     except Exception as e:
         frappe.throw("Error in creating CSID: " + str(e))
@@ -810,12 +812,14 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
         frappe.msgprint(response.text)
         if response.status_code != 200:
             frappe.throw(f"Error in compliance: {response.text}")
+        return response.text    
     except requests.exceptions.RequestException as e:
         frappe.msgprint(f"Request exception occurred: {str(e)}")
         return "error in compliance", "NOT ACCEPTED"
 
     except Exception as e:
-        frappe.throw(f"ERROR in clearance invoice, ZATCA validation: {str(e)}")        
+        frappe.throw(f"ERROR in clearance invoice, ZATCA validation: {str(e)}")   
+             
 
 
 @frappe.whitelist(allow_guest=True)
@@ -1426,8 +1430,16 @@ def zatca_Background(invoice_number):
         # Retrieve the company document to access settings
         settings = frappe.get_doc('Company', company_name)
         company_abbr = settings.abbr
+        
+
+
+        if sales_invoice_doc.taxes and sales_invoice_doc.taxes[0].included_in_print_rate == 1:
+            if any(item.item_tax_template for item in sales_invoice_doc.items):
+                frappe.throw("Item Tax Template cannot be used when taxes are included in the print rate. Please remove Item Tax Templates.")
 
         any_item_has_tax_template = any(item.item_tax_template for item in sales_invoice_doc.items)
+
+        
         if any_item_has_tax_template and not all(item.item_tax_template for item in sales_invoice_doc.items):
             frappe.throw("If any one item has an Item Tax Template, all items must have an Item Tax Template.")
         tax_categories = set()
@@ -1571,6 +1583,12 @@ def zatca_Background_on_submit(doc, method=None):
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
 
+
+
+
+        if sales_invoice_doc.taxes and sales_invoice_doc.taxes[0].included_in_print_rate == 1:
+            if any(item.item_tax_template for item in sales_invoice_doc.items):
+                frappe.throw("Item Tax Template cannot be used when taxes are included in the print rate. Please remove Item Tax Templates.")
         any_item_has_tax_template = False
 
         # Check if any item has a tax template
