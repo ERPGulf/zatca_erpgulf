@@ -59,8 +59,8 @@
   {
    "fieldname": "send_invoice_to_zatca",
    "fieldtype": "Select",
-   "label": "Send invoice to zatca",
-   "options": "Live\nBatches"
+   "label": "Send POS invoice to zatca",
+   "options": "Live\nBackground"
   },
   {
    "fieldname": "select",
@@ -243,7 +243,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-30 15:52:58.677726",
+ "modified": "2024-12-09 09:12:56.935110",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "Zatca ERPgulf Setting",

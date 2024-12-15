@@ -41,7 +41,7 @@ app_license = "mit"
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+# 	"Role": "home_page"
 # }
 
 # Generators
@@ -55,8 +55,8 @@ app_license = "mit"
 
 # add methods and filters to jinja environment
 # jinja = {
-#	"methods": "zatca_erpgulf.utils.jinja_methods",
-#	"filters": "zatca_erpgulf.utils.jinja_filters"
+# 	"methods": "zatca_erpgulf.utils.jinja_methods",
+# 	"filters": "zatca_erpgulf.utils.jinja_filters"
 # }
 
 # Installation
@@ -98,11 +98,11 @@ app_license = "mit"
 # Permissions evaluated in scripted ways
 
 # permission_query_conditions = {
-#	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
 # has_permission = {
-#	"Event": "frappe.desk.doctype.event.event.has_permission",
+# 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # DocType Class
@@ -110,7 +110,7 @@ app_license = "mit"
 # Override standard doctype classes
 
 # override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
+# 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
 # Document Events
@@ -118,32 +118,32 @@ app_license = "mit"
 # Hook on document methods and events
 
 # doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
+# 	"*": {
+# 		"on_update": "method",
+# 		"on_cancel": "method",
+# 		"on_trash": "method"
+# 	}
 # }
 
 # Scheduled Tasks
 # ---------------
 
 # scheduler_events = {
-#	"all": [
-#		"zatca_erpgulf.tasks.all"
-#	],
-#	"daily": [
-#		"zatca_erpgulf.tasks.daily"
-#	],
-#	"hourly": [
-#		"zatca_erpgulf.tasks.hourly"
-#	],
-#	"weekly": [
-#		"zatca_erpgulf.tasks.weekly"
-#	],
-#	"monthly": [
-#		"zatca_erpgulf.tasks.monthly"
-#	],
+# 	"all": [
+# 		"zatca_erpgulf.tasks.all"
+# 	],
+# 	"daily": [
+# 		"zatca_erpgulf.tasks.daily"
+# 	],
+# 	"hourly": [
+# 		"zatca_erpgulf.tasks.hourly"
+# 	],
+# 	"weekly": [
+# 		"zatca_erpgulf.tasks.weekly"
+# 	],
+# 	"monthly": [
+# 		"zatca_erpgulf.tasks.monthly"
+# 	],
 # }
 
 # Testing
@@ -155,14 +155,14 @@ app_license = "mit"
 # ------------------------------
 #
 # override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "zatca_erpgulf.event.get_events"
+# 	"frappe.desk.doctype.event.event.get_events": "zatca_erpgulf.event.get_events"
 # }
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 # override_doctype_dashboards = {
-#	"Task": "zatca_erpgulf.task.get_dashboard_data"
+# 	"Task": "zatca_erpgulf.task.get_dashboard_data"
 # }
 
 # exempt linked doctypes from being automatically cancelled
@@ -188,57 +188,57 @@ app_license = "mit"
 # --------------------
 
 # user_data_fields = [
-#	{
-#		"doctype": "{doctype_1}",
-#		"filter_by": "{filter_by}",
-#		"redact_fields": ["{field_1}", "{field_2}"],
-#		"partial": 1,
-#	},
-#	{
-#		"doctype": "{doctype_2}",
-#		"filter_by": "{filter_by}",
-#		"partial": 1,
-#	},
-#	{
-#		"doctype": "{doctype_3}",
-#		"strict": False,
-#	},
-#	{
-#		"doctype": "{doctype_4}"
-#	}
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
 # ]
 
 # Authentication and authorization
 # --------------------------------
 
 # auth_hooks = [
-#	"zatca_erpgulf.auth.validate"
+# 	"zatca_erpgulf.auth.validate"
 # ]
 
 doc_events = {
     "Sales Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
-        "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Background_on_submit"
+        "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit",
     },
     "POS Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
-        "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_Background_on_submit"
-    }
+        "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_background_on_submit",
+    },
 }
 doctype_js = {
-    "Sales Invoice" : "public/js/our_sales_invoice.js" ,
+    "Sales Invoice": "public/js/our_sales_invoice.js",
     "Company": "public/js/company.js",
-    "POS Invoice" : "public/js/our_pos_invoice.js",
-    }
+    "POS Invoice": "public/js/our_pos_invoice.js",
+}
 
 
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
 fixtures = [
     {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}}
-#    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
+    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}},
+    #    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
 ]
 
 app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"

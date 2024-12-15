@@ -87,7 +87,7 @@ frappe.ui.form.on("Company", {
     custom_generate_production_csids: function (frm) {
         
         frappe.call({
-            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.production_CSID",
+            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
             args: {
                 "company_abbr": frm.doc.abbr
             },
@@ -101,7 +101,7 @@ frappe.ui.form.on("Company", {
     custom_generate_compliance_csid: function (frm) {
         
         frappe.call({
-            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.create_CSID",
+            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
             args: {
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
@@ -116,7 +116,7 @@ frappe.ui.form.on("Company", {
     custom_create_csr: function (frm) {
         
         frappe.call({
-            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.create_csr",
+            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
             args: {
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
@@ -131,7 +131,7 @@ frappe.ui.form.on("Company", {
     custom_check_compliance: function (frm) {
 
         frappe.call({
-            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
+            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_call_compliance",
             args: {
                 "invoice_number": frm.doc.custom_sample_invoice_number_to_test,
                 "compliance_type": "1",

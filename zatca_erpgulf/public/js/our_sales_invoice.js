@@ -78,7 +78,7 @@ frappe.ui.form.on("Sales Invoice", {
         if (frm.doc.docstatus === 1 && !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status)) {
                 frm.add_custom_button(__("Send invoice to Zatca"), function() {
                     frm.call({
-                        method:"zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Background",
+                        method:"zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
                         args: {
                             "invoice_number": frm.doc.name
                             

@@ -272,7 +272,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 								if (portal_type && company_abbr) {
 									
 									frappe.call({
-										method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.create_csr",
+										method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
 										args: { portal_type, company_abbr },
 										callback: function (response) {
 											if (response && response.message) {
@@ -382,7 +382,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 										if (portal_type && company_abbr) {
 											// Step 3: Generate CSID
 											frappe.call({
-												method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.create_CSID",
+												method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
 												args: { portal_type, company_abbr },
 												callback: function (response) {
 													if (response && response.message) {
@@ -471,69 +471,13 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				label: __("Standard Debit Note"),
 				fieldtype: "Check",
 			},
+			
 			// {
 			// 	fieldname: "check_compliance",
 			// 	label: __("Check Compliance"),
 			// 	fieldtype: "Button",
 			// 	click: function () {
-			// 		const invoiceValue = current_dialog.get_value("invoice_number"); // Get the OTP value from the dialog
-			// 		if (!invoiceValue || invoiceValue.trim() === "") {
-			// 			frappe.msgprint(__("Please enter the invoice number before proceeding."));
-			// 			return;
-			// 	}
-			// 		if (!selected_company) {
-			// 			frappe.msgprint(__("Please select a company before creating CSR."));
-			// 			return;
-			// 		}
-			
-			// 		// Fetch the company abbreviation
-			// 		frappe.call({
-			// 			method: "frappe.client.get_value",
-			// 			args: {
-			// 				doctype: "Company",
-			// 				filters: { name: selected_company },
-			// 				fieldname: ["abbr"],
-			// 			},
-			// 			callback: function (res) {
-			// 				if (res && res.message) {
-			// 					const company_abbr = res.message.abbr;
-			// 					// Safely fetch portal_type
-			// 					const complianceType = "1";
-			// 					if (invoiceValue && company_abbr) {
-			// 						// Create CSR
-			// 						frappe.call({
-			// 							method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
-			// 							args: { invoice_number,complianceType, company_abbr },
-			// 							callback: function (response) {
-			// 								if (response && response.message) {
-			// 									// console.log("CSR Response:", response.message);
-			
-			// 									const encodedString = response.message.trim();
-			// 									frappe.msgprint(encodedString)
-			// 									// Update the `created_csr_config` field in the dialog
-												
-			// 								} else {
-			// 									frappe.msgprint(__("Failed to create CSID. Please check the logs."));
-			// 								}
-			// 							},
-			// 						});
-			// 					} else {
-			// 						frappe.msgprint(__("Invalid portal type or company abbreviation."));
-			// 					}
-			// 				} else {
-			// 					frappe.msgprint(__("Failed to fetch company abbreviation."));
-			// 				}
-			// 			},
-			// 		});
-			// 	},
-				
-			// },
-			// {
-			// 	fieldname: "check_compliance",
-			// 	label: __("Check Compliance"),
-			// 	fieldtype: "Button",
-			// 	click: function () {
-			// 		const invoiceValue = current_dialog.get_value("invoice_number"); // Get the invoice number
+			// 		const invoiceValue = current_dialog.get_value("invoice_number");
 			// 		if (!invoiceValue || invoiceValue.trim() === "") {
 			// 			frappe.msgprint(__("Please enter the invoice number before proceeding."));
 			// 			return;
@@ -544,7 +488,6 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			// 			return;
 			// 		}
 			
-			// 		// Fetch the company abbreviation
 			// 		frappe.call({
 			// 			method: "frappe.client.get_value",
 			// 			args: {
@@ -553,10 +496,10 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			// 				fieldname: ["abbr"],
 			// 			},
 			// 			callback: function (res) {
+			// 				console.log("API Response:", res);
 			// 				if (res && res.message) {
 			// 					const company_abbr = res.message.abbr;
 			
-			// 					// Checkbox conditions to check one by one
 			// 					const conditions = [
 			// 						{ fieldname: "simplified_invoice", label: "Simplified Invoice", complianceType: "1" },
 			// 						{ fieldname: "standard_invoice", label: "Standard Invoice", complianceType: "2" },
@@ -566,54 +509,61 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			// 						{ fieldname: "standard_debit_note", label: "Standard Debit Note", complianceType: "6" },
 			// 					];
 			
-			// 					const processCondition = (index) => {
-			// 						if (index >= conditions.length) {
-			// 							frappe.msgprint(__("Compliance checks completed."));
-			// 							return;
+			// 					const processConditionSequentially = async () => {
+			// 						for (let condition of conditions) {
+			// 							try {
+			// 								const response = await frappe.call({
+			// 									method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
+			// 									args: {
+			// 										invoice_number: invoiceValue,
+			// 										complianceType: condition.complianceType,
+			// 										company_abbr: company_abbr,
+			// 									},
+			// 								});
+			
+			// 								if (res&& res.message) {
+												
+									
+			// 									const {
+			// 										validationResults,
+			// 										reportingStatus,
+			// 										clearanceStatus,
+			// 									} = res.message;
+			
+			// 									const validationStatus = validationResults?.status ;
+            //                         			const infoMessages = validationResults?.infoMessages || [];
+            //                         			const validationInfo = infoMessages
+            //                             .map((msg) => `${msg.category}: ${msg.message} (Status: ${msg.status})`)
+            //                             .join("\n");
+
+            //                         const statusMessage = [
+            //                             `${condition.label}:`,
+            //                             `Validation Status: ${validationStatus}`,
+            //                             `Reporting Status: ${reportingStatus || "Not Reported"}`,
+            //                             `Clearance Status: ${clearanceStatus || "Not Cleared"}`,
+            //                             `Details:\n${validationInfo || "No additional details."}`,
+            //                         ]
+			// 										.filter(Boolean)
+			// 										.join(", ");
+			
+			// 									frappe.msgprint(__(statusMessage));
+			// 									current_dialog.set_value(condition.fieldname, validationStatus === "PASS" ? 1 : 0);
+			// 								} else {
+			// 									frappe.msgprint(
+			// 										__(`${condition.label}: Not Passed. Reason: ${res.message || "Unknown error"}`)
+			// 									);
+			// 									current_dialog.set_value(condition.fieldname, 0);
+			// 								}
+			// 							} catch (error) {
+			// 								frappe.msgprint(__(`${condition.label}: Not Passed. Reason: API Error.`));
+			// 								current_dialog.set_value(condition.fieldname, 0);
+			// 							}
 			// 						}
 			
-			// 						const condition = conditions[index];
-			
-			// 						// Call the API for the current condition
-			// 						frappe.call({
-			// 							method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
-			// 							args: {
-			// 								invoice_number: invoiceValue,
-			// 								complianceType: condition.complianceType,
-			// 								company_abbr: company_abbr,
-			// 							},
-			// 							callback: function (response) {
-			// 								if (response && response.message ) {
-			// 									// Condition passed
-			// 									frappe.msgprint(__(`${condition.label} Passed.`));
-			// 									current_dialog.set_value(condition.fieldname, 0); // Tick the checkbox
-			// 								} else {
-			// 									// Condition failed
-			// 									frappe.msgprint(
-			// 										__(`${condition.label} Not Passed. Reason: ${response.message || "Unknown error"}`)
-			// 									);
-			// 									current_dialog.set_value(condition.fieldname, 0); // Untick the checkbox
-			// 								}
-			// 								setTimeout(() => {
-			// 									processCondition(index + 1); // Move to the next condition after the delay
-			// 								}, 1000);
-			
-			// 								// Move to the next condition
-			// 								//processCondition(index + 1);
-			// 							},
-			// 							error: function () {
-			// 								// Handle API error
-			// 								frappe.msgprint(__(`${condition.label} Not Passed. Reason: API Error.`));
-			// 								current_dialog.set_value(condition.fieldname, 0); // Untick the checkbox
-			
-			// 								// Move to the next condition
-			// 								processCondition(index + 1);
-			// 							},
-			// 						});
+			// 						frappe.msgprint(__("Compliance checks completed."));
 			// 					};
 			
-			// 					// Start checking conditions one by one
-			// 					processCondition(0);
+			// 					processConditionSequentially();
 			// 				} else {
 			// 					frappe.msgprint(__("Failed to fetch company abbreviation."));
 			// 				}
@@ -622,123 +572,206 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			// 	},
 			// }
 			{
-				fieldname: "check_compliance",
-label: __("Check Compliance"),
-fieldtype: "Button",
-click: function () {
-	const invoiceValue = current_dialog.get_value("invoice_number"); // Get the invoice number
-	if (!invoiceValue || invoiceValue.trim() === "") {
-		frappe.msgprint(__("Please enter the invoice number before proceeding."));
-		return;
-	}
+    fieldname: "check_compliance",
+    label: __("Check Compliance"),
+    fieldtype: "Button",
+    click: function () {
+        const invoiceValue = current_dialog.get_value("invoice_number");
+        if (!invoiceValue || invoiceValue.trim() === "") {
+            frappe.msgprint(__("Please enter the invoice number before proceeding."));
+            return;
+        }
 
-	if (!selected_company) {
-		frappe.msgprint(__("Please select a company before running compliance checks."));
-		return;
-	}
+        if (!selected_company) {
+            frappe.msgprint(__("Please select a company before running compliance checks."));
+            return;
+        }
 
-	// Fetch the company abbreviation
-	frappe.call({
-		method: "frappe.client.get_value",
-		args: {
-			doctype: "Company",
-			filters: { name: selected_company },
-			fieldname: ["abbr"],
-		},
-		callback: function (res) {
-			if (res && res.message) {
-				const company_abbr = res.message.abbr;
+        // Fetch company abbreviation
+        frappe.call({
+            method: "frappe.client.get_value",
+            args: {
+                doctype: "Company",
+                filters: { name: selected_company },
+                fieldname: ["abbr"],
+            },
+            callback: function (res) {
+                if (res && res.message) {
+                    const company_abbr = res.message.abbr;
 
-				// Compliance conditions
-				const conditions = [
-					{ fieldname: "simplified_invoice", label: "Simplified Invoice", complianceType: "1" },
-					{ fieldname: "standard_invoice", label: "Standard Invoice", complianceType: "2" },
-					{ fieldname: "simplified_credit_note", label: "Simplified Credit Note", complianceType: "3" },
-					{ fieldname: "standard_credit_note", label: "Standard Credit Note", complianceType: "4" },
-					{ fieldname: "simplified_debit_note", label: "Simplified Debit Note", complianceType: "5" },
-					{ fieldname: "standard_debit_note", label: "Standard Debit Note", complianceType: "6" },
-				];
+                    // Compliance conditions
+                    const conditions = [
+                        { fieldname: "simplified_invoice", label: "Simplified Invoice", complianceType: "1" },
+                        { fieldname: "standard_invoice", label: "Standard Invoice", complianceType: "2" },
+                        { fieldname: "simplified_credit_note", label: "Simplified Credit Note", complianceType: "3" },
+                        { fieldname: "standard_credit_note", label: "Standard Credit Note", complianceType: "4" },
+                        { fieldname: "simplified_debit_note", label: "Simplified Debit Note", complianceType: "5" },
+                        { fieldname: "standard_debit_note", label: "Standard Debit Note", complianceType: "6" },
+                    ];
 
-				// Process each condition
-				const processCondition = (index) => {
-					if (index >= conditions.length) {
-						frappe.msgprint(__("Compliance checks completed for invoice: " + invoiceValue));
-						return;
-					}
+                    const processConditionSequentially = async () => {
+                        for (let condition of conditions) {
+                            try {
+								await frappe.call({
+									method: "frappe.client.set_value",
+									args: {
+										doctype: "Company",
+										name: selected_company,
+										fieldname: "custom_validation_type",
+										value: condition.label,
+									},
+								});
+                                // Call compliance API for each condition
+                                const response = await frappe.call({
+                                    method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_call_compliance",
+                                    args: {
+                                        invoice_number: invoiceValue,
+                                        complianceType: condition.complianceType,
+                                        company_abbr: company_abbr,
+                                    },
+									
+                                });
+								
 
-					const condition = conditions[index];
+                                if (response && response.message) {
+                                    const {
+                                        validationResults = {},
+                                        reportingStatus = "Not Reported",
+                                        clearanceStatus = "Not Cleared",
+                                    } = response.message;
 
-					// Call the API for the current condition
-					frappe.call({
-						method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
-						args: {
-							invoice_number: invoiceValue,
-							complianceType: condition.complianceType,
-							company_abbr: company_abbr,
-						},
-						callback: function (response) {
-							if (response && response.message) {
-								let clearanceStatus = response.message.clearanceStatus;
-								let reportingStatus = response.message.reportingStatus;
+                                    const validationStatus = validationResults?.status || "PASS";
+                                    const infoMessages = validationResults?.infoMessages || [];
+                                    const detailedInfo = infoMessages
+                                        .map(
+                                            (msg) =>
+                                                `${msg.category}: ${msg.message} (Code: ${msg.code}, Status: ${msg.status})`
+                                        )
+                                        .join("\n");
 
-								// Check if clearanceStatus is "CLEARED" or reportingStatus is "REPORTED"
-								if (clearanceStatus === "CLEARED" || reportingStatus === "REPORTED") {
-									// Condition passed, tick the checkbox
-									frappe.msgprint(__(`${condition.label} Passed for invoice: ${invoiceValue}`));
-									current_dialog.set_value(condition.fieldname, 1); // Tick the checkbox (1 = ticked, 0 = unticked)
-								} else {
-									// Condition failed
-									frappe.msgprint(
-										__(`${condition.label} Not Passed for invoice: ${invoiceValue}. ClearanceStatus: ${clearanceStatus || 'N/A'}, ReportingStatus: ${reportingStatus || 'N/A'}`)
-									);
-									current_dialog.set_value(condition.fieldname, 0); // Untick the checkbox
-								}
+                                    const statusMessage = [
+                                        `${condition.label}:`,
+                                        `Validation Status: ${validationStatus}`,
+                                        `Reporting Status: ${reportingStatus}`,
+                                        `Clearance Status: ${clearanceStatus}`,
+                                        `Details:\n${detailedInfo || "No additional details."}`,
+                                    ]
+                                        .filter(Boolean)
+                                        .join("\n");
 
-								// Move to the next condition after a small delay
-								setTimeout(() => {
-									processCondition(index + 1); 
-								}, 1000);
-							} else {
-								// Handle empty response or failed response
-								frappe.msgprint(
-									__(`${condition.label} Not Passed for invoice: ${invoiceValue}. Reason: ${response.message || "Unknown error"}`)
-								);
-								current_dialog.set_value(condition.fieldname, 0); // Untick the checkbox
+                                    // Display message for each condition
+                                    // frappe.msgprint(__(statusMessage));
+									frappe.msgprint(__(`${condition.label}:${JSON.stringify(response.message, 4)}`));
 
-								// Move to the next condition
-								setTimeout(() => {
-									processCondition(index + 1); 
-								}, 1000);
-							}
-						},
-						error: function () {
-							// Handle API error
-							frappe.msgprint(__(`${condition.label} Not Passed for invoice: ${invoiceValue}. Reason: API Error.`));
-							current_dialog.set_value(condition.fieldname, 0); // Untick the checkbox
+                                    // Update checkbox value
+                                    current_dialog.set_value(
+                                        condition.fieldname,
+                                        validationStatus === "PASS" ? 1 : 0
+                                    );
+                                } else {
+                                    frappe.msgprint(
+                                        __(`${condition.label}: No response or unknown error from the API.`)
+                                    );
+                                    current_dialog.set_value(condition.fieldname, 0);
+                                }
+                            } catch (error) {
+                                frappe.msgprint(__(`${condition.label}: Failed due to API Error.`));
+                                console.error("API Error:", error);
+                                current_dialog.set_value(condition.fieldname, 0);
+                            }
+                        }
 
-							// Move to the next condition
-							setTimeout(() => {
-								processCondition(index + 1); 
-							}, 1000);
-						},
-					});
-				};
+                        frappe.msgprint(__("Compliance checks completed."));
+                    };
 
-				// Start checking conditions one by one
-				processCondition(0);
-			} else {
-				frappe.msgprint(__("Failed to fetch company abbreviation."));
-			}
-		},
-	});
+                    // Start sequential processing of conditions
+                    processConditionSequentially();
+                } else {
+                    frappe.msgprint(__("Failed to fetch company abbreviation."));
+                }
+            },
+        });
+    },
 }
 
-
-			}
+			
+	
+			
 		],
 		primary_action_label: __("Next"),
 	},
-	
+	{
+		name: "final_csid_generation",
+		title: __("Final CSID Generation"),
+		fields: [
+		
+			{
+				fieldname: "final_csid",
+				label: __("Generate Final CSIDs"),
+				fieldtype: "Button",
+				click: function () {
+					if (!selected_company) {
+						frappe.msgprint(__("Please select a company before creating CSR."));
+						return;
+					}
+			
+					frappe.call({
+						method: "frappe.client.get_value",
+						args: {
+							doctype: "Company",
+							filters: { name: selected_company },
+							fieldname: ["abbr"],
+						},
+						callback: function (res) {
+							if (res && res.message) {
+								const company_abbr = res.message.abbr;
+			
+								
+			
+								if (company_abbr) {
+									
+									frappe.call({
+										method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
+										args: { company_abbr },
+										callback: function (response) {
+											if (response && response.message) {
+												// console.log("CSR Response:", response.message);
+												
+												const encodedString = response.message.trim();
+												// console.log(encodedString)
+												// frappe.msgprint(encodedString)
+												if (current_dialog) {
+														current_dialog.set_value("final_auth_csid", encodedString);
+														current_dialog.refresh();
+														// frappe.msgprint(__("CSR data successfully updated in the field"));
+													} else {
+														frappe.msgprint(__("Dialog reference not found."));
+													}
+
+												} else {
+												frappe.msgprint(__("Failed to create CSR. Please check the logs."));
+											}
+										},
+									});
+								} else {
+									frappe.msgprint(__("Invalid portal type or company abbreviation."));
+								}
+							} else {
+								frappe.msgprint(__("Failed to fetch company abbreviation."));
+							}
+						},
+					});
+				},
+			},
+		
+		  {
+			fieldname: "final_auth_csid",
+			label: __("Final Auth CSID"),
+			fieldtype: "Long Text",
+		},
+		],
+		primary_action_label: __("Next"),
+	  },
 	  {
 		name: "steps_to_follow",
 		title: __("Steps to Follow Next"),
