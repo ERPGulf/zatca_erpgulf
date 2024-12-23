@@ -135,7 +135,6 @@ def error_log():
 def attach_qr_image(qrcodeb64, sales_invoice_doc):
     """attach the qr image"""
     try:
-        # Check if custom field exists; if not, create it
         if not hasattr(sales_invoice_doc, "ksa_einv_qr"):
             create_custom_fields(
                 {
@@ -173,8 +172,6 @@ def attach_qr_image(qrcodeb64, sales_invoice_doc):
             }
         )
         file_doc.save(ignore_permissions=True)
-
-        # Link the file to the Sales Invoice
         sales_invoice_doc.db_set("ksa_einv_qr", file_doc.file_url)
         sales_invoice_doc.notify_update()
 
@@ -355,9 +352,7 @@ def reporting_api(
                         "content": xml_cleared_data,
                     }
                 )
-
                 file.save(ignore_permissions=True)
-
                 success_log(response.text, uuid1, invoice_number)
             else:
 
@@ -440,7 +435,6 @@ def clearance_api(
                     f"{response.text}"
                 )
             )
-
         if response.status_code in (401, 403, 407, 451):
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
@@ -460,7 +454,6 @@ def clearance_api(
                     f"{response.text}"
                 )
             )
-
         if response.status_code not in (200, 202):
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
@@ -493,13 +486,8 @@ def clearance_api(
             company_abbr = settings.abbr
             if settings.custom_send_einvoice_background:
                 frappe.msgprint(msg)
-            # frappe.msgprint(msg)
-
-            # Update PIH in the Company doctype without JSON formatting
             company_doc.custom_pih = encoded_hash
             company_doc.save(ignore_permissions=True)
-
-            # Update the Sales Invoice with the UUID and status
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_zatca_full_response", msg, commit=True, update_modified=True
@@ -561,7 +549,6 @@ def zatca_call(
 
         invoice = xml_tags()
         invoice, uuid1, sales_invoice_doc = salesinvoice_data(invoice, invoice_number)
-
         # Get the company abbreviation
         company_abbr = frappe.db.get_value(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
@@ -609,12 +596,9 @@ def zatca_call(
 
         if not any_item_has_tax_template:
             invoice = item_data(invoice, sales_invoice_doc)
-
         else:
             invoice = item_data_with_template(invoice, sales_invoice_doc)
-
         xml_structuring(invoice)
-
         try:
             with open(
                 frappe.local.site + "/private/files/finalzatcaxml.xml",
@@ -651,7 +635,11 @@ def zatca_call(
         qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
         update_qr_toxml(qrcodeb64, company_abbr)
         signed_xmlfile_name = structuring_signedxml()
-
+        # Example usage
+        # file_path = generate_invoice_pdf(
+        #     invoice_number, language="en", letterhead="Sample letterhead"
+        # )
+        # frappe.throw(f"PDF saved at: {file_path}")
         if compliance_type == "0":
             if customer_doc.custom_b2c == 1:
                 reporting_api(
@@ -697,7 +685,6 @@ def zatca_call_compliance(
 
         company_doc = frappe.get_doc("Company", company_name)
 
-        # Determine compliance type based on company settings
         if company_doc.custom_validation_type == "Simplified Invoice":
             compliance_type = "1"
         elif company_doc.custom_validation_type == "Standard Invoice":
@@ -710,16 +697,10 @@ def zatca_call_compliance(
             compliance_type = "5"
         elif company_doc.custom_validation_type == "Standard Debit Note":
             compliance_type = "6"
-
-        # Validate the invoice number
         if not frappe.db.exists("Sales Invoice", invoice_number):
             frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
-
-        # Fetch and process the sales invoice data
         invoice = xml_tags()
         invoice, uuid1, sales_invoice_doc = salesinvoice_data(invoice, invoice_number)
-
-        # Check if any item has a tax template and validate it
         any_item_has_tax_template = any(
             item.item_tax_template for item in sales_invoice_doc.items
         )
@@ -727,11 +708,9 @@ def zatca_call_compliance(
             item.item_tax_template for item in sales_invoice_doc.items
         ):
             frappe.throw(
-                "If any one item has an Item Tax Template, all items must have an Item Tax Template."
+                "If any one item has an Item Tax Template,"
+                " all items must have an Item Tax Template."
             )
-
-        # Process the invoice based on the compliance type
-
         invoice = invoice_typecode_compliance(invoice, compliance_type)
         invoice = doc_reference_compliance(
             invoice, sales_invoice_doc, invoice_number, compliance_type
@@ -742,24 +721,17 @@ def zatca_call_compliance(
         invoice = delivery_and_payment_means_for_compliance(
             invoice, sales_invoice_doc, compliance_type
         )
-        # if not any_item_has_tax_template:
-        #     invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
-        # else:
-        #     invoice = add_document_level_discount_with_tax_template(invoice, sales_invoice_doc)
 
         if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
             # Add document-level discount with tax
             invoice = add_nominal_discount_tax(invoice, sales_invoice_doc)
-
         elif not any_item_has_tax_template:
-            # Add nominal discount tax
             invoice = add_document_level_discount_with_tax(invoice, sales_invoice_doc)
         else:
             # Add document-level discount with tax template
             invoice = add_document_level_discount_with_tax_template(
                 invoice, sales_invoice_doc
             )
-
         if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
             if not any_item_has_tax_template:
                 invoice = tax_data_nominal(invoice, sales_invoice_doc)
@@ -776,7 +748,6 @@ def zatca_call_compliance(
 
         else:
             item_data_with_template(invoice, sales_invoice_doc)
-
         # Generate and process the XML data
         xml_structuring(invoice)
         with open(
@@ -803,7 +774,6 @@ def zatca_call_compliance(
             encoded_hash,
             company_abbr,
         )
-
         # Generate the TLV data and QR code
         tlv_data = generate_tlv_xml(company_abbr)
         tagsbufsarray = []
@@ -815,9 +785,9 @@ def zatca_call_compliance(
 
         update_qr_toxml(qrcodeb64, company_abbr)
         signed_xmlfile_name = structuring_signedxml()
-
-        # Make the compliance API call
-        value=compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr)
+        value = compliance_api_call(
+            uuid1, encoded_hash, signed_xmlfile_name, company_abbr
+        )
         return value
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
@@ -827,14 +797,13 @@ def zatca_call_compliance(
         frappe.throw("Error in Zatca invoice call: " + str(e))
         return None
 
+
 @frappe.whitelist(allow_guest=True)
 def zatca_background(invoice_number):
     """defines the zatca bacground"""
     try:
         sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
         company_name = sales_invoice_doc.company
-
-        # Retrieve the company document to access settings
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
 
@@ -847,11 +816,9 @@ def zatca_background(invoice_number):
                     "Item Tax Template cannot be used when taxes are included "
                     "in the print rate. Please remove Item Tax Templates."
                 )
-
         any_item_has_tax_template = any(
             item.item_tax_template for item in sales_invoice_doc.items
         )
-
         if any_item_has_tax_template and not all(
             item.item_tax_template for item in sales_invoice_doc.items
         ):
@@ -977,11 +944,7 @@ def zatca_background_on_submit(doc, _method=None):
     try:
         sales_invoice_doc = doc
         invoice_number = sales_invoice_doc.name
-
-        # Ensure the Sales Invoice document is correctly loaded
         sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-
-        # Retrieve the company abbreviation using the company name from the Sales Invoice
         company_abbr = frappe.db.get_value(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
@@ -989,11 +952,7 @@ def zatca_background_on_submit(doc, _method=None):
             frappe.throw(
                 f"Company abbreviation for {sales_invoice_doc.company} not found."
             )
-
-        # Retrieve the company document
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-
-        # Check if ZATCA invoicing is enabled; if not, submit the doc and exit
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
@@ -1008,14 +967,10 @@ def zatca_background_on_submit(doc, _method=None):
                     " in the print rate. Please remove Item Tax Templates."
                 )
         any_item_has_tax_template = False
-
-        # Check if any item has a tax template
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
                 any_item_has_tax_template = True
                 break
-
-        # If one item has a tax template, all items must have a tax template
         if any_item_has_tax_template:
             for item in sales_invoice_doc.items:
                 if not item.item_tax_template:
@@ -1023,10 +978,7 @@ def zatca_background_on_submit(doc, _method=None):
                         "If any one item has an Item Tax Template,"
                         " all items must have an Item Tax Template."
                     )
-
         tax_categories = set()
-
-        # Collect and validate tax categories from item tax templates
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
                 item_tax_template = frappe.get_doc(
@@ -1077,7 +1029,6 @@ def zatca_background_on_submit(doc, _method=None):
                 "Only a 100% discount is allowed for ZATCA nominal invoices."
                 " Please ensure the additional discount percentage is set to 100."
             )
-
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
             and sales_invoice_doc.get("custom_submit_line_item_discount_to_zatca")
@@ -1086,15 +1037,11 @@ def zatca_background_on_submit(doc, _method=None):
                 "For nominal invoices, please disable line item discounts"
                 " by unchecking 'Submit Line Item Discount to ZATCA'."
             )
-
-        # Ensure ZATCA compliance for discounts and tax categories
-
         if len(tax_categories) > 1 and base_discount_amount > 0:
             frappe.throw(
                 "ZATCA does not respond for multiple items with multiple tax categories "
                 "and a document-level discount. Please ensure all items have the same tax category."
             )
-
         if (
             base_discount_amount > 0
             and sales_invoice_doc.apply_discount_on != "Net Total"
@@ -1103,40 +1050,27 @@ def zatca_background_on_submit(doc, _method=None):
                 "You cannot apply a discount on the Grand Total as the tax is already calculated. "
                 "Please apply your discount on the Net Total."
             )
-
-        # Validate if the Sales Invoice exists in the database
         if not frappe.db.exists("Sales Invoice", invoice_number):
             frappe.throw(
                 f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
             )
-
-        # Check for negative discounts when the invoice is not a return
         if base_discount_amount < 0 and not sales_invoice_doc.is_return:
             frappe.throw(
                 "Additional discount cannot be negative. Please enter a positive value."
             )
-
-        # Ensure the document is submitted before sending to ZATCA
         if sales_invoice_doc.docstatus in [0, 2]:
             frappe.throw(
                 f"Please submit the invoice before sending to ZATCA: {invoice_number}"
             )
-
-        # Prevent duplicate submissions to ZATCA
         if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw(
                 "This invoice has already been submitted to Zakat and Tax Authority."
             )
-
-        # Call the ZATCA submission function
         company_name = sales_invoice_doc.company
-
-        # Retrieve the company document to access settings
         settings = frappe.get_doc("Company", company_name)
         if settings.custom_phase_1_or_2 == "Phase-2":
             zatca_call(invoice_number, "0", any_item_has_tax_template, company_abbr)
         else:
             create_qr_code(sales_invoice_doc, method=None)
-
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(f"Error in background call: {str(e)}")

@@ -174,26 +174,116 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		  },
 		],
 		primary_action_label: __("Next"),
+		primary_action(values) {
+			if (!values.integration_type) {
+				frappe.msgprint({
+					title: __("Mandatory Field Missing"),
+					indicator: "red",
+					message: __("Please select an Integration Type to proceed."),
+				});
+				return;
+			}
+	
+			// Your logic for moving to the next slide goes here
+			console.log("Selected Integration Type:", values.integration_type);
+		},
+		
 	  },
-	  {
+	//   {
+	// 	name: "select_company",
+	// 	title: __("Select Company"),
+	// 	fields: [
+	// 	  {
+	// 		fieldname: "company",
+	// 		label: __("Select Company"),
+	// 		fieldtype: "Link",
+	// 		options: "Company",
+	// 		change: function () {
+	// 		  const company = this.get_value("company");
+	// 		  if (company) {
+	// 			selected_company = company;
+	// 		  }
+	// 		},
+	// 	  },
+	// 	],
+	// 	primary_action_label: __("Next"),
+	//   },
+	{
 		name: "select_company",
 		title: __("Select Company"),
 		fields: [
-		  {
-			fieldname: "company",
-			label: __("Select Company"),
-			fieldtype: "Link",
-			options: "Company",
-			change: function () {
-			  const company = this.get_value("company");
-			  if (company) {
-				selected_company = company;
-			  }
+			{
+				fieldname: "company",
+				label: __("Select Company"),
+				fieldtype: "Link",
+				options: "Company",
+				change: function () {
+					const company = this.get_value("company");
+					if (company) {
+						selected_company = company;
+	
+						// Prevent multiple triggers by checking a global flag
+						if (window.confirmationDialogShownFor === company) {
+							return; // Dialog already shown for this company
+						}
+	
+						// Check for existing ZATCA setup in the selected company
+						frappe.call({
+							method: "frappe.client.get",
+							args: {
+								doctype: "Company",
+								name: selected_company,
+							},
+							callback: function (res) {
+								if (res && res.message) {
+									const zatcaSetup = res.message.custom_basic_auth_from_production;
+									console.log(zatcaSetup)
+									if (zatcaSetup) {
+										// Show confirmation dialog
+										frappe.confirm(
+											__(
+												"ZATCA setup already exists for this company. Do you want to override the existing setup?"
+											),
+											function () {
+												// User selected "Yes"
+												frappe.msgprint(
+													__("Proceeding to the next step.")
+												);
+											},
+											function () {
+												// User selected "No"
+												frappe.msgprint(
+													__("Setup canceled. Please select another company or exit the wizard.")
+												);
+												selected_company = null;
+												current_dialog.hide();
+											}
+										);
+										// Mark this company as having shown the dialog
+										window.confirmationDialogShownFor = company;
+									}
+								}
+							},
+						});
+					}
+				},
 			},
-		  },
 		],
 		primary_action_label: __("Next"),
-	  },
+		primary_action(values) {
+			if (!selected_company) {
+				frappe.msgprint(
+					__("Please select a company before proceeding.")
+				);
+				return;
+			}
+			slideData[slides_settings[current_slide_index].name] = values;
+			current_slide_index++;
+			current_dialog.hide();
+			render_slide(slides_settings[current_slide_index]);
+		},
+	},
+	
 	  {
 		name: "company_details",
 		title: __("Company Details"),
@@ -472,105 +562,6 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				fieldtype: "Check",
 			},
 			
-			// {
-			// 	fieldname: "check_compliance",
-			// 	label: __("Check Compliance"),
-			// 	fieldtype: "Button",
-			// 	click: function () {
-			// 		const invoiceValue = current_dialog.get_value("invoice_number");
-			// 		if (!invoiceValue || invoiceValue.trim() === "") {
-			// 			frappe.msgprint(__("Please enter the invoice number before proceeding."));
-			// 			return;
-			// 		}
-			
-			// 		if (!selected_company) {
-			// 			frappe.msgprint(__("Please select a company before running compliance checks."));
-			// 			return;
-			// 		}
-			
-			// 		frappe.call({
-			// 			method: "frappe.client.get_value",
-			// 			args: {
-			// 				doctype: "Company",
-			// 				filters: { name: selected_company },
-			// 				fieldname: ["abbr"],
-			// 			},
-			// 			callback: function (res) {
-			// 				console.log("API Response:", res);
-			// 				if (res && res.message) {
-			// 					const company_abbr = res.message.abbr;
-			
-			// 					const conditions = [
-			// 						{ fieldname: "simplified_invoice", label: "Simplified Invoice", complianceType: "1" },
-			// 						{ fieldname: "standard_invoice", label: "Standard Invoice", complianceType: "2" },
-			// 						{ fieldname: "simplified_credit_note", label: "Simplified Credit Note", complianceType: "3" },
-			// 						{ fieldname: "standard_credit_note", label: "Standard Credit Note", complianceType: "4" },
-			// 						{ fieldname: "simplified_debit_note", label: "Simplified Debit Note", complianceType: "5" },
-			// 						{ fieldname: "standard_debit_note", label: "Standard Debit Note", complianceType: "6" },
-			// 					];
-			
-			// 					const processConditionSequentially = async () => {
-			// 						for (let condition of conditions) {
-			// 							try {
-			// 								const response = await frappe.call({
-			// 									method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_Call_compliance",
-			// 									args: {
-			// 										invoice_number: invoiceValue,
-			// 										complianceType: condition.complianceType,
-			// 										company_abbr: company_abbr,
-			// 									},
-			// 								});
-			
-			// 								if (res&& res.message) {
-												
-									
-			// 									const {
-			// 										validationResults,
-			// 										reportingStatus,
-			// 										clearanceStatus,
-			// 									} = res.message;
-			
-			// 									const validationStatus = validationResults?.status ;
-            //                         			const infoMessages = validationResults?.infoMessages || [];
-            //                         			const validationInfo = infoMessages
-            //                             .map((msg) => `${msg.category}: ${msg.message} (Status: ${msg.status})`)
-            //                             .join("\n");
-
-            //                         const statusMessage = [
-            //                             `${condition.label}:`,
-            //                             `Validation Status: ${validationStatus}`,
-            //                             `Reporting Status: ${reportingStatus || "Not Reported"}`,
-            //                             `Clearance Status: ${clearanceStatus || "Not Cleared"}`,
-            //                             `Details:\n${validationInfo || "No additional details."}`,
-            //                         ]
-			// 										.filter(Boolean)
-			// 										.join(", ");
-			
-			// 									frappe.msgprint(__(statusMessage));
-			// 									current_dialog.set_value(condition.fieldname, validationStatus === "PASS" ? 1 : 0);
-			// 								} else {
-			// 									frappe.msgprint(
-			// 										__(`${condition.label}: Not Passed. Reason: ${res.message || "Unknown error"}`)
-			// 									);
-			// 									current_dialog.set_value(condition.fieldname, 0);
-			// 								}
-			// 							} catch (error) {
-			// 								frappe.msgprint(__(`${condition.label}: Not Passed. Reason: API Error.`));
-			// 								current_dialog.set_value(condition.fieldname, 0);
-			// 							}
-			// 						}
-			
-			// 						frappe.msgprint(__("Compliance checks completed."));
-			// 					};
-			
-			// 					processConditionSequentially();
-			// 				} else {
-			// 					frappe.msgprint(__("Failed to fetch company abbreviation."));
-			// 				}
-			// 			},
-			// 		});
-			// 	},
-			// }
 			{
     fieldname: "check_compliance",
     label: __("Check Compliance"),
@@ -793,30 +784,52 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		primary_action_label: slide.primary_action_label,
 		primary_action(values) {
 			slideData[slides_settings[current_slide_index].name] = values;
+			if (slide.name === "integration_type") {
+				if (!values.integration_type) {
+					frappe.msgprint({
+						title: __("Mandatory Field Missing"),
+						indicator: "red",
+						message: __("Please select an Integration Type to proceed."),
+					});
+					return;
+				}
+			  }
 		  if (slide.name === "select_company") {
+			if (!values.company) {
+				frappe.msgprint({
+					title: __("Mandatory Field Missing"),
+					indicator: "red",
+					message: __("Please select a Company to proceed."),
+				});
+				return;
+			}
 			fetch_company_details(values.company);
 		  }
 		  if (slide.name === "company_details") {
+			if (!values.vat_number || !values.city || !values.business_category) {
+				let missing_fields = [];
+			
+				if (!values.vat_number) {
+					missing_fields.push("VAT Number");
+				}
+				if (!values.city) {
+					missing_fields.push("City");
+				}
+				if (!values.business_category) {
+					missing_fields.push("Business Category");
+				}
+			
+				frappe.msgprint({
+					title: __("Mandatory Fields Missing"),
+					indicator: "red",
+					message: __(`The following field(s) are required: ${missing_fields.join(", ")}. Please fill them to proceed.`),
+				});
+			
+				return;
+			}
+			
 			generate_csr_config(values);
 		  }
-		//   if (slide.name === "enter_otp") {
-		// 	frappe.call({
-		// 		method: "frappe.client.set_value",
-		// 		args: {
-		// 			doctype: "Company",
-		// 			name: selected_company,
-		// 			fieldname: "custom_otp",
-		// 			value: values.otp,
-		// 		},
-		// 		callback: function (response) {
-		// 			if (response && response.message) {
-		// 				frappe.msgprint(__("OTP stored successfully in the company document."));
-		// 			} else {
-		// 				frappe.msgprint(__("Failed to store OTP. Please try again."));
-		// 			}
-		// 		},
-		// 	});
-		// }
   
 		  
 		  if (current_slide_index < slides_settings.length - 1) {

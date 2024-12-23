@@ -97,6 +97,70 @@ frappe.ui.form.on("Sales Invoice", {
                     frm.reload_doc();
                 }, __("Zatca Phase-2"));
         }   
+        frm.page.add_menu_item(__('Print PDF-A3'), function() {
+            // Create a dialog box with fields for Print Format, Letterhead, and Language
+            const dialog = new frappe.ui.Dialog({
+                title: __('Generate PDF-A3'),
+                fields: [
+                    {
+                        fieldtype: 'Link',
+                        fieldname: 'print_format',
+                        label: __('Print Format'),
+                        options: 'Print Format', 
+                        // default: 'Claudion Invoice Format', // Default print format if any
+                        reqd: 1,
+                        get_query: function() {
+                            return {
+                                filters: {
+                                    doc_type: 'Sales Invoice' // Filters print formats related to Sales Invoice
+                                }
+                            };
+                        }
+                    },
+                    {
+                        fieldtype: 'Link',
+                        fieldname: 'letterhead',
+                        label: __('Letterhead'),
+                        options: 'Letter Head', // Options should be the 'Letter Head' doctype
+                        reqd: 0
+                    },
+                    {
+                        fieldtype: 'Link',
+                        fieldname: 'language',
+                        label: __('Language'),
+                        options: 'Language', // Options should be the 'Language' doctype
+                        // default: 'en', // Default language
+                        reqd: 1
+                    }
+                ],
+                primary_action_label: __('Generate PDF-A3'),
+                primary_action: function() {
+                    const values = dialog.get_values();
+                    frappe.call({
+                        method: 'zatca_erpgulf.zatca_erpgulf.pdf_a3.embed_file_in_pdf',
+                        args: {
+                            invoice_name: frm.doc.name,
+                            print_format: values.print_format,
+                            letterhead: values.letterhead,
+                            language: values.language
+                        },
+                        callback: function(r) {
+                            if (r.message) {
+                                // Open the generated PDF in a new tab
+                                const pdf_url = r.message;
+                                window.open(pdf_url, '_blank');
+                            } else {
+                                frappe.msgprint(__('Failed to generate PDF-A3'));
+                            }
+                        }
+                    });
+                    dialog.hide();
+                }
+            });
+            dialog.show();
+        });
+        
+        
 
     }
 });

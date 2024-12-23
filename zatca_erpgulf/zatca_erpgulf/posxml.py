@@ -888,7 +888,7 @@ def tax_data(invoice, pos_invoice_doc):
                     "discount_amount", 0.0
                 )
             else:
-                taxable_amount_1 = pos_invoice_doc.base_net_total - pos_invoice_doc.get(
+                taxable_amount_1 = pos_invoice_doc.net_total - pos_invoice_doc.get(
                     "discount_amount", 0.0
                 )
             # tax_rate = float(pos_invoice_doc.taxes[0].rate)
@@ -907,7 +907,7 @@ def tax_data(invoice, pos_invoice_doc):
                     "discount_amount", 0.0
                 )
             else:
-                taxable_amount_1 = pos_invoice_doc.base_net_total - pos_invoice_doc.get(
+                taxable_amount_1 = pos_invoice_doc.net_total - pos_invoice_doc.get(
                     "discount_amount", 0.0
                 )
             # tax_rate = float(pos_invoice_doc.taxes[0].rate)
@@ -980,9 +980,7 @@ def tax_data(invoice, pos_invoice_doc):
         if tax_rate.included_in_print_rate == 0:
             cbc_lineextensionamount.text = str(round(abs(pos_invoice_doc.total), 2))
         else:
-            cbc_lineextensionamount.text = str(
-                round(abs(pos_invoice_doc.base_net_total), 2)
-            )
+            cbc_lineextensionamount.text = str(round(abs(pos_invoice_doc.net_total), 2))
         cbc_taxexclusiveamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:TaxExclusiveAmount"
         )
@@ -1001,7 +999,7 @@ def tax_data(invoice, pos_invoice_doc):
             cbc_taxexclusiveamount.text = str(
                 round(
                     abs(
-                        pos_invoice_doc.base_net_total
+                        pos_invoice_doc.net_total
                         - pos_invoice_doc.get("discount_amount", 0.0)
                     ),
                     2,
@@ -1027,7 +1025,7 @@ def tax_data(invoice, pos_invoice_doc):
             cbc_taxinclusiveamount.text = "{:.2f}".format(
                 round(
                     abs(
-                        pos_invoice_doc.base_net_total
+                        pos_invoice_doc.net_total
                         - pos_invoice_doc.get("discount_amount", 0.0)
                     )
                     + abs(tax_amount_without_retention),
@@ -1060,7 +1058,7 @@ def tax_data(invoice, pos_invoice_doc):
             cbc_payableamount.text = "{:.2f}".format(
                 round(
                     abs(
-                        pos_invoice_doc.base_net_total
+                        pos_invoice_doc.net_total
                         - pos_invoice_doc.get("discount_amount", 0.0)
                     )
                     + abs(tax_amount_without_retention),

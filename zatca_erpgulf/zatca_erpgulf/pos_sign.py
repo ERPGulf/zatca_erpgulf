@@ -419,7 +419,7 @@ def clearance_api(
             file = frappe.get_doc(
                 {
                     "doctype": "File",
-                    "file_name": "Cleared xml file " + pos_invoice_doc.name,
+                    "file_name": "Cleared xml file " + pos_invoice_doc.name + ".xml",
                     "attached_to_doctype": pos_invoice_doc.doctype,
                     "attached_to_name": pos_invoice_doc.name,
                     "content": xml_cleared,
