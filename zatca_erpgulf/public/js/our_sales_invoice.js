@@ -74,30 +74,30 @@ frappe.realtime.on('hide_gif', () => {
 });
 
 frappe.ui.form.on("Sales Invoice", {
-    refresh: function(frm) {
+    refresh: function (frm) {
         if (frm.doc.docstatus === 1 && !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status)) {
-                frm.add_custom_button(__("Send invoice to Zatca"), function() {
-                    frm.call({
-                        method:"zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
-                        args: {
-                            "invoice_number": frm.doc.name
-                            
-                        },
-                        callback: function(response) {
-                            if (response.message) {  
-                                frappe.msgprint(response.message);
-                                frm.reload_doc();
-        
-                            }
+            frm.add_custom_button(__("Send invoice to Zatca"), function () {
+                frm.call({
+                    method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
+                    args: {
+                        "invoice_number": frm.doc.name
+
+                    },
+                    callback: function (response) {
+                        if (response.message) {
+                            frappe.msgprint(response.message);
                             frm.reload_doc();
+
                         }
-                        
-                    
-                    });
-                    frm.reload_doc();
-                }, __("Zatca Phase-2"));
-        }   
-        frm.page.add_menu_item(__('Print PDF-A3'), function() {
+                        frm.reload_doc();
+                    }
+
+
+                });
+                frm.reload_doc();
+            }, __("Zatca Phase-2"));
+        }
+        frm.page.add_menu_item(__('Print PDF-A3'), function () {
             // Create a dialog box with fields for Print Format, Letterhead, and Language
             const dialog = new frappe.ui.Dialog({
                 title: __('Generate PDF-A3'),
@@ -106,10 +106,10 @@ frappe.ui.form.on("Sales Invoice", {
                         fieldtype: 'Link',
                         fieldname: 'print_format',
                         label: __('Print Format'),
-                        options: 'Print Format', 
+                        options: 'Print Format',
                         // default: 'Claudion Invoice Format', // Default print format if any
                         reqd: 1,
-                        get_query: function() {
+                        get_query: function () {
                             return {
                                 filters: {
                                     doc_type: 'Sales Invoice' // Filters print formats related to Sales Invoice
@@ -134,7 +134,7 @@ frappe.ui.form.on("Sales Invoice", {
                     }
                 ],
                 primary_action_label: __('Generate PDF-A3'),
-                primary_action: function() {
+                primary_action: function () {
                     const values = dialog.get_values();
                     frappe.call({
                         method: 'zatca_erpgulf.zatca_erpgulf.pdf_a3.embed_file_in_pdf',
@@ -144,7 +144,7 @@ frappe.ui.form.on("Sales Invoice", {
                             letterhead: values.letterhead,
                             language: values.language
                         },
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 // Open the generated PDF in a new tab
                                 const pdf_url = r.message;
@@ -159,14 +159,14 @@ frappe.ui.form.on("Sales Invoice", {
             });
             dialog.show();
         });
-        
-        
+
+
 
     }
 });
 
 frappe.ui.form.on('Sales Invoice', {
-    refresh: function(frm) {
+    refresh: function (frm) {
         const fieldsWithTooltips = [
             {
                 fieldname: "custom_zatca_third_party_invoice",
@@ -174,8 +174,7 @@ frappe.ui.form.on('Sales Invoice', {
                     An external party such as an accounting firm can issue invoices on behalf of the seller after fulfilling specific requirements as mentioned in the VAT legislation.
                 `,
                 links: [
-                    "https://example.com/view-inventory",
-                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                    "https://docs.claudion.com/Claudion-Docs/Third%20party",
                 ],
             },
             {
@@ -184,8 +183,7 @@ frappe.ui.form.on('Sales Invoice', {
                     A taxable person provides goods or services to a customer at no cost or at a reduced price, typically as part of a promotional activity.
                 `,
                 links: [
-                    "https://example.com/view-inventory",
-                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                    "https://docs.claudion.com/Claudion-Docs/nominal",
                 ],
             },
             {
@@ -194,8 +192,7 @@ frappe.ui.form.on('Sales Invoice', {
                     The supplier and customer both intend that the goods are transported outside the GCC territory as a consequence of that supply.
                 `,
                 links: [
-                    "https://example.com/view-inventory",
-                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                    "https://docs.claudion.com/Claudion-Docs/export",
                 ],
             },
             {
@@ -204,8 +201,7 @@ frappe.ui.form.on('Sales Invoice', {
                     Summary tax invoices are issued where there is more than one supply of goods or services.
                 `,
                 links: [
-                    "https://example.com/view-inventory",
-                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                    "https://docs.claudion.com/Claudion-Docs/Summary%20invoice",
                 ],
             },
             {
@@ -214,8 +210,7 @@ frappe.ui.form.on('Sales Invoice', {
                     Self-billing is a case where the buyer raises a tax invoice for the goods and services received on behalf of the vendor.
                 `,
                 links: [
-                    "https://example.com/view-inventory",
-                    "https://cloud.erpgulf.com/blog/news/zatca-sdk-v334-release-notes",
+                    "https://docs.claudion.com/Claudion-Docs/selfbilled",
                 ],
             },
         ];
@@ -265,7 +260,7 @@ frappe.ui.form.on('Sales Invoice', {
         };
 
         // Attach popovers to specific fields
-        
+
     }
 });
 
