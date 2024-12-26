@@ -234,11 +234,17 @@ class ZatcaDashboard {
 
     create_card(title, count) {
         return `
-	
+	    <a href="/app/query-report/Zatca Status Report?&status=${title}" style="color: ">
         <div class="number-card" style="flex: 1 1 22%; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-width: 100px;">
-            <h4 style="font-weight: bold; color: #495057;">${title}</h4>
+            <h4 style="font-weight: bold; color: #495057;">
+               ${title}
+            </h4>            
+
             <div class="count" style="font-size: 32px; font-weight: bold; color: #007bff; margin-top: 10px;">${count}</div>
-        </div>`;
+        </div> </a>
+
+	
+`;
     }
 
     render_list() {

@@ -186,11 +186,15 @@ def create_csr(portal_type, company_abbr):
         mycsr = csr.public_bytes(serialization.Encoding.PEM)
         base64csr = base64.b64encode(mycsr)
         encoded_string = base64csr.decode("utf-8")
-
-        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-        company_doc.custom_csr_data = encoded_string.strip()
-        # Save the updated company document
-        company_doc.save(ignore_permissions=True)
+        if zatca_setting_doc.custom_create_csr:
+            zatca_setting_doc = frappe.get_doc("Zatca Multiple Setting", "name")
+            zatca_setting_doc.custom_csr_data = encoded_string.strip()
+            zatca_setting_doc.save(ignore_permissions=True)
+        else:
+            company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+            company_doc.custom_csr_data = encoded_string.strip()
+            # Save the updated company document
+            company_doc.save(ignore_permissions=True)
         return encoded_string
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
