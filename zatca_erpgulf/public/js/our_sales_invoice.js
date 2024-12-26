@@ -149,6 +149,18 @@ frappe.ui.form.on("Sales Invoice", {
                                 // Open the generated PDF in a new tab
                                 const pdf_url = r.message;
                                 window.open(pdf_url, '_blank');
+                                frappe.call({
+                                    method: 'frappe.client.insert',
+                                    args: {
+                                        doc: {
+                                            doctype: 'File',
+                                            file_url: r.message, // File URL returned from the server
+                                            attached_to_doctype: 'Sales Invoice',
+                                            attached_to_name: frm.doc.name,
+                                            is_private: 1 // Make the file private
+                                        }
+                                    },
+                                });
                             } else {
                                 frappe.msgprint(__('Failed to generate PDF-A3'));
                             }

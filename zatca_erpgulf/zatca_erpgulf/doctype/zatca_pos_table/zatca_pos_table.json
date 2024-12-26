@@ -1,26 +1,29 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-12-25 11:17:36.866693",
+ "creation": "2024-12-25 18:45:48.937095",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "section_break_dau0"
+  "zatca_multiple_setting"
  ],
  "fields": [
   {
-   "fieldname": "section_break_dau0",
-   "fieldtype": "Section Break"
+   "fieldname": "zatca_multiple_setting",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Zatca Multiple setting",
+   "options": "Zatca Multiple Setting"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-25 11:17:36.866693",
+ "modified": "2024-12-25 19:16:11.768973",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
- "name": "Zatca Machine Setting",
+ "name": "Zatca POS table",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",

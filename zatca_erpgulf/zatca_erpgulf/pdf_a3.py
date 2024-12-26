@@ -206,7 +206,13 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
             print_format=print_format,
         )
 
-        final_pdf = frappe.local.site + "/private/files/" + invoice_name + "output.pdf"
+        # final_pdf = frappe.local.site + "/private/files/" + invoice_name + "output.pdf"
+        final_pdf = (
+            frappe.local.site
+            + "/private/files/PDF-A3 "
+            + invoice_name
+            + " output.pdf"
+        )
         # frappe.msgprint(f"Embedding XML into: {input_pdf}")
         with pikepdf.Pdf.open(input_pdf, allow_overwriting_input=True) as pdf:
             with open(xml_file, "rb") as xml_attachment:
@@ -217,7 +223,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
             file_doc = frappe.get_doc(
                 {
                     "doctype": "File",
-                    "file_url": "/private/files/" + invoice_name + "output.pdf",
+                    "file_url": "/private/files/PDF-A3 " + invoice_name + " output.pdf",
                     "is_private": 1,  # Make the file private
                 }
             )
