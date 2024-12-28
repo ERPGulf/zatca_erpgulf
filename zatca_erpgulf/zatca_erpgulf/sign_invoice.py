@@ -534,7 +534,7 @@ def clearance_api(
         frappe.throw(f"Error in clearance API: {str(e)}")
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
     compliance_type="0",
@@ -670,7 +670,7 @@ def zatca_call(
         )
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_call_compliance(
     invoice_number, company_abbr, compliance_type="0", any_item_has_tax_template=False
 ):
@@ -798,7 +798,7 @@ def zatca_call_compliance(
         return None
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_background(invoice_number):
     """defines the zatca bacground"""
     try:
@@ -938,7 +938,7 @@ def zatca_background(invoice_number):
         frappe.throw("Error in background call: " + str(e))
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_background_on_submit(doc, _method=None):
     """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
     try:

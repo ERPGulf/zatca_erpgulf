@@ -165,7 +165,7 @@ def embed_file_in_pdf_1(input_pdf, xml_file, output_pdf):
         pdf.save(output_pdf)
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language=None):
     """
     Embed XML into a PDF using pikepdf.
@@ -208,10 +208,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
 
         # final_pdf = frappe.local.site + "/private/files/" + invoice_name + "output.pdf"
         final_pdf = (
-            frappe.local.site
-            + "/private/files/PDF-A3 "
-            + invoice_name
-            + " output.pdf"
+            frappe.local.site + "/private/files/PDF-A3 " + invoice_name + " output.pdf"
         )
         # frappe.msgprint(f"Embedding XML into: {input_pdf}")
         with pikepdf.Pdf.open(input_pdf, allow_overwriting_input=True) as pdf:

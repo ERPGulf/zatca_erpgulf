@@ -86,10 +86,12 @@ def reporting_api(
 
         # Directly retrieve the production CSID from the company's document field
         if pos_invoice_doc.custom_zatca_pos_name:
-            zatca_settings = frappe.get_doc("Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name)
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+            )
             production_csid = zatca_settings.custom_final_auth_csid
-        else :
-            production_csid = company_doc.custom_basic_auth_from_production    
+        else:
+            production_csid = company_doc.custom_basic_auth_from_production
 
         if production_csid:
             headers = {
@@ -222,7 +224,7 @@ def reporting_api(
                     zatca_settings.custom_pih = encoded_hash
                     zatca_settings.save(ignore_permissions=True)
 
-                else :    
+                else:
                     settings = frappe.get_doc("Company", company_name)
                     company_abbr = settings.abbr
                     if settings.custom_send_einvoice_background:
@@ -451,7 +453,7 @@ def clearance_api(
         return None
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
     compliance_type="0",
@@ -575,7 +577,7 @@ def zatca_call(
         )
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_call_compliance(
     invoice_number, company_abbr, compliance_type="0", any_item_has_tax_template=False
 ):
@@ -701,7 +703,7 @@ def zatca_call_compliance(
         frappe.throw("Error in Zatca invoice call: " + str(e))
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_background_(invoice_number):
     """Function for zatca background"""
     try:
@@ -811,7 +813,7 @@ def zatca_background_(invoice_number):
         frappe.throw("Error in background call: " + str(e))
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=False)
 def zatca_background_on_submit(doc, _method=None):
     """Function for zatca background on submit"""
 
