@@ -85,7 +85,11 @@ def reporting_api(
         }
 
         # Directly retrieve the production CSID from the company's document field
-        production_csid = company_doc.custom_basic_auth_from_production
+        if pos_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc("Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name)
+            production_csid = zatca_settings.custom_final_auth_csid
+        else :
+            production_csid = company_doc.custom_basic_auth_from_production    
 
         if production_csid:
             headers = {
@@ -210,14 +214,23 @@ def reporting_api(
                 )
 
                 company_name = pos_invoice_doc.company
-                settings = frappe.get_doc("Company", company_name)
-                company_abbr = settings.abbr
-                if settings.custom_send_einvoice_background:
-                    frappe.msgprint(msg)
+                if pos_invoice_doc.custom_zatca_pos_name:
+                    if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                        frappe.msgprint(msg)
 
-                # Update PIH data without JSON formatting
-                company_doc.custom_pih = encoded_hash
-                company_doc.save(ignore_permissions=True)
+                    # Update PIH data without JSON formatting
+                    zatca_settings.custom_pih = encoded_hash
+                    zatca_settings.save(ignore_permissions=True)
+
+                else :    
+                    settings = frappe.get_doc("Company", company_name)
+                    company_abbr = settings.abbr
+                    if settings.custom_send_einvoice_background:
+                        frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                    company_doc.custom_pih = encoded_hash
+                    company_doc.save(ignore_permissions=True)
 
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
                 invoice_doc.db_set(

@@ -89,6 +89,10 @@ frappe.ui.form.on("Company", {
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
             args: {
+                "zatca_doc": {
+                    "doctype": frm.doc.doctype,
+                    "name": frm.doc.name
+                },
                 "company_abbr": frm.doc.abbr
             },
             callback: function (r) {
@@ -103,6 +107,10 @@ frappe.ui.form.on("Company", {
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
             args: {
+                "zatca_doc": {
+                "doctype": frm.doc.doctype, // Pass the doctype dynamically
+                "name": frm.doc.name       // Pass the document name dynamically
+            },
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
             },
@@ -118,6 +126,10 @@ frappe.ui.form.on("Company", {
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
             args: {
+                "zatca_doc": {
+                "doctype": frm.doc.doctype, // Pass the doctype dynamically
+                "name": frm.doc.name       // Pass the document name dynamically
+            },
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
             },

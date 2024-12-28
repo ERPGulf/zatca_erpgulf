@@ -41,6 +41,39 @@ def parse_csr_config(csr_config_string):
     return csr_config
 
 
+def get_csr_data_multiple(zatca_doc):
+    """Getting csr data from the config for multiple"""
+    try:
+        csr_config_string = zatca_doc.custom_csr_config
+
+        if not csr_config_string:
+            frappe.throw("No CSR config found in company settings")
+
+        csr_config = parse_csr_config(csr_config_string)
+
+        csr_values = {
+            "csr.common.name": csr_config.get("csr.common.name"),
+            "csr.serial.number": csr_config.get("csr.serial.number"),
+            "csr.organization.identifier": csr_config.get(
+                "csr.organization.identifier"
+            ),
+            "csr.organization.unit.name": csr_config.get("csr.organization.unit.name"),
+            "csr.organization.name": csr_config.get("csr.organization.name"),
+            "csr.country.name": csr_config.get("csr.country.name"),
+            "csr.invoice.type": csr_config.get("csr.invoice.type"),
+            "csr.location.address": csr_config.get("csr.location.address"),
+            "csr.industry.business.category": csr_config.get(
+                "csr.industry.business.category"
+            ),
+        }
+
+        return csr_values
+
+    except (frappe.ValidationError, frappe.DoesNotExistError) as e:
+        frappe.throw(f"Error in fetching CSR data: {e}")
+        return None
+
+
 def get_csr_data(company_abbr):
     """Getting csr data from the config"""
     try:
@@ -79,22 +112,46 @@ def get_csr_data(company_abbr):
         return None
 
 
-def create_private_keys(company_abbr):
+def create_private_keys(company_abbr,zatca_doc):
     """the function is for creating the private key"""
     try:
-        company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
-        if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+        if isinstance(zatca_doc, str):
+            zatca_doc = json.loads(zatca_doc)
+        # frappe.msgprint(f"Using OTP (Company): {zatca_doc}")
+        # Validate zatca_doc structure
+        if (
+            not isinstance(zatca_doc, dict)
+            or "doctype" not in zatca_doc
+            or "name" not in zatca_doc
+        ):
+            frappe.throw(
+                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+            )
 
-        company_doc = frappe.get_doc("Company", company_name)
+        # Fetch the document based on doctype and name
+        doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+        elif doc.doctype == "Company":
+            company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+            company_doc = frappe.get_doc("Company", company_name)
+        # company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+        # if not company_name:
+        #     frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+
+        # company_doc = frappe.get_doc("Company", company_name)
         private_key = ec.generate_private_key(ec.SECP256K1(), backend=default_backend())
         private_key_pem = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),
         )
-        company_doc.custom_private_key = private_key_pem.decode("utf-8")
-        company_doc.save(ignore_permissions=True)
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc.custom_private_key = private_key_pem.decode("utf-8")
+            multiple_setting_doc.save(ignore_permissions=True)
+        elif doc.doctype == "Company":
+            company_doc.custom_private_key = private_key_pem.decode("utf-8")
+            company_doc.save(ignore_permissions=True)
 
         return private_key_pem
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
@@ -105,12 +162,39 @@ def create_private_keys(company_abbr):
 
 
 @frappe.whitelist(allow_guest=True)
-def create_csr(portal_type, company_abbr):
+def create_csr(zatca_doc, portal_type, company_abbr):
     """
     Function defining the create csr method with the config csr data
     """
     try:
-        csr_values = get_csr_data(company_abbr)
+        # frappe.throw("hi")
+
+        if isinstance(zatca_doc, str):
+            zatca_doc = json.loads(zatca_doc)
+        # frappe.msgprint(f"Using OTP (Company): {zatca_doc}")
+        # Validate zatca_doc structure
+        if (
+            not isinstance(zatca_doc, dict)
+            or "doctype" not in zatca_doc
+            or "name" not in zatca_doc
+        ):
+            frappe.throw(
+                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+            )
+
+        # Fetch the document based on doctype and name
+        doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
+        # frappe.throw(doc)
+        # Fetch CSR data based on document type
+        if doc.doctype == "Zatca Multiple Setting":
+            csr_values = get_csr_data_multiple(doc)
+            # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
+        elif doc.doctype == "Company":
+            csr_values = get_csr_data(company_abbr)
+            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
+        else:
+            frappe.throw("Unsupported document type for CSR creation.")
+
         company_csr_data = csr_values
 
         csr_common_name = company_csr_data.get("csr.common.name")
@@ -133,8 +217,16 @@ def create_csr(portal_type, company_abbr):
             customoid = encode_customoid("PREZATCA-Code-Signing")
         else:
             customoid = encode_customoid("ZATCA-Code-Signing")
+        if doc.doctype == "Zatca Multiple Setting":
+            private_key_pem = create_private_keys(doc,zatca_doc)
+            # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
+        elif doc.doctype == "Company":
+            private_key_pem = create_private_keys(company_abbr,zatca_doc)
+            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
+        else:
+            frappe.throw("no private key.")    
 
-        private_key_pem = create_private_keys(company_abbr)
+        
         private_key = serialization.load_pem_private_key(
             private_key_pem, password=None, backend=default_backend()
         )
@@ -186,11 +278,11 @@ def create_csr(portal_type, company_abbr):
         mycsr = csr.public_bytes(serialization.Encoding.PEM)
         base64csr = base64.b64encode(mycsr)
         encoded_string = base64csr.decode("utf-8")
-        if zatca_setting_doc.custom_create_csr:
-            zatca_setting_doc = frappe.get_doc("Zatca Multiple Setting", "name")
-            zatca_setting_doc.custom_csr_data = encoded_string.strip()
-            zatca_setting_doc.save(ignore_permissions=True)
-        else:
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+            multiple_setting_doc.custom_csr_data = encoded_string.strip()
+            multiple_setting_doc.save(ignore_permissions=True)
+        elif doc.doctype == "Company":
             company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
             company_doc.custom_csr_data = encoded_string.strip()
             # Save the updated company document
@@ -223,18 +315,44 @@ def get_api_url(company_abbr, base_url):
 
 
 @frappe.whitelist(allow_guest=True)
-def create_csid(company_abbr):
+def create_csid(zatca_doc,company_abbr):
     """creating csid"""
     try:
-        company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
-        if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+        if isinstance(zatca_doc, str):
+            zatca_doc = json.loads(zatca_doc)
+        # frappe.msgprint(f"Using OTP (Company): {zatca_doc}")
+        # Validate zatca_doc structure
+        if (
+            not isinstance(zatca_doc, dict)
+            or "doctype" not in zatca_doc
+            or "name" not in zatca_doc
+        ):
+            frappe.throw(
+                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+            )
+        # Fetch the document based on doctype and name
+        doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+            csr_data_str =multiple_setting_doc.get("custom_csr_data", "")
+        elif doc.doctype == "Company":
+            company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
 
-        company_doc = frappe.get_doc("Company", company_name)
-        csr_data_str = company_doc.get("custom_csr_data", "")
+            company_doc = frappe.get_doc("Company", company_name)
+            csr_data_str = company_doc.get("custom_csr_data", "")
 
-        if not csr_data_str:
-            frappe.throw("No CSR data found for the company.")
+            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
+        else:
+            frappe.throw("Unsupported document type for CSR creation.")
+        # company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+        # if not company_name:
+        #     frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+
+        # # company_doc = frappe.get_doc("Company", company_name)
+        # # csr_data_str = company_doc.get("custom_csr_data", "")
+
+        # if not csr_data_str:
+        #     frappe.throw("No CSR data found for the company.")
         csr_contents = csr_data_str.strip()
 
         if not csr_contents:
@@ -242,9 +360,18 @@ def create_csid(company_abbr):
 
         payload = json.dumps({"csr": csr_contents})
         # frappe.msgprint(f"Using OTP: {company_doc.custom_otp}")
+        if doc.doctype == "Zatca Multiple Setting":
+            otp = multiple_setting_doc.get("custom_otp", "")
+            # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
+        elif doc.doctype == "Company":
+            otp = company_doc.get("custom_otp", "")
+
+            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
+        else:
+            frappe.throw("no otp.")
         headers = {
             "accept": "application/json",
-            "OTP": company_doc.custom_otp,
+            "OTP": otp ,
             "Accept-Version": "V2",
             "Content-Type": "application/json",
             "Cookie": "TS0106293e=0132a679c07382ce7821148af16b99da546c13ce1dcddbef0e19802eb470e539a4d39d5ef63d5c8280b48c529f321e8b0173890e4f",
@@ -271,12 +398,20 @@ def create_csid(company_abbr):
 
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
         encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-        company_doc.custom_certificate = base64.b64decode(
-            data["binarySecurityToken"]
-        ).decode("utf-8")
-        company_doc.custom_basic_auth_from_csid = encoded_value
-        company_doc.custom_compliance_request_id_ = data["requestID"]
-        company_doc.save(ignore_permissions=True)
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc.custom_certficate = base64.b64decode(
+                data["binarySecurityToken"]
+            ).decode("utf-8")
+            multiple_setting_doc.custom_basic_auth_from_csid = encoded_value
+            multiple_setting_doc.custom_compliance_request_id_ = data["requestID"]
+            multiple_setting_doc.save(ignore_permissions=True)
+        elif doc.doctype == "Company" :
+            company_doc.custom_certificate = base64.b64decode(
+                data["binarySecurityToken"]
+            ).decode("utf-8")
+            company_doc.custom_basic_auth_from_csid = encoded_value
+            company_doc.custom_compliance_request_id_ = data["requestID"]
+            company_doc.save(ignore_permissions=True)       
         return response.text
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
@@ -934,20 +1069,45 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
 
 
 @frappe.whitelist(allow_guest=True)
-def production_csid(company_abbr):
+def production_csid(zatca_doc,company_abbr):
     """production csid button and api"""
     try:
-        company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
-        if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+        # company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+        # if not company_name:
+        #     frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
-        company_doc = frappe.get_doc("Company", company_name)
-        csid = company_doc.custom_basic_auth_from_csid
+        # company_doc = frappe.get_doc("Company", company_name)
+        if isinstance(zatca_doc, str):
+            zatca_doc = json.loads(zatca_doc)
+        # frappe.msgprint(f"Using OTP (Company): {zatca_doc}")
+        # Validate zatca_doc structure
+        if (
+            not isinstance(zatca_doc, dict)
+            or "doctype" not in zatca_doc
+            or "name" not in zatca_doc
+        ):
+            frappe.throw(
+                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+            )
+        # Fetch the document based on doctype and name
+        doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+            csid = multiple_setting_doc.custom_basic_auth_from_csid
+            request_id = multiple_setting_doc.custom_compliance_request_id_
+        elif doc.doctype == "Company":
+            company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+
+            company_doc = frappe.get_doc("Company", company_name)
+            csid = company_doc.custom_basic_auth_from_csid
+            request_id = company_doc.custom_compliance_request_id_
+
+        
         if not csid:
-            frappe.throw((f"CSID for company {company_abbr} not found"))
-        request_id = company_doc.custom_compliance_request_id_
+            frappe.throw((f"CSID for company not found"))
+        # request_id = company_doc.custom_compliance_request_id_
         if not request_id:
-            frappe.throw(f"Compliance request ID for company {company_abbr} not found")
+            frappe.throw(f"Compliance request ID for company  not found")
         payload = {"compliance_request_id": request_id}
 
         headers = {
@@ -975,12 +1135,21 @@ def production_csid(company_abbr):
         data = response.json()
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
         encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-        company_doc.custom_certificate = base64.b64decode(
+        if doc.doctype == "Zatca Multiple Setting":
+            multiple_setting_doc.custom_certificate = base64.b64decode(
             data["binarySecurityToken"]
         ).decode("utf-8")
-        company_doc.custom_basic_auth_from_production = encoded_value
+            multiple_setting_doc.custom_final_auth_csid = encoded_value
 
-        company_doc.save(ignore_permissions=True)
+            multiple_setting_doc.save(ignore_permissions=True)
+        elif doc.doctype == "Company" :
+            company_doc.custom_certificate = base64.b64decode(
+            data["binarySecurityToken"]
+        ).decode("utf-8")
+            company_doc.custom_basic_auth_from_production = encoded_value
+
+            company_doc.save(ignore_permissions=True)
+        
         return response.text
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
