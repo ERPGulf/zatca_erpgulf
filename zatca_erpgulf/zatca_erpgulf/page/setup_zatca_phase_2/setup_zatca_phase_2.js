@@ -915,6 +915,8 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 					fetch_company_details(values.company);
 				}
 				if (slide.name === "company_details") {
+					const savedData = slideData[slide.name];
+					dialog.set_values(savedData);
 					if (!values.vat_number || !values.city || !values.business_category) {
 						let missing_fields = [];
 
