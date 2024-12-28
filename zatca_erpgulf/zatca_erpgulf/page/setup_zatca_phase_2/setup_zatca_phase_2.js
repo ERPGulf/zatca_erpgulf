@@ -268,6 +268,30 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						}
 					},
 				},
+				{
+					fieldname: "is_offline_pos",
+					label: __("Is Offline POS?"),
+					fieldtype: "Check",
+					onchange: function (e) {
+						// Ensure fields_dict is accessible and the field exists
+						const selectMachineField = this.layout.fields_dict.select_machine;
+		
+						if (selectMachineField) {
+							const isOffline = this.get_value(); // Get checkbox value
+							selectMachineField.df.hidden = !isOffline; // Toggle hidden property
+							selectMachineField.refresh(); // Apply changes
+						} else {
+							console.error("Field 'select_machine' not found.");
+						}
+					},
+				},
+				{
+					fieldname: "select_machine",
+					label: __("Select Machine"),
+					fieldtype: "Link",
+					options: "Zatca Multiple Setting",
+					hidden: true, // Initially hidden
+				},
 			],
 			primary_action_label: __("Next"),
 			primary_action(values) {
@@ -337,7 +361,26 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							frappe.msgprint(__("Please select a company before creating CSR."));
 							return;
 						}
-
+						const selectcompanySlide = slides_settings.find(
+							(slide) => slide.name === "select_compay"
+						);
+						const isOfflinePOSField = selectcompanySlide?.fields.find(
+							(field) => field.fieldname === "is_offline_pos"
+						);
+						const isOfflinePOS = isOfflinePOSField?.value; // Assuming value is stored here
+						if (isOfflinePOS) {
+							const selectMachineField = integrationSlide?.fields.find(
+								(field) => field.fieldname === "select_machine"
+							);
+							selectedMachine = selectMachineField?.value;
+						
+							if (!selectedMachine) {
+								frappe.msgprint(__("Please select a machine for offline POS."));
+								return;
+							}
+						}
+						
+					
 						frappe.call({
 							method: "frappe.client.get_value",
 							args: {
@@ -360,10 +403,20 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 										: null;
 
 									if (portal_type && company_abbr) {
+										const doctype = isOfflinePOS
+											? "Zatca Multiple Setting"
+											: "Company";
+										const name = isOfflinePOS
+											? selectedMachine
+											: selected_company;
 
 										frappe.call({
 											method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
-											args: { portal_type, company_abbr },
+											args: {  
+												zatca_doc: {
+													doctype: doctype,
+													name: name,
+												},portal_type, company_abbr },
 											callback: function (response) {
 												if (response && response.message) {
 													// console.log("CSR Response:", response.message);
@@ -432,6 +485,25 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							frappe.msgprint(__("Please select a company before activating CSID."));
 							return;
 						}
+						const selectcompanySlide = slides_settings.find(
+							(slide) => slide.name === "select_compay"
+						);
+						const isOfflinePOSField = selectcompanySlide?.fields.find(
+							(field) => field.fieldname === "is_offline_pos"
+						);
+						const isOfflinePOS = isOfflinePOSField?.value; // Assuming value is stored here
+						if (isOfflinePOS) {
+							const selectMachineField = integrationSlide?.fields.find(
+								(field) => field.fieldname === "select_machine"
+							);
+							selectedMachine = selectMachineField?.value;
+						
+							if (!selectedMachine) {
+								frappe.msgprint(__("Please select a machine for offline POS."));
+								return;
+							}
+						}
+						
 
 						// Step 1: Save the OTP in the company document
 						frappe.call({
@@ -470,10 +542,19 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 													: null;
 
 												if (portal_type && company_abbr) {
+													const doctype = isOfflinePOS
+													? "Zatca Multiple Setting"
+													: "Company";
+												const name = isOfflinePOS
+													? selectedMachine
+													: selected_company;
 													// Step 3: Generate CSID
 													frappe.call({
 														method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
-														args: { portal_type, company_abbr },
+														args: { zatca_doc: {
+															doctype: doctype,
+															name: name,
+														},portal_type, company_abbr },
 														callback: function (response) {
 															if (response && response.message) {
 																// console.log("Response: " + JSON.stringify(response, null, 2));
@@ -705,6 +786,25 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							frappe.msgprint(__("Please select a company before creating CSR."));
 							return;
 						}
+						const selectcompanySlide = slides_settings.find(
+							(slide) => slide.name === "select_compay"
+						);
+						const isOfflinePOSField = selectcompanySlide?.fields.find(
+							(field) => field.fieldname === "is_offline_pos"
+						);
+						const isOfflinePOS = isOfflinePOSField?.value; // Assuming value is stored here
+						if (isOfflinePOS) {
+							const selectMachineField = integrationSlide?.fields.find(
+								(field) => field.fieldname === "select_machine"
+							);
+							selectedMachine = selectMachineField?.value;
+						
+							if (!selectedMachine) {
+								frappe.msgprint(__("Please select a machine for offline POS."));
+								return;
+							}
+						}
+						
 
 						frappe.call({
 							method: "frappe.client.get_value",
@@ -720,10 +820,19 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 
 									if (company_abbr) {
+										const doctype = isOfflinePOS
+										? "Zatca Multiple Setting"
+										: "Company";
+									const name = isOfflinePOS
+										? selectedMachine
+										: selected_company;
 
 										frappe.call({
 											method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
-											args: { company_abbr },
+											args: { zatca_doc: {
+												doctype: doctype,
+												name: name,
+											},company_abbr },
 											callback: function (response) {
 												if (response && response.message) {
 													// console.log("CSR Response:", response.message);
