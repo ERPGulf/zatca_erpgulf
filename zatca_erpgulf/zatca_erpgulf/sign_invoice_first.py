@@ -1059,8 +1059,8 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
             data=payload,
             timeout=30,
         )
-        frappe.throw(response.status_code)
-        # frappe.throw(response.text)
+        # frappe.throw(response.status_code)
+        frappe.throw(response.text)
         if response.status_code != 200:
             frappe.throw(f"Error in compliance: {response.text}")
         if response.status_code != 202:
