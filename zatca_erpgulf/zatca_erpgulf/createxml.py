@@ -578,13 +578,11 @@ def customer_data(invoice, sales_invoice_doc):
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
-                frappe.throw("13")
                 if sales_invoice_doc.customer_address:
                     address = frappe.get_doc(
                         "Address", sales_invoice_doc.customer_address
                     )
             else:
-                frappe.throw("14")
                 if customer_doc.customer_primary_address:
                     address = frappe.get_doc(
                         "Address", customer_doc.customer_primary_address
