@@ -1032,7 +1032,6 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
         frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
     company_doc = frappe.get_doc("Company", company_name)
-    frappe.throw(company_abbr)
     payload = json.dumps(
         {
             "invoiceHash": encoded_hash,
@@ -1044,7 +1043,7 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
     csid = company_doc.custom_basic_auth_from_csid
     if not csid:
         frappe.throw((f"CSID for company {company_abbr} not found"))
-
+    frappe.throw(csid)
     headers = {
         "accept": "application/json",
         "Accept-Language": "en",
