@@ -1032,7 +1032,7 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
         frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
     company_doc = frappe.get_doc("Company", company_name)
-    frappe.throw(uuid1)
+    frappe.throw(encoded_hash)
     payload = json.dumps(
         {
             "invoiceHash": encoded_hash,
