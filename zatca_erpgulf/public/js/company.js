@@ -85,7 +85,7 @@ frappe.ui.form.on("Company", {
         // Refresh logic if any
     },
     custom_generate_production_csids: function (frm) {
-        
+
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
             args: {
@@ -103,14 +103,14 @@ frappe.ui.form.on("Company", {
         });
     },
     custom_generate_compliance_csid: function (frm) {
-        
+
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
             args: {
                 "zatca_doc": {
-                "doctype": frm.doc.doctype, // Pass the doctype dynamically
-                "name": frm.doc.name       // Pass the document name dynamically
-            },
+                    "doctype": frm.doc.doctype, // Pass the doctype dynamically
+                    "name": frm.doc.name       // Pass the document name dynamically
+                },
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
             },
@@ -122,14 +122,14 @@ frappe.ui.form.on("Company", {
         });
     },
     custom_create_csr: function (frm) {
-        
+
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
             args: {
                 "zatca_doc": {
-                "doctype": frm.doc.doctype, // Pass the doctype dynamically
-                "name": frm.doc.name       // Pass the document name dynamically
-            },
+                    "doctype": frm.doc.doctype, // Pass the doctype dynamically
+                    "name": frm.doc.name       // Pass the document name dynamically
+                },
                 "portal_type": frm.doc.custom_select,
                 "company_abbr": frm.doc.abbr
             },
@@ -151,10 +151,10 @@ frappe.ui.form.on("Company", {
             },
             callback: function (r) {
                 if (!r.exc) {
-                    frm.save();
+                    // frm.save();
                 }
             },
         });
-        
+
     }
 });
