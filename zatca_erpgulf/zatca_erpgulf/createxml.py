@@ -508,12 +508,10 @@ def company_data(invoice, sales_invoice_doc):
             ],
         )
 
-        # frappe.throw(str(address_list))
         if len(address_list) == 0:
             frappe.throw(
                 "Zatca requires proper address. Please add your company address in address master"
             )
-        frappe.throw(len(address_list))
         for address in address_list:
             cac_postaladdress = ET.SubElement(cac_party_1, "cac:PostalAddress")
             cbc_streetname = ET.SubElement(cac_postaladdress, "cbc:StreetName")
@@ -594,7 +592,7 @@ def customer_data(invoice, sales_invoice_doc):
                 frappe.throw("Customer address is mandatory for non-B2C customers.")
 
             cac_postaladdress_1 = ET.SubElement(cac_party_2, "cac:PostalAddress")
-
+            frappe.throw(address.address_line1)
             if address.address_line1:
                 cbc_streetname_1 = ET.SubElement(cac_postaladdress_1, "cbc:StreetName")
                 cbc_streetname_1.text = address.address_line1
