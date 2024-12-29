@@ -513,6 +513,7 @@ def company_data(invoice, sales_invoice_doc):
             frappe.throw(
                 "Zatca requires proper address. Please add your company address in address master"
             )
+        frappe.throw(len(address_list))
         for address in address_list:
             cac_postaladdress = ET.SubElement(cac_party_1, "cac:PostalAddress")
             cbc_streetname = ET.SubElement(cac_postaladdress, "cbc:StreetName")
