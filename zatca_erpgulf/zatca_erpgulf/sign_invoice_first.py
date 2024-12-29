@@ -1026,55 +1026,54 @@ def structuring_signedxml():
 
 def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
     """compliance api call for testing with sandbox"""
-    # try:
-    company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
-    if not company_name:
-        frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+    try:
+        company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+        if not company_name:
+            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
-    company_doc = frappe.get_doc("Company", company_name)
-    payload = json.dumps(
-        {
-            "invoiceHash": encoded_hash,
-            "uuid": uuid1,
-            "invoice": xml_base64_decode(signed_xmlfile_name),
+        company_doc = frappe.get_doc("Company", company_name)
+        payload = json.dumps(
+            {
+                "invoiceHash": encoded_hash,
+                "uuid": uuid1,
+                "invoice": xml_base64_decode(signed_xmlfile_name),
+            }
+        )
+
+        csid = company_doc.custom_basic_auth_from_csid
+        if not csid:
+            frappe.throw((f"CSID for company {company_abbr} not found"))
+
+        headers = {
+            "accept": "application/json",
+            "Accept-Language": "en",
+            "Accept-Version": "V2",
+            "Authorization": "Basic " + csid,
+            "Content-Type": "application/json",
         }
-    )
+        frappe.throw(get_api_url(company_abbr, base_url="compliance/invoices"))
+        response = requests.request(
+            "POST",
+            url=get_api_url(company_abbr, base_url="compliance/invoices"),
+            headers=headers,
+            data=payload,
+            timeout=30,
+        )
+        frappe.throw("before call")
+        # frappe.throw(response.text)
+        if response.status_code != 200:
+            frappe.throw(f"Error in compliance: {response.text}")
+        if response.status_code != 202:
+            frappe.throw(f"Warning from zatca in compliance: {response.text}")
 
-    csid = company_doc.custom_basic_auth_from_csid
-    if not csid:
-        frappe.throw((f"CSID for company {company_abbr} not found"))
-    frappe.throw(csid)
-    headers = {
-        "accept": "application/json",
-        "Accept-Language": "en",
-        "Accept-Version": "V2",
-        "Authorization": "Basic " + csid,
-        "Content-Type": "application/json",
-    }
-    response = requests.request(
-        "POST",
-        url=get_api_url(company_abbr, base_url="compliance/invoices"),
-        headers=headers,
-        data=payload,
-        timeout=30,
-    )
-    frappe.throw("after call")
-    # frappe.throw(response.text)
-    if response.status_code != 200:
-        frappe.throw(f"Error in compliance: {response.text}")
-    if response.status_code != 202:
-        frappe.throw(f"Warning from zatca in compliance: {response.text}")
+        return response.text
+    except requests.exceptions.RequestException as e:
+        frappe.msgprint(f"Request exception occurred: {str(e)}")
+        return "error in compliance", "NOT ACCEPTED"
 
-    return response.text
-
-
-# except requests.exceptions.RequestException as e:
-#     frappe.msgprint(f"Request exception occurred: {str(e)}")
-#     return "error in compliance", "NOT ACCEPTED"
-
-# except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-#     frappe.throw(f"ERROR in clearance invoice, ZATCA validation: {str(e)}")
-#     return None
+    except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
+        frappe.throw(f"ERROR in clearance invoice, ZATCA validation: {str(e)}")
+        return None
 
 
 @frappe.whitelist(allow_guest=False)
