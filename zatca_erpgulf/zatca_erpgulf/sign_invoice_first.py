@@ -1059,10 +1059,12 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
             data=payload,
             timeout=30,
         )
-        frappe.throw(get_api_url(company_abbr, base_url="compliance/invoices"))
-        frappe.throw(response.text)
+        # frappe.throw(response.text)
         if response.status_code != 200:
             frappe.throw(f"Error in compliance: {response.text}")
+        if response.status_code != 202:
+            frappe.throw(f"Warning from zatca in compliance: {response.text}")
+
         return response.text
     except requests.exceptions.RequestException as e:
         frappe.msgprint(f"Request exception occurred: {str(e)}")
