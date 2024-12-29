@@ -562,6 +562,7 @@ def customer_data(invoice, sales_invoice_doc):
     customer data of address and need values
     """
     try:
+        frappe.throw("565")
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         # frappe.throw(str(customer_doc))
         cac_accountingcustomerparty = ET.SubElement(
@@ -592,7 +593,7 @@ def customer_data(invoice, sales_invoice_doc):
                 frappe.throw("Customer address is mandatory for non-B2C customers.")
 
             cac_postaladdress_1 = ET.SubElement(cac_party_2, "cac:PostalAddress")
-            frappe.throw(address.address_line1)
+            # frappe.throw(address.address_line1)
             if address.address_line1:
                 cbc_streetname_1 = ET.SubElement(cac_postaladdress_1, "cbc:StreetName")
                 cbc_streetname_1.text = address.address_line1
