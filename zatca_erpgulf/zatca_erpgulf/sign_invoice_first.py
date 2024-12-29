@@ -1039,7 +1039,7 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
                 "invoice": xml_base64_decode(signed_xmlfile_name),
             }
         )
-        frappe.throw("1042")
+
         csid = company_doc.custom_basic_auth_from_csid
         if not csid:
             frappe.throw((f"CSID for company {company_abbr} not found"))
@@ -1051,7 +1051,7 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
             "Authorization": "Basic " + csid,
             "Content-Type": "application/json",
         }
-
+        frappe.throw("1054")
         response = requests.request(
             "POST",
             url=get_api_url(company_abbr, base_url="compliance/invoices"),
