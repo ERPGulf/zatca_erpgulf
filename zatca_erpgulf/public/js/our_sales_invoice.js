@@ -83,18 +83,16 @@ frappe.ui.form.on("Sales Invoice", {
                         "invoice_number": frm.doc.name
 
                     },
-                    callback: function (response) {
-                        if (response.message) {
-                            frappe.msgprint(response.message);
-                            frm.reload_doc();
+                    callback: function (r) {
 
-                        }
+                        // me.frm.refresh_fields();
+                        console.log("response.message");
                         frm.reload_doc();
+
                     }
 
 
                 });
-                frm.reload_doc();
             }, __("Zatca Phase-2"));
         }
         frm.page.add_menu_item(__('Print PDF-A3'), function () {

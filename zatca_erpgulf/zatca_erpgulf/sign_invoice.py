@@ -933,7 +933,7 @@ def zatca_background(invoice_number):
             zatca_call(invoice_number, "0", any_item_has_tax_template, company_abbr)
         else:
             create_qr_code(sales_invoice_doc, method=None)
-
+        return "Success"
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw("Error in background call: " + str(e))
 
@@ -1072,6 +1072,7 @@ def zatca_background_on_submit(doc, _method=None):
             zatca_call(invoice_number, "0", any_item_has_tax_template, company_abbr)
         else:
             create_qr_code(sales_invoice_doc, method=None)
+        doc.reload()
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(f"Error in background call: {str(e)}")
 
