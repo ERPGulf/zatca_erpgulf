@@ -48,7 +48,9 @@ def generate_invoice_pdf(invoice, language, letterhead=None, print_format=None):
 
 def embed_file_in_pdf_1(input_pdf, xml_file, output_pdf):
     """embed the pdf file"""
-    icc_path = frappe.local.site + "/private/files/sRGB.icc"
+    app_path = frappe.get_app_path("zatca_erpgulf")
+    icc_path = app_path + "/sRGB.icc"
+
     # frappe.throw(icc_path)
     with pikepdf.open(input_pdf, allow_overwriting_input=True) as pdf:
         # Open metadata for editing
@@ -172,6 +174,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
     """
     try:
 
+        # frappe.throw(app_path)/opt/zatca/frappe-bench/apps/zatca_erpgulf/zatca_erpgulf
         if not language:
             language = "en"  # Default language
         invoice_number = frappe.get_doc("Sales Invoice", invoice_name)
