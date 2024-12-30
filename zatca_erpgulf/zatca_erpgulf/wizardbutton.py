@@ -1,55 +1,78 @@
 """the function for the button in  wizard"""
 
-        value = compliance_api_call(
-            uuid1, encoded_hash, signed_xmlfile_name
-        
-
+import json
+import base64
+import requests
 import frappe
-from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import compliance_api_call
 
-# Define a mapping for file paths based on compliance types
-FILE_PATHS = {
-    "1": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifiedinvoice.xml.xml",
-    "2": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard invoice.xml",
-    "3": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifeild credit note.xml.xml",
-    "4": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard credit note.xml.xml",
-    "5": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplified debit note.xml.xml",
-    "6": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard debit note.xml.xml",
-}
+
+def get_api_url(company_abbr, base_url):
+    """There are many api susing in zatca which can be defined by a feild in settings"""
+    try:
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+        if company_doc.custom_select == "Sandbox":
+            url = company_doc.custom_sandbox_url + base_url
+        elif company_doc.custom_select == "Simulation":
+            url = company_doc.custom_simulation_url + base_url
+        else:
+            url = company_doc.custom_production_url + base_url
+        return url
+
+    except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
+        frappe.throw(
+            "unexpected error occurred api for company {company_abbr} " + str(e)
+        )
+        return None
+
 
 @frappe.whitelist(allow_guest=False)
-def wizard_button(company_abbr):
-    """Compliance check for Zatca based on file type and company abbreviation."""
+def wizard_button(company_abbr, button):
+    """Compliance check for ZATCA based on file type and company abbreviation."""
     try:
+        # Map buttons to their corresponding XML file paths
+        button_file_mapping = {
+            "simplified_invoice_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifiedinvoice.xml.xml",
+            "standard_invoice_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard invoice.xml",
+            "simplified_credit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifeild credit note.xml.xml",
+            "standard_credit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard credit note.xml.xml",
+            "simplified_debit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplified debit note.xml.xml",
+            "standard_debit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard debit note.xml.xml",
+        }
+
+        # Determine the selected XML file based on the button clicked
+        signed_xml_filename = button_file_mapping.get(button)
+        if not signed_xml_filename:
+            frappe.throw(f"Invalid button selected: {button}")
+
         # Validate and fetch company name
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
         company_doc = frappe.get_doc("Company", company_name)
-        compliance_type = None
 
-        # Determine compliance type based on custom validation type
-        validation_type_to_compliance = {
-            "Simplified Invoice": "1",
-            "Standard Invoice": "2",
-            "Simplified Credit Note": "3",
-            "Standard Credit Note": "4",
-            "Simplified Debit Note": "5",
-            "Standard Debit Note": "6",
-        }
+        # Prepare payload
+        encoded_hash = "<your_encoded_hash>"  # Replace with actual encoded hash
+        uuid1 = "<your_uuid1>"  # Replace with actual UUID
+
+        with open(signed_xml_filename, "rb") as file:
+            xml_content = file.read()
+        xml_base64_encoded = base64.b64encode(xml_content).decode("utf-8")
+
         payload = json.dumps(
             {
                 "invoiceHash": encoded_hash,
                 "uuid": uuid1,
-                "invoice": xml_base64_decode(signed_xmlfile_name),
+                "invoice": xml_base64_encoded,
             }
         )
 
+        # Check for CSID in company doc
         csid = company_doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw((f"CSID for company {company_abbr} not found"))
+            frappe.throw(f"CSID for company {company_abbr} not found.")
 
+        # Define headers
         headers = {
             "accept": "application/json",
             "Accept-Language": "en",
@@ -57,7 +80,8 @@ def wizard_button(company_abbr):
             "Authorization": "Basic " + csid,
             "Content-Type": "application/json",
         }
-        # frappe.throw(get_api_url(company_abbr, base_url="compliance/invoices"))
+
+        # API request
         response = requests.request(
             "POST",
             url=get_api_url(company_abbr, base_url="compliance/invoices"),
@@ -65,10 +89,12 @@ def wizard_button(company_abbr):
             data=payload,
             timeout=30,
         )
-        # frappe.throw(response.status_code)
-        frappe.throw(response.text)
 
-    except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.log_error(title="Zatca invoice call failed", message=frappe.get_traceback())
-        frappe.throw("Error in Zatca invoice call: " + str(e))
-        return None
+        # Handle response
+        if response.status_code != 200:
+            frappe.throw(f"Error from ZATCA API: {response.text}")
+
+        return response.json()
+
+    except Exception as e:
+        frappe.throw(f"Error in wizard_button: {str(e)}")

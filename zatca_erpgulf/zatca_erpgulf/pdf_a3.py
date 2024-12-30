@@ -48,7 +48,7 @@ def generate_invoice_pdf(invoice, language, letterhead=None, print_format=None):
 
 def embed_file_in_pdf_1(input_pdf, xml_file, output_pdf):
     """embed the pdf file"""
-    icc_path = "/opt/zatca/frappe-bench/apps/zatca_erpgulf/zatca_erpgulf/zatca_erpgulf/sRGB.icc"
+    icc_path = frappe.local.site + "/private/files/sRGB.icc"
     # frappe.throw(icc_path)
     with pikepdf.open(input_pdf, allow_overwriting_input=True) as pdf:
         # Open metadata for editing
