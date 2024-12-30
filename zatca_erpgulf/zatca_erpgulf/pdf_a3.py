@@ -224,14 +224,16 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
                 {
                     "doctype": "File",
                     "file_url": "/private/files/PDF-A3 " + invoice_name + " output.pdf",
+                    "attached_to_doctype": "Sales Invoice",
+                    "attached_to_name": invoice_name,
                     "is_private": 1,  # Make the file private
                 }
             )
         file_doc.insert(ignore_permissions=True)
         # frappe.msgprint(f"XML successfully embedded into: {input_pdf}")
         # frappe.throw(file_doc.file_url)
-        # return get_url(file_doc.file_url)
-        return "/private/files/PDF-A3 " + invoice_name + " output.pdf"
+        return get_url(file_doc.file_url)
+
     except pikepdf.PdfError as e:
         frappe.msgprint(f"Error processing the PDF: {e}")
     except FileNotFoundError as e:
