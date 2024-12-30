@@ -147,6 +147,7 @@ frappe.ui.form.on("Sales Invoice", {
                         callback: function (r) {
                             if (r.message) {
                                 // Open the generated PDF in a new tab
+                                console.log(r.message)
                                 const pdf_url = r.message;
                                 window.open(pdf_url, '_blank');
                                 frappe.call({

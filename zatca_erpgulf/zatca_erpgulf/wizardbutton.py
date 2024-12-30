@@ -4,6 +4,7 @@ import json
 import base64
 import requests
 import frappe
+import lxml.etree as ET
 
 
 def get_api_url(company_abbr, base_url):
@@ -29,14 +30,15 @@ def get_api_url(company_abbr, base_url):
 def wizard_button(company_abbr, button):
     """Compliance check for ZATCA based on file type and company abbreviation."""
     try:
+        app_path = frappe.get_app_path("zatca_erpgulf")
         # Map buttons to their corresponding XML file paths
         button_file_mapping = {
-            "simplified_invoice_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifiedinvoice.xml.xml",
-            "standard_invoice_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard invoice.xml",
-            "simplified_credit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplifeild credit note.xml.xml",
-            "standard_credit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard credit note.xml.xml",
-            "simplified_debit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/simplified debit note.xml.xml",
-            "standard_debit_note_button": "/opt/zatca/frappe-bench/apps/zatca_erpgulf/standard debit note.xml.xml",
+            "simplified_invoice_button": app_path + "/simplifeid invoice.xml",
+            "standard_invoice_button": app_path + "/standard invoice.xml",
+            "simplified_credit_note_button": app_path + "/simplifeild credit note.xml",
+            "standard_credit_note_button": app_path + "/standard credit note.xml",
+            "simplified_debit_note_button": app_path + "/simplified debit note.xml",
+            "standard_debit_note_button": app_path + "/standard debit note.xml",
         }
 
         # Determine the selected XML file based on the button clicked
@@ -51,14 +53,40 @@ def wizard_button(company_abbr, button):
 
         company_doc = frappe.get_doc("Company", company_name)
 
-        # Prepare payload
-        encoded_hash = "<your_encoded_hash>"  # Replace with actual encoded hash
-        uuid1 = "<your_uuid1>"  # Replace with actual UUID
+        # Parse XML and extract encoded hash and UUID
+        namespaces = {
+            "ext": "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
+            "sig": "urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2",
+            "sac": "urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2",
+            "xades": "http://uri.etsi.org/01903/v1.3.2#",
+            "ds": "http://www.w3.org/2000/09/xmldsig#",
+            "cbc": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+        }
 
+        tree = ET.parse(signed_xml_filename)
+        root = tree.getroot()
+
+        # Extract DigestValue
+        digest_value_element = root.find(
+            "ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignedInfo/ds:Reference[@Id='invoiceSignedData']/ds:DigestValue",
+            namespaces,
+        )
+        if digest_value_element is None or not digest_value_element.text:
+            frappe.throw("DigestValue not found in the XML file.")
+        encoded_hash = digest_value_element.text.strip()
+
+        # Extract UUID
+        uuid_element = root.find("cbc:UUID", namespaces)
+        if uuid_element is None or not uuid_element.text:
+            frappe.throw("UUID not found in the XML file.")
+        uuid1 = uuid_element.text.strip()
+
+        # Read and encode the entire XML file
         with open(signed_xml_filename, "rb") as file:
             xml_content = file.read()
         xml_base64_encoded = base64.b64encode(xml_content).decode("utf-8")
 
+        # Prepare payload
         payload = json.dumps(
             {
                 "invoiceHash": encoded_hash,
