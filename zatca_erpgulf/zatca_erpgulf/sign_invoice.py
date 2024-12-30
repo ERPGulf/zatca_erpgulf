@@ -1074,3 +1074,24 @@ def zatca_background_on_submit(doc, _method=None):
             create_qr_code(sales_invoice_doc, method=None)
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(f"Error in background call: {str(e)}")
+
+
+@frappe.whitelist()
+def resubmit_invoices(invoice_numbers):
+    """Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'"""
+    if isinstance(invoice_numbers, str):
+        invoice_numbers = frappe.parse_json(invoice_numbers)
+
+    results = {}
+    for invoice_number in invoice_numbers:
+        try:
+            # Fetch the Sales Invoice document
+            sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            sales_invoice_doc.submit()
+        except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+            frappe.log_error(
+                f"Error processing Sales Invoice {invoice_number}: {str(e)}"
+            )
+            results[invoice_number] = f"Error: {str(e)}"
+
+    return results

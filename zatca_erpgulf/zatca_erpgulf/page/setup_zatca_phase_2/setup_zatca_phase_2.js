@@ -162,33 +162,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			],
 			primary_action_label: __("Start"),
 		},
-		{
-			name: "integration_type",
-			title: __("Zatca Integration Type"),
-			fields: [
-				{
-					fieldname: "integration_type",
-					label: __("Integration Type"),
-					fieldtype: "Select",
-					options: ["Simulation", "Sandbox", "Production"],
-				},
-			],
-			primary_action_label: __("Next"),
-			primary_action(values) {
-				if (!values.integration_type) {
-					frappe.msgprint({
-						title: __("Mandatory Field Missing"),
-						indicator: "red",
-						message: __("Please select an Integration Type to proceed."),
-					});
-					return;
-				}
-
-				// Your logic for moving to the next slide goes here
-				console.log("Selected Integration Type:", values.integration_type);
-			},
-
-		},
+		
 		//   {
 		// 	name: "select_company",
 		// 	title: __("Select Company"),
@@ -246,9 +220,9 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 												),
 												function () {
 													// User selected "Yes"
-													frappe.msgprint(
-														__("Proceeding to the next step.")
-													);
+													// frappe.msgprint(
+													// 	__("Proceeding to the next step.")
+													// );
 												},
 												function () {
 													// User selected "No"
@@ -307,6 +281,59 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				render_slide(slides_settings[current_slide_index]);
 			},
 		},
+		{
+			name: "integration_type",
+			title: __("Zatca Integration Type"),
+			fields: [
+				{
+					fieldname: "integration_type",
+					label: __("Integration Type"),
+					fieldtype: "Select",
+					options: ["Simulation", "Sandbox", "Production"],
+					onchange: function () {
+						const selectedIntegrationType = this.get_value();
+						if (selectedIntegrationType && selected_company) {
+							// Update the custom_select field in the selected company
+							frappe.call({
+								method: "frappe.client.set_value",
+								args: {
+									doctype: "Company",
+									name: selected_company,
+									fieldname: "custom_select",
+									value: selectedIntegrationType,
+								},
+								
+							});
+						} else if (!selected_company) {
+							frappe.msgprint({
+								title: __("Error"),
+								indicator: "red",
+								message: __("Please select a company first."),
+							});
+						}
+					},
+				},
+			],
+			primary_action_label: __("Next"),
+			primary_action(values) {
+				if (!values.integration_type) {
+					frappe.msgprint({
+						title: __("Mandatory Field Missing"),
+						indicator: "red",
+						message: __("Please select an Integration Type to proceed."),
+					});
+					return;
+				}
+		
+				// Proceed to the next slide
+				slideData[slides_settings[current_slide_index].name] = values;
+				current_slide_index++;
+				current_dialog.hide();
+				render_slide(slides_settings[current_slide_index]);
+				console.log("Selected Integration Type:", values.integration_type);
+			},
+		},
+		
 
 		{
 			name: "company_details",

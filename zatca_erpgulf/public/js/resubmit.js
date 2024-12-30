@@ -104,8 +104,9 @@ frappe.listview_settings["Sales Invoice"] = {
                 },
                 callback: function(response) {
                     if (response.message) {
-                        frappe.msgprint(__('Invoices have been resubmitted.'));
+                        // frappe.msgprint(__('Invoices have been resubmitted.'));
                         listview.refresh();
+                        listview.check_all(false);
                     } else {
                         frappe.msgprint(__('Failed to resubmit some invoices. Please check logs for details.'));
                     }
