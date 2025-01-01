@@ -289,7 +289,14 @@ def clearance_api(
             )
 
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-        production_csid = company_doc.custom_basic_auth_from_production or ""
+        if pos_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+            )
+            production_csid = zatca_settings.custom_final_auth_csid
+        else:
+            production_csid = company_doc.custom_basic_auth_from_production or ""
+        # production_csid = company_doc.custom_basic_auth_from_production or ""
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,
@@ -407,14 +414,32 @@ def clearance_api(
 
             # frappe.msgprint(msg)
             company_name = pos_invoice_doc.company
-            settings = frappe.get_doc("Company", company_name)
-            company_abbr = settings.abbr
-            if settings.custom_send_einvoice_background:
-                frappe.msgprint(msg)
+            if pos_invoice_doc.custom_zatca_pos_name:
+                if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                    frappe.msgprint(msg)
 
-            # Update PIH in the Company doctype without JSON formatting
-            company_doc.custom_pih = encoded_hash
-            company_doc.save(ignore_permissions=True)
+                    # Update PIH data without JSON formatting
+                zatca_settings.custom_pih = encoded_hash
+                zatca_settings.save(ignore_permissions=True)
+
+            else:
+                settings = frappe.get_doc("Company", company_name)
+                company_abbr = settings.abbr
+                if settings.custom_send_einvoice_background:
+                    frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                company_doc.custom_pih = encoded_hash
+                company_doc.save(ignore_permissions=True)
+
+            # settings = frappe.get_doc("Company", company_name)
+            # company_abbr = settings.abbr
+            # if settings.custom_send_einvoice_background:
+            #     frappe.msgprint(msg)
+
+            # # Update PIH in the Company doctype without JSON formatting
+            # company_doc.custom_pih = encoded_hash
+            # company_doc.save(ignore_permissions=True)
 
             # Update the POs Invoice with the UUID and status
             invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
@@ -484,7 +509,9 @@ def zatca_call(
             invoice = invoice_typecode_compliance(invoice, compliance_type)
 
         invoice = doc_reference(invoice, pos_invoice_doc, invoice_number)
-        invoice = additional_reference(invoice, company_abbr)
+        invoice = additional_reference(
+            invoice, company_abbr,pos_invoice_doc
+            )
         invoice = company_data(invoice, pos_invoice_doc)
         invoice = customer_data(invoice, pos_invoice_doc)
         invoice = delivery_and_paymentmeans(
@@ -628,7 +655,9 @@ def zatca_call_compliance(
         invoice = doc_reference_compliance(
             invoice, pos_invoice_doc, invoice_number, compliance_type
         )
-        invoice = additional_reference(invoice, company_abbr)
+        invoice = additional_reference(
+            invoice, company_abbr,pos_invoice_doc
+            )
         invoice = company_data(invoice, pos_invoice_doc)
         invoice = customer_data(invoice, pos_invoice_doc)
         invoice = delivery_and_paymentmeans_for_compliance(

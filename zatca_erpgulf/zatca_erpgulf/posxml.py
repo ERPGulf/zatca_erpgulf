@@ -361,7 +361,7 @@ def get_pih_for_company(pih_data, company_name):
         return None  # Ensures consistent return
 
 
-def additional_reference(invoice, company_abbr):
+def additional_reference(invoice, company_abbr,pos_invoice_doc):
     """Function for additional reference"""
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
@@ -385,7 +385,14 @@ def additional_reference(invoice, company_abbr):
         cbc_embeddeddocumentbinaryobject.set("mimeCode", "text/plain")
 
         # Directly retrieve the PIH data without JSON parsing
-        pih = company_doc.custom_pih  # Assuming this is already in the correct format
+        # pih = company_doc.custom_pih  # Assuming this is already in the correct format
+        if pos_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+            )
+            pih = zatca_settings.custom_pih
+        else:
+            pih = company_doc.custom_pih
 
         cbc_embeddeddocumentbinaryobject.text = pih
 

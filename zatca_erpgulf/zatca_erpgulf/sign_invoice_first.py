@@ -422,34 +422,98 @@ def create_csid(zatca_doc, company_abbr):
         return None
 
 
-def create_public_key(company_abbr):
-    """Creating public key"""
+# def create_public_key(company_abbr):
+#     """Creating public key"""
+#     try:
+#         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
+#         if not company_name:
+#             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+
+#         company_doc = frappe.get_doc("Company", company_name)
+#         certificate_data_str = company_doc.get("custom_certificate", "")
+
+#         if not certificate_data_str:
+#             frappe.throw("No certificate data found for the company.")
+#         cert_base64 = f"""
+#         -----BEGIN CERTIFICATE-----
+#         {certificate_data_str.strip()}
+#         -----END CERTIFICATE-----
+#         """
+#         cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
+#         public_key = cert.public_key()
+#         public_key_pem = public_key.public_bytes(
+#             encoding=serialization.Encoding.PEM,
+#             format=serialization.PublicFormat.SubjectPublicKeyInfo,
+#         ).decode()
+#         company_doc.custom_public_key = public_key_pem
+#         company_doc.save(ignore_permissions=True)
+
+#     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
+#         frappe.throw("error occurred while creating public key for company " + str(e))
+def create_public_key(company_abbr, source_doc=None):
+    """Create a public key based on the company abbreviation and source document."""
     try:
+        # Get the company name using the provided abbreviation
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
+        # Fetch the company document
         company_doc = frappe.get_doc("Company", company_name)
-        certificate_data_str = company_doc.get("custom_certificate", "")
+
+        # Initialize certificate_data_str based on the document type
+        certificate_data_str = ""
+        frappe.throw(source_doc)
+
+        if source_doc:
+            if source_doc.doctype == "Sales Invoice":
+                # Use certificate from the company document for Sales Invoice
+                certificate_data_str = company_doc.get("custom_certificate", "")
+            elif source_doc.doctype == "POS Invoice":
+                # Check if custom_zatca_pos_name exists in POS Invoice
+                if source_doc.custom_zatca_pos_name:
+                    # Fetch Zatca settings and use its certificate
+                    zatca_settings = frappe.get_doc(
+                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                    )
+                    certificate_data_str = zatca_settings.get("custom_certficate", "")
+                else:
+                    # Fallback to using the company document's certificate
+                    certificate_data_str = company_doc.get("custom_certificate", "")
+            else:
+                frappe.throw("Unsupported document type provided.")
 
         if not certificate_data_str:
-            frappe.throw("No certificate data found for the company.")
+            frappe.throw("No certificate data found.")
+
+        # Build the PEM certificate
         cert_base64 = f"""
         -----BEGIN CERTIFICATE-----
         {certificate_data_str.strip()}
         -----END CERTIFICATE-----
         """
+        # Load the certificate and extract the public key
         cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
         public_key = cert.public_key()
         public_key_pem = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode()
-        company_doc.custom_public_key = public_key_pem
-        company_doc.save(ignore_permissions=True)
+
+        # Save the public key to the appropriate place
+        if source_doc.doctype == "Sales Invoice":
+            company_doc.custom_public_key = public_key_pem
+            company_doc.save(ignore_permissions=True)
+        elif source_doc.doctype == "POS Invoice":
+            if source_doc.custom_zatca_pos_name:
+                zatca_settings.custom_public_key = public_key_pem
+                zatca_settings.save(ignore_permissions=True)
+            else:
+                company_doc.custom_public_key = public_key_pem
+                company_doc.save(ignore_permissions=True)
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("error occurred while creating public key for company " + str(e))
+        frappe.throw("Error occurred while creating public key: " + str(e))
 
 
 def removetags(finalzatcaxml):
@@ -1113,10 +1177,10 @@ def production_csid(zatca_doc, company_abbr):
             request_id = company_doc.custom_compliance_request_id_
 
         if not csid:
-            frappe.throw((f"CSID for company not found"))
+            frappe.throw(("CSID for company not found"))
         # request_id = company_doc.custom_compliance_request_id_
         if not request_id:
-            frappe.throw(f"Compliance request ID for company  not found")
+            frappe.throw("Compliance request ID for company  not found")
         payload = {"compliance_request_id": request_id}
 
         headers = {
