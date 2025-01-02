@@ -6,6 +6,7 @@ including the creation of UBL XML
 invoices, signing, and submission to ZATCA servers for clearance and reporting."""
 
 import base64
+import json
 import requests
 import frappe
 from zatca_erpgulf.zatca_erpgulf.posxml import (
@@ -432,16 +433,6 @@ def clearance_api(
                 company_doc.custom_pih = encoded_hash
                 company_doc.save(ignore_permissions=True)
 
-            # settings = frappe.get_doc("Company", company_name)
-            # company_abbr = settings.abbr
-            # if settings.custom_send_einvoice_background:
-            #     frappe.msgprint(msg)
-
-            # # Update PIH in the Company doctype without JSON formatting
-            # company_doc.custom_pih = encoded_hash
-            # company_doc.save(ignore_permissions=True)
-
-            # Update the POs Invoice with the UUID and status
             invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_zatca_full_response", msg, commit=True, update_modified=True
@@ -454,8 +445,6 @@ def clearance_api(
             data = response.json()
             base64_xml = data.get("clearedInvoice")
             xml_cleared = base64.b64decode(base64_xml).decode("utf-8")
-
-            # Attach the cleared XML to the POS Invoice
             file = frappe.get_doc(
                 {
                     "doctype": "File",
@@ -484,9 +473,11 @@ def zatca_call(
     compliance_type="0",
     any_item_has_tax_template=False,
     company_abbr=None,
+    source_doc=None,
 ):
     """Function for zatca call"""
     try:
+
         if not frappe.db.exists("POS Invoice", invoice_number):
             frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
 
@@ -509,9 +500,7 @@ def zatca_call(
             invoice = invoice_typecode_compliance(invoice, compliance_type)
 
         invoice = doc_reference(invoice, pos_invoice_doc, invoice_number)
-        invoice = additional_reference(
-            invoice, company_abbr,pos_invoice_doc
-            )
+        invoice = additional_reference(invoice, company_abbr, pos_invoice_doc)
         invoice = company_data(invoice, pos_invoice_doc)
         invoice = customer_data(invoice, pos_invoice_doc)
         invoice = delivery_and_paymentmeans(
@@ -549,10 +538,12 @@ def zatca_call(
         tag_removed_xml = removetags(file_content)
         canonicalized_xml = canonicalize_xml(tag_removed_xml)
         hash1, encoded_hash = getinvoicehash(canonicalized_xml)
-        encoded_signature = digital_signature(hash1, company_abbr)
-        issuer_name, serial_number = extract_certificate_details(company_abbr)
-        encoded_certificate_hash = certificate_hash(company_abbr)
-        namespaces, signing_time = signxml_modify(company_abbr)
+        encoded_signature = digital_signature(hash1, company_abbr, source_doc)
+        issuer_name, serial_number = extract_certificate_details(
+            company_abbr, source_doc
+        )
+        encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
+        namespaces, signing_time = signxml_modify(company_abbr, source_doc)
         signed_properties_base64 = generate_signed_properties_hash(
             signing_time, issuer_name, serial_number, encoded_certificate_hash
         )
@@ -562,8 +553,9 @@ def zatca_call(
             signed_properties_base64,
             encoded_hash,
             company_abbr,
+            source_doc,
         )
-        tlv_data = generate_tlv_xml(company_abbr)
+        tlv_data = generate_tlv_xml(company_abbr, source_doc)
 
         tagsbufsarray = []
         for tag_num, tag_value in tlv_data.items():
@@ -606,7 +598,11 @@ def zatca_call(
 
 @frappe.whitelist(allow_guest=False)
 def zatca_call_compliance(
-    invoice_number, company_abbr, compliance_type="0", any_item_has_tax_template=False
+    invoice_number,
+    company_abbr,
+    compliance_type="0",
+    any_item_has_tax_template=False,
+    source_doc=None,
 ):
     """Function for zatca call compliance"""
 
@@ -655,9 +651,7 @@ def zatca_call_compliance(
         invoice = doc_reference_compliance(
             invoice, pos_invoice_doc, invoice_number, compliance_type
         )
-        invoice = additional_reference(
-            invoice, company_abbr,pos_invoice_doc
-            )
+        invoice = additional_reference(invoice, company_abbr, pos_invoice_doc)
         invoice = company_data(invoice, pos_invoice_doc)
         invoice = customer_data(invoice, pos_invoice_doc)
         invoice = delivery_and_paymentmeans_for_compliance(
@@ -693,10 +687,12 @@ def zatca_call_compliance(
         tag_removed_xml = removetags(file_content)
         canonicalized_xml = canonicalize_xml(tag_removed_xml)
         hash1, encoded_hash = getinvoicehash(canonicalized_xml)
-        encoded_signature = digital_signature(hash1, company_abbr)
-        issuer_name, serial_number = extract_certificate_details(company_abbr)
-        encoded_certificate_hash = certificate_hash(company_abbr)
-        namespaces, signing_time = signxml_modify(company_abbr)
+        encoded_signature = digital_signature(hash1, company_abbr, source_doc)
+        issuer_name, serial_number = extract_certificate_details(
+            company_abbr, source_doc
+        )
+        encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
+        namespaces, signing_time = signxml_modify(company_abbr, source_doc)
         signed_properties_base64 = generate_signed_properties_hash(
             signing_time, issuer_name, serial_number, encoded_certificate_hash
         )
@@ -706,10 +702,11 @@ def zatca_call_compliance(
             signed_properties_base64,
             encoded_hash,
             company_abbr,
+            source_doc,
         )
 
         # Generate the TLV data and QR code
-        tlv_data = generate_tlv_xml(company_abbr)
+        tlv_data = generate_tlv_xml(company_abbr, source_doc)
 
         tagsbufsarray = []
         for tag_num, tag_value in tlv_data.items():
@@ -733,13 +730,17 @@ def zatca_call_compliance(
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_(invoice_number):
+def zatca_background_(invoice_number, source_doc):
     """Function for zatca background"""
     try:
+        if source_doc:
+            source_doc = frappe.get_doc(
+                json.loads(source_doc)
+            )  # Deserialize if sent as JSON
+
         pos_invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
         company_name = pos_invoice_doc.company
 
-        # Retrieve the company document to access settings
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
 
@@ -834,7 +835,9 @@ def zatca_background_(invoice_number):
             )
 
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+            zatca_call(
+                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
+            )
         else:
             create_qr_code(pos_invoice_doc, method=None)
 
@@ -847,14 +850,10 @@ def zatca_background_on_submit(doc, _method=None):
     """Function for zatca background on submit"""
 
     try:
-
+        source_doc = doc
         pos_invoice_doc = doc
         invoice_number = pos_invoice_doc.name
-
-        # Ensure the POS Invoice document is correctly loaded
         pos_invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-
-        # Retrieve the company abbreviation using the company name from the POS Invoice
         company_abbr = frappe.db.get_value(
             "Company", {"name": pos_invoice_doc.company}, "abbr"
         )
@@ -963,7 +962,9 @@ def zatca_background_on_submit(doc, _method=None):
         # Retrieve the company document to access settings
         settings = frappe.get_doc("Company", company_name)
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(invoice_number, "0", any_item_has_tax_template, company_abbr)
+            zatca_call(
+                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
+            )
         else:
             create_qr_code(pos_invoice_doc, method=None)
 

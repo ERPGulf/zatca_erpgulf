@@ -147,7 +147,8 @@ frappe.ui.form.on("Company", {
             args: {
                 "invoice_number": frm.doc.custom_sample_invoice_number_to_test,
                 "compliance_type": "1",
-                "company_abbr": frm.doc.abbr
+                "company_abbr": frm.doc.abbr,
+                "source_doc" : frm.doc,
             },
             callback: function (r) {
                 if (!r.exc) {
