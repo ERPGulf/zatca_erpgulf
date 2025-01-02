@@ -1097,9 +1097,32 @@ def zatca_background_on_submit(doc, _method=None):
         frappe.throw(f"Error in background call: {str(e)}")
 
 
+# @frappe.whitelist()
+# def resubmit_invoices(invoice_numbers):
+#     """Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'"""
+#     if isinstance(invoice_numbers, str):
+#         invoice_numbers = frappe.parse_json(invoice_numbers)
+
+#     results = {}
+#     for invoice_number in invoice_numbers:
+#         try:
+#             # Fetch the Sales Invoice document
+#             sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+#             sales_invoice_doc.submit()
+#         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+#             frappe.log_error(
+#                 f"Error processing Sales Invoice {invoice_number}: {str(e)}"
+#             )
+#             results[invoice_number] = f"Error: {str(e)}"
+
+#     return results
 @frappe.whitelist()
 def resubmit_invoices(invoice_numbers):
-    """Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'"""
+    """
+    Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'.
+    If the invoice is already submitted, call `zatca_background_on_submit`.
+    Otherwise, submit the invoice.
+    """
     if isinstance(invoice_numbers, str):
         invoice_numbers = frappe.parse_json(invoice_numbers)
 
@@ -1108,11 +1131,18 @@ def resubmit_invoices(invoice_numbers):
         try:
             # Fetch the Sales Invoice document
             sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-            sales_invoice_doc.submit()
+
+            if sales_invoice_doc.docstatus == 1:  # Check if the invoice is already submitted
+                # Call the zatca_background_on_submit function
+                zatca_background_on_submit(sales_invoice_doc)
+                # results[invoice_number] = "Already submitted, resubmitted to ZATCA."
+            else:
+                # Submit the invoice
+                sales_invoice_doc.submit()
+                # results[invoice_number] = "Invoice successfully submitted."
+
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-            frappe.log_error(
-                f"Error processing Sales Invoice {invoice_number}: {str(e)}"
-            )
-            results[invoice_number] = f"Error: {str(e)}"
+            frappe.throw(f"Error in background call: {str(e)}")
+            # Log errors and add to the results
 
     return results
