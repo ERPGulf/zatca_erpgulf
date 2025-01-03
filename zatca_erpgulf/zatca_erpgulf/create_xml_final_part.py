@@ -37,7 +37,6 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
             cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
-            # tax_amount_without_retention = round(abs(total_tax), 2)
             cbc_taxamount.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
             )
@@ -54,8 +53,6 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount.text = str(tax_amount_without_retention_sar)
-
-        # processed_tax_templates = set()
 
         # Group items by ZATCA tax category
         tax_category_totals = {}
@@ -227,7 +224,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
 
         cbc_allowancetotalamount.text = str(round(abs(sales_invoice_doc.total), 2))
-        # cbc_AllowanceTotalAmount.text = str(abs(sales_invoice_doc.get('discount_amount', 0.0)))
+        
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -323,7 +320,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
-            # taxable_amount = sales_invoice_doc.base_total
             if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 cbc_taxableamount.text = str(
                     abs(round(sales_invoice_doc.base_total, 2))

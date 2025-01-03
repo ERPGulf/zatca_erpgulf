@@ -141,7 +141,6 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 	let current_slide_index = 0;
 	let selected_company = null;
 	let current_dialog = null;
-	let new_dialog = null;
 	let slideData = {};
 
 	const slides_settings = [
@@ -447,16 +446,12 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 												},portal_type, company_abbr },
 											callback: function (response) {
 												if (response && response.message) {
-													// console.log("CSR Response:", response.message);
-									
-
 													const encodedString = response.message.trim();
 													// console.log(encodedString)
 													// frappe.msgprint(encodedString)
 													if (current_dialog) {
 														current_dialog.set_value("created_csr_config", encodedString);
 														current_dialog.refresh();
-														// frappe.msgprint(__("CSR data successfully updated in the field"));
 													} else {
 														frappe.msgprint(__("Dialog reference not found."));
 													}

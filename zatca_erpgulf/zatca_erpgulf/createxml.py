@@ -236,10 +236,6 @@ def invoice_typecode_compliance(invoice, compliance_type):
     # 6 is for compliance test. Standard Debit Note
     # frappe.throw(str("here 5 " + str(compliance_type)))
     try:
-        # cbc_InvoiceTypeCode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
-        # cbc_InvoiceTypeCode.set("name", "0200000")
-        # cbc_InvoiceTypeCode.text = "388"
-        # return invoice
 
         if compliance_type == "1":  # simplified invoice
             cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")

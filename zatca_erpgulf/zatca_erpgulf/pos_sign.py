@@ -297,7 +297,6 @@ def clearance_api(
             production_csid = zatca_settings.custom_final_auth_csid
         else:
             production_csid = company_doc.custom_basic_auth_from_production or ""
-        # production_csid = company_doc.custom_basic_auth_from_production or ""
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,

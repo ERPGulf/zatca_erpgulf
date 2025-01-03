@@ -310,7 +310,6 @@ def tax_data(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             abs(sales_invoice_doc.get("discount_amount", 0.0))
         )
-        # cbc_AllowanceTotalAmount.text = str(abs(sales_invoice_doc.get('discount_amount', 0.0)))
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -421,8 +420,6 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
             tax_amount_without_retention = round(abs(total_tax), 2)
             cbc_taxamount.text = str(tax_amount_without_retention)
-
-        # processed_tax_templates = set()
 
         # Group items by ZATCA tax category
         tax_category_totals = {}
