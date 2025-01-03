@@ -533,9 +533,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							},
 							callback: function (response) {
 								if (response && response.message) {
-									// frappe.msgprint(__("OTP saved successfully in the company document."));
-
-									// Step 2: Fetch the company abbreviation
+									
 									frappe.call({
 										method: "frappe.client.get_value",
 										args: {
@@ -574,13 +572,9 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 														},portal_type, company_abbr },
 														callback: function (response) {
 															if (response && response.message) {
-																// console.log("Response: " + JSON.stringify(response, null, 2));
-
-																// Use the response as a JSON string
+															
 																const encodedString = response.message.trim();
-																// console.log("Response: " + JSON.stringify(response, null, 2))
-																// const encodedString = response.message.trim();
-																// frappe.msgprint(__("CSID generated successfully."));
+																
 																if (current_dialog) {
 																	current_dialog.set_value("basic_auth_from_csid", encodedString);
 																	current_dialog.refresh();
@@ -620,90 +614,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			],
 			primary_action_label: __("Next"),
 		},
-		// {
-		// 	name: "zatca_compliance_check",
-		// 	title: __("Zatca Compliance Check"),
-		// 	fields: [
-		// 		{
-		// 			fieldname: "conditions_section",
-		// 			label: __("Compliance Conditions"),
-		// 			fieldtype: "Section Break",
-		// 		},
-		// 		// Dynamically generate fields for conditions
-		// 		...[
-		// 			{ fieldname: "simplified_invoice", label: "Simplified Invoice", complianceType: "1" },
-		// 			{ fieldname: "standard_invoice", label: "Standard Invoice", complianceType: "2" },
-		// 			{ fieldname: "simplified_credit_note", label: "Simplified Credit Note", complianceType: "3" },
-		// 			{ fieldname: "standard_credit_note", label: "Standard Credit Note", complianceType: "4" },
-		// 			{ fieldname: "simplified_debit_note", label: "Simplified Debit Note", complianceType: "5" },
-		// 			{ fieldname: "standard_debit_note", label: "Standard Debit Note", complianceType: "6" },
-		// 		].flatMap((condition) => [
-		// 			{
-		// 				fieldname: `${condition.fieldname}_checkbox`,
-		// 				label: __(condition.label),
-		// 				fieldtype: "Check",
-		// 			},
-		// 			{
-		// 				fieldname: `${condition.fieldname}_button`,
-		// 				label: __(condition.label),
-		// 				fieldtype: "Button",
-		// 				click: function () {
-		// 					// const invoiceValue = current_dialog.get_value("invoice_number");
-		// 					// if (!invoiceValue || invoiceValue.trim() === "") {
-		// 					// 	frappe.msgprint(__("Please enter the invoice number before proceeding."));
-		// 					// 	return;
-		// 					// }
 		
-		// 					if (!selected_company) {
-		// 						frappe.msgprint(__("Please select a company before running compliance checks."));
-		// 						return;
-		// 					}
-		
-		// 					// Fetch company abbreviation
-		// 					frappe.call({
-		// 						method: "frappe.client.get_value",
-		// 						args: {
-		// 							doctype: "Company",
-		// 							filters: { name: selected_company },
-		// 							fieldname: ["abbr"],
-		// 						},
-		// 						callback: function (res) {
-		// 							if (res && res.message) {
-		// 								const company_abbr = res.message.abbr;
-		
-		// 								// Determine the button clicked based on the condition
-		// 								const buttonClicked = `${condition.fieldname}_button`;
-		
-		// 								// Call the wizard_button Python function
-		// 								frappe.call({
-		// 									method: "zatca_erpgulf.zatca_erpgulf.wizardbutton.wizard_button",
-		// 									args: {
-		// 										company_abbr: company_abbr,
-		// 										button: buttonClicked, // Pass the corresponding button ID
-		// 									},
-		// 									callback: function (response) {
-		// 										if (response && response.message) {
-		// 											frappe.msgprint(
-		// 												__(`${condition.label}: ${JSON.stringify(response.message, null, 4)}`)
-		// 											);
-		// 										} else {
-		// 											frappe.msgprint(
-		// 												__(`${condition.label}: No response or unknown error from the API.`)
-		// 											);
-		// 										}
-		// 									},
-		// 								});
-		// 							} else {
-		// 								frappe.msgprint(__("Failed to fetch company abbreviation."));
-		// 							}
-		// 						},
-		// 					});
-		// 				},
-		// 			},
-		// 		]),
-		// 	],
-		// 	primary_action_label: __("Next"),
-		// },
 		{
 			name: "zatca_compliance_check",
 			title: __("Zatca Compliance Check"),
@@ -859,15 +770,13 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 											},company_abbr },
 											callback: function (response) {
 												if (response && response.message) {
-													// console.log("CSR Response:", response.message);
 
 													const encodedString = response.message.trim();
-													// console.log(encodedString)
-													// frappe.msgprint(encodedString)
+													
 													if (current_dialog) {
 														current_dialog.set_value("final_auth_csid", encodedString);
 														current_dialog.refresh();
-														// frappe.msgprint(__("CSR data successfully updated in the field"));
+												
 													} else {
 														frappe.msgprint(__("Dialog reference not found."));
 													}
@@ -1093,8 +1002,6 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		  csr.location.address=${city}
 		  csr.industry.business.category=${business_category}
 		`.trim();
-
-		// frappe.msgprint(csr_config.replace(/^\s+|\s+$/gm, ""));
 	}
 
 	function submit_wizard(values) {

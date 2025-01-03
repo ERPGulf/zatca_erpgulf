@@ -608,10 +608,6 @@ def item_data(invoice, sales_invoice_doc):
                 cac_invoiceline, "cbc:LineExtensionAmount"
             )
             cbc_lineextensionamount_1.set("currencyID", sales_invoice_doc.currency)
-            # if sales_invoice_doc.currency == "SAR":
-            #     cbc_LineExtensionAmount_1.text=  str(abs(single_item.base_amount))
-            # else :
-            #     cbc_LineExtensionAmount_1.text=  str(abs(single_item.amount))
 
             if sales_invoice_doc.currency == "SAR":
                 if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
@@ -890,7 +886,7 @@ def xml_structuring(invoice):
     Xml structuring and final saving of the xml into private files
     """
     try:
-        # xml_declaration = "<?xml version='1.0' encoding='UTF-8'?>\n"
+    
         tree = ET.ElementTree(invoice)
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
 

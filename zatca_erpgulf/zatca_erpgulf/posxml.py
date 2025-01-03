@@ -892,7 +892,7 @@ def tax_data(invoice, pos_invoice_doc):
                 taxable_amount_1 = pos_invoice_doc.net_total - pos_invoice_doc.get(
                     "discount_amount", 0.0
                 )
-            # tax_rate = float(pos_invoice_doc.taxes[0].rate)
+            
             tax_amount_without_retention = (
                 taxable_amount_1 * float(pos_invoice_doc.taxes[0].rate) / 100
             )

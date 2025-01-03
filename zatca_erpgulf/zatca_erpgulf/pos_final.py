@@ -482,7 +482,6 @@ def item_data_with_template(invoice, pos_invoice_doc):
             cac_price = ET.SubElement(cac_invoiceline, "cac:Price")
             cbc_priceamount = ET.SubElement(cac_price, "cbc:PriceAmount")
             cbc_priceamount.set("currencyID", pos_invoice_doc.currency)
-            # cbc_PriceAmount.text = str(abs(single_item.base_net_rate))
             company_name = pos_invoice_doc.company
             settings = frappe.get_doc("Company", company_name)
             if settings.custom_submit_line_item_discount_to_zatca != 1:
@@ -504,7 +503,7 @@ def item_data_with_template(invoice, pos_invoice_doc):
 def xml_structuring(invoice):
     """function for xml structuring"""
     try:
-        # xml_declaration = "<?xml version='1.0' encoding='UTF-8'?>\n"
+        
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
         tree = ET.ElementTree(invoice)
         with open(xml_file_path, "wb") as file:
