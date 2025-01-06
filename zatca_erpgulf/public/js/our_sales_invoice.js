@@ -243,11 +243,6 @@ frappe.ui.form.on('Sales Invoice', {
             }
         `;
         $('<style>').text(css).appendTo('head'); // Add the CSS dynamically
-
-
-
-        // Attach popovers to specific fields
-
     }
 });
 
