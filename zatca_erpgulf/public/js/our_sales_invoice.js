@@ -53,7 +53,7 @@ function getFieldContainer(context, fieldname) {
     ];
 
     for (const source of possibleSources) {
-        if (source && source[fieldname]) {
+        if (source?.[fieldname]) {
             return source[fieldname];
         }
     }
