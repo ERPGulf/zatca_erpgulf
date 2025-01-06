@@ -1,113 +1,51 @@
-// function applyTooltips(context, fieldsWithTooltips) {
-// 	fieldsWithTooltips.forEach((field) => {
-// 		let fieldContainer;
-// 		if (context.fields_dict && context.fields_dict[field.fieldname]) {
-// 			fieldContainer = context.fields_dict[field.fieldname];
-// 		}
-// 		else if (context.dialog && context.dialog.fields_dict && context.dialog.fields_dict[field.fieldname]) {
-// 			fieldContainer = context.dialog.fields_dict[field.fieldname];
-// 		}
-// 		else if (context.page) {
-// 			fieldContainer = $(context.page).find(`[data-fieldname="${field.fieldname}"]`).closest('.frappe-control');
-// 		}
-// 		if (!fieldContainer) {
-// 			console.error(`Field '${field.fieldname}' not found in the provided context.`);
-// 			return;
-// 		}
-// 		const fieldWrapper = fieldContainer.$wrapper || $(fieldContainer); // Handle both Doctype/Dialog and Page contexts
-// 		if (!fieldWrapper || fieldWrapper.length === 0) {
-// 			console.error(`Field wrapper for '${field.fieldname}' not found.`);
-// 			return;
-// 		}
-// 		let labelElement;
-// 		if (fieldWrapper.find('label').length > 0) {
-// 			labelElement = fieldWrapper.find('label').first();
-// 		} else if (fieldWrapper.find('.control-label').length > 0) {
-// 			labelElement = fieldWrapper.find('.control-label').first();
-// 		}
-// 		if (!labelElement && (context.dialog || context.page)) {
-// 			labelElement = fieldWrapper.find('.form-control').first();
-// 		}
-
-// 		if (!labelElement || labelElement.length === 0) {
-// 			console.error(`Label for field '${field.fieldname}' not found.`);
-// 			return;
-// 		}
-// 		const tooltipContainer = labelElement.next('.tooltip-container');
-// 		if (tooltipContainer.length === 0) {
-// 			const tooltip = new Tooltip({
-// 				containerClass: "tooltip-container",
-// 				tooltipClass: "custom-tooltip",
-// 				iconClass: "info-icon",
-// 				text: field.text,
-// 				links: field.links,
-// 			});
-// 			tooltip.renderTooltip(labelElement[0]);
-// 		}
-// 	});
-// }
-function getFieldContainer(context, fieldname) {
-    const possibleSources = [
-        context.fields_dict, // Check fields_dict first
-        context.dialog?.fields_dict // Check dialog.fields_dict if it exists
-    ];
-
-    for (const source of possibleSources) {
-        if (source?.[fieldname]) {
-            return source[fieldname];
-        }
-    }
-
-    if (context.page) {
-        return $(context.page).find(`[data-fieldname="${fieldname}"]`).closest('.frappe-control');
-    }
-
-    return null; // Return null if the field is not found
-}
 function applyTooltips(context, fieldsWithTooltips) {
-    fieldsWithTooltips.forEach((field) => {
-        const fieldContainer = getFieldContainer(context, field.fieldname);
+	fieldsWithTooltips.forEach((field) => {
+		let fieldContainer;
+		if (context.fields_dict?.[field.fieldname]) {
+			fieldContainer = context.fields_dict[field.fieldname];
+		}
+		else if (context.dialog?.fields_dict?.[field.fieldname]) {
+			fieldContainer = context.dialog.fields_dict[field.fieldname];
+		}
+		else if (context.page) {
+			fieldContainer = $(context.page).find(`[data-fieldname="${field.fieldname}"]`).closest('.frappe-control');
+		}
+		if (!fieldContainer) {
+			console.error(`Field '${field.fieldname}' not found in the provided context.`);
+			return;
+		}
+		const fieldWrapper = fieldContainer.$wrapper || $(fieldContainer); // Handle both Doctype/Dialog and Page contexts
+		if (!fieldWrapper || fieldWrapper.length === 0) {
+			console.error(`Field wrapper for '${field.fieldname}' not found.`);
+			return;
+		}
+		let labelElement;
+		if (fieldWrapper.find('label').length > 0) {
+			labelElement = fieldWrapper.find('label').first();
+		} else if (fieldWrapper.find('.control-label').length > 0) {
+			labelElement = fieldWrapper.find('.control-label').first();
+		}
+		if (!labelElement && (context.dialog || context.page)) {
+			labelElement = fieldWrapper.find('.form-control').first();
+		}
 
-        if (!fieldContainer) {
-            console.error(`Field '${field.fieldname}' not found in the provided context.`);
-            return;
-        }
-
-        const fieldWrapper = fieldContainer.$wrapper || $(fieldContainer); // Handle both Doctype/Dialog and Page contexts
-        if (!fieldWrapper || fieldWrapper.length === 0) {
-            console.error(`Field wrapper for '${field.fieldname}' not found.`);
-            return;
-        }
-
-        let labelElement;
-        if (fieldWrapper.find('label').length > 0) {
-            labelElement = fieldWrapper.find('label').first();
-        } else if (fieldWrapper.find('.control-label').length > 0) {
-            labelElement = fieldWrapper.find('.control-label').first();
-        }
-        if (!labelElement && (context.dialog || context.page)) {
-            labelElement = fieldWrapper.find('.form-control').first();
-        }
-
-        if (!labelElement || labelElement.length === 0) {
-            console.error(`Label for field '${field.fieldname}' not found.`);
-            return;
-        }
-
-        const tooltipContainer = labelElement.next('.tooltip-container');
-        if (tooltipContainer.length === 0) {
-            const tooltip = new Tooltip({
-                containerClass: "tooltip-container",
-                tooltipClass: "custom-tooltip",
-                iconClass: "info-icon",
-                text: field.text,
-                links: field.links,
-            });
-            tooltip.renderTooltip(labelElement[0]);
-        }
-    });
+		if (!labelElement || labelElement.length === 0) {
+			console.error(`Label for field '${field.fieldname}' not found.`);
+			return;
+		}
+		const tooltipContainer = labelElement.next('.tooltip-container');
+		if (tooltipContainer.length === 0) {
+			const tooltip = new Tooltip({
+				containerClass: "tooltip-container",
+				tooltipClass: "custom-tooltip",
+				iconClass: "info-icon",
+				text: field.text,
+				links: field.links,
+			});
+			tooltip.renderTooltip(labelElement[0]);
+		}
+	});
 }
-
 frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 	const unifiedTooltips = [
 		{
