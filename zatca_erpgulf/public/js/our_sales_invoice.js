@@ -4,7 +4,7 @@ function applyTooltips(context, fieldsWithTooltips) {
         if (context.fields_dict?.[field.fieldname]) { // Use optional chaining
             fieldContainer = context.fields_dict[field.fieldname];
         }
-        else if (context.dialog && context.dialog.fields_dict && context.dialog.fields_dict[field.fieldname]) {
+        else if (context.dialog?.fields_dict?.[field.fieldname]) {
             fieldContainer = context.dialog.fields_dict[field.fieldname];
         }
         else if (context.page) {
