@@ -244,7 +244,24 @@ frappe.ui.form.on('Sales Invoice', {
         `;
         $('<style>').text(css).appendTo('head'); // Add the CSS dynamically
 
-        
+        // Attach popover to the "subject" field
+        const attachPopover = (fieldname, title, body) => {
+            setTimeout(() => {
+                $(`[data-fieldname="${fieldname}"]`).popover({
+                    trigger: 'hover',
+                    placement: 'top',
+                    content: `
+                        <div class="popover-content">
+                            <h4 class="popover-title">${title}</h4>
+                            <p class="popover-body">${body}</p>
+                        </div>
+                    `,
+                    html: true
+                });
+            }, 500);
+        };
+
+        // Attach popovers to specific fields
 
     }
 });
