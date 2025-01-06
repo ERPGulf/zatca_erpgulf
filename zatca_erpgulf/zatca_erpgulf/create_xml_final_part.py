@@ -11,7 +11,7 @@ from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
-
+ITEM_TAX_TEMPLATE = "Item Tax Template"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -59,7 +59,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
         for item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", item.item_tax_template
+                ITEM_TAX_TEMPLATE, item.item_tax_template
             )
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
 
@@ -90,7 +90,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
         for item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", item.item_tax_template
+                ITEM_TAX_TEMPLATE, item.item_tax_template
             )
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
 
@@ -517,7 +517,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                     round(abs(sales_invoice_doc.discount_amount), 2)
                 )
 
-        # cbc_AllowanceTotalAmount.text = str(abs(sales_invoice_doc.get('discount_amount', 0.0)))
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -789,7 +788,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
     try:
         for single_item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", single_item.item_tax_template
+                ITEM_TAX_TEMPLATE, single_item.item_tax_template
             )
             item_tax_percentage = (
                 item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
