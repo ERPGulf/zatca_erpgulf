@@ -67,7 +67,7 @@ function getFieldContainer(context, fieldname) {
 function applyTooltips(context, fieldsWithTooltips) {
     fieldsWithTooltips.forEach((field) => {
         const fieldContainer = getFieldContainer(context, field.fieldname);
-        
+
         if (!fieldContainer) {
             console.error(`Field '${field.fieldname}' not found in the provided context.`);
             return;
@@ -79,11 +79,15 @@ function applyTooltips(context, fieldsWithTooltips) {
             return;
         }
 
-        let labelElement = fieldWrapper.find('label').length > 0
-            ? fieldWrapper.find('label').first()
-            : fieldWrapper.find('.control-label').length > 0
-            ? fieldWrapper.find('.control-label').first()
-            : fieldWrapper.find('.form-control').first();
+        let labelElement;
+        if (fieldWrapper.find('label').length > 0) {
+            labelElement = fieldWrapper.find('label').first();
+        } else if (fieldWrapper.find('.control-label').length > 0) {
+            labelElement = fieldWrapper.find('.control-label').first();
+        }
+        if (!labelElement && (context.dialog || context.page)) {
+            labelElement = fieldWrapper.find('.form-control').first();
+        }
 
         if (!labelElement || labelElement.length === 0) {
             console.error(`Label for field '${field.fieldname}' not found.`);
@@ -303,21 +307,21 @@ frappe.ui.form.on('Sales Invoice', {
         $('<style>').text(css).appendTo('head'); // Add the CSS dynamically
 
         // Attach popover to the "subject" field
-        const attachPopover = (fieldname, title, body) => {
-            setTimeout(() => {
-                $(`[data-fieldname="${fieldname}"]`).popover({
-                    trigger: 'hover',
-                    placement: 'top',
-                    content: `
-                        <div class="popover-content">
-                            <h4 class="popover-title">${title}</h4>
-                            <p class="popover-body">${body}</p>
-                        </div>
-                    `,
-                    html: true
-                });
-            }, 500);
-        };
+        // const attachPopover = (fieldname, title, body) => {
+        //     setTimeout(() => {
+        //         $(`[data-fieldname="${fieldname}"]`).popover({
+        //             trigger: 'hover',
+        //             placement: 'top',
+        //             content: `
+        //                 <div class="popover-content">
+        //                     <h4 class="popover-title">${title}</h4>
+        //                     <p class="popover-body">${body}</p>
+        //                 </div>
+        //             `,
+        //             html: true
+        //         });
+        //     }, 500);
+        // };
 
         // Attach popovers to specific fields
 
