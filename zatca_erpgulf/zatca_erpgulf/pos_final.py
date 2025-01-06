@@ -18,6 +18,7 @@ from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_tax_for_item,
     add_line_item_discount,
 )
+ITEM_TAX_TEMPLATE = "Item Tax Template"
 
 
 def tax_data_with_template(invoice, pos_invoice_doc):
@@ -27,7 +28,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         tax_category_totals = {}
         for item in pos_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", item.item_tax_template
+                ITEM_TAX_TEMPLATE, item.item_tax_template
             )
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
 
@@ -105,7 +106,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         tax_category_totals = {}
         for item in pos_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", item.item_tax_template
+                ITEM_TAX_TEMPLATE, item.item_tax_template
             )
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
 
@@ -136,7 +137,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
 
         for item in pos_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", item.item_tax_template
+                ITEM_TAX_TEMPLATE, item.item_tax_template
             )
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
 
@@ -415,7 +416,7 @@ def item_data_with_template(invoice, pos_invoice_doc):
     try:
         for single_item in pos_invoice_doc.items:
             item_tax_template = frappe.get_doc(
-                "Item Tax Template", single_item.item_tax_template
+                ITEM_TAX_TEMPLATE, single_item.item_tax_template
             )
             item_tax_percentage = (
                 item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
