@@ -1,10 +1,10 @@
 function applyTooltips(context, fieldsWithTooltips) {
 	fieldsWithTooltips.forEach((field) => {
 		let fieldContainer;
-		if (context.fields_dict?.[field.fieldname]) {
+		if (context.fields_dict && context.fields_dict[field.fieldname]) {
 			fieldContainer = context.fields_dict[field.fieldname];
 		}
-		else if (context.dialog?.fields_dict?.[field.fieldname]) {
+		else if (context.dialog && context.dialog.fields_dict && context.dialog.fields_dict[field.fieldname]) {
 			fieldContainer = context.dialog.fields_dict[field.fieldname];
 		}
 		else if (context.page) {
