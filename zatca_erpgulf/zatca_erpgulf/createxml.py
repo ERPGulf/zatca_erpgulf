@@ -10,7 +10,7 @@ import frappe
 from frappe.utils.data import get_time
 CBC_ID = "cbc:ID"
 DS_TRANSFORM = "ds:Transform"
-XPATH_ALGORITHM_URL = "http://www.w3.org/TR/1999/REC-xpath-19991116"
+
 
 def get_icv_code(invoice_number):
     """
@@ -130,15 +130,15 @@ def xml_tags():
         reference.set("URI", "")
         transforms = ET.SubElement(reference, "ds:Transforms")
         transform = ET.SubElement(transforms, DS_TRANSFORM)
-        transform.set("Algorithm", XPATH_ALGORITHM_URL)
+        transform.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
         xpath = ET.SubElement(transform, "ds:XPath")
         xpath.text = "not(//ancestor-or-self::ext:UBLExtensions)"
         transform2 = ET.SubElement(transforms, DS_TRANSFORM)
-        transform2.set("Algorithm", XPATH_ALGORITHM_URL)
+        transform2.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
         xpath2 = ET.SubElement(transform2, "ds:XPath")
         xpath2.text = "not(//ancestor-or-self::cac:Signature)"
         transform3 = ET.SubElement(transforms, DS_TRANSFORM)
-        transform3.set("Algorithm", XPATH_ALGORITHM_URL)
+        transform3.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
         xpath3 = ET.SubElement(transform3, "ds:XPath")
         xpath3.text = (
             "not(//ancestor-or-self::cac:AdditionalDocumentReference[cbc:ID='QR'])"
