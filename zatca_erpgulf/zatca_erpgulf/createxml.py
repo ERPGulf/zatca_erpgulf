@@ -8,6 +8,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import frappe
 from frappe.utils.data import get_time
+CBC_ID = "cbc:ID"
 
 
 def get_icv_code(invoice_number):
@@ -47,7 +48,7 @@ def billing_reference_for_credit_and_debit_note(invoice, sales_invoice_doc):
         cac_invoicedocumentreference = ET.SubElement(
             cac_billingreference, "cac:InvoiceDocumentReference"
         )
-        cbc_id13 = ET.SubElement(cac_invoicedocumentreference, "cbc:ID")
+        cbc_id13 = ET.SubElement(cac_invoicedocumentreference, CBC_ID)
         cbc_id13.text = (
             sales_invoice_doc.return_against
         )  # field from return against invoice.
@@ -103,7 +104,7 @@ def xml_tags():
         signature_information = ET.SubElement(
             ubl_document_signatures, "sac:SignatureInformation"
         )
-        invoice_id = ET.SubElement(signature_information, "cbc:ID")
+        invoice_id = ET.SubElement(signature_information, CBC_ID)
         invoice_id.text = "urn:oasis:names:specification:ubl:signature:1"
         referenced_signatureid = ET.SubElement(
             signature_information, "sbc:ReferencedSignatureID"
@@ -203,7 +204,7 @@ def salesinvoice_data(invoice, invoice_number):
         cbc_profile_id = ET.SubElement(invoice, "cbc:ProfileID")
         cbc_profile_id.text = "reporting:1.0"
 
-        cbc_id = ET.SubElement(invoice, "cbc:ID")
+        cbc_id = ET.SubElement(invoice, CBC_ID)
         cbc_id.text = str(sales_invoice_doc.name)
 
         cbc_uuid = ET.SubElement(invoice, "cbc:UUID")
@@ -348,7 +349,7 @@ def doc_reference(invoice, sales_invoice_doc, invoice_number):
         cac_additionaldocumentreference = ET.SubElement(
             invoice, "cac:AdditionalDocumentReference"
         )
-        cbc_id_1 = ET.SubElement(cac_additionaldocumentreference, "cbc:ID")
+        cbc_id_1 = ET.SubElement(cac_additionaldocumentreference, CBC_ID)
         cbc_id_1.text = "ICV"
         cbc_uuid_1 = ET.SubElement(cac_additionaldocumentreference, "cbc:UUID")
         cbc_uuid_1.text = str(get_icv_code(invoice_number))
@@ -376,13 +377,13 @@ def doc_reference_compliance(
             cac_invoicedocumentreference = ET.SubElement(
                 cac_billingreference, "cac:InvoiceDocumentReference"
             )
-            cbc_id13 = ET.SubElement(cac_invoicedocumentreference, "cbc:ID")
+            cbc_id13 = ET.SubElement(cac_invoicedocumentreference, CBC_ID)
             cbc_id13.text = "6666666"  # field from return against invoice.
 
         cac_additionaldocumentreference = ET.SubElement(
             invoice, "cac:AdditionalDocumentReference"
         )
-        cbc_id_1 = ET.SubElement(cac_additionaldocumentreference, "cbc:ID")
+        cbc_id_1 = ET.SubElement(cac_additionaldocumentreference, CBC_ID)
         cbc_id_1.text = "ICV"
         cbc_uuid_1 = ET.SubElement(cac_additionaldocumentreference, "cbc:UUID")
         cbc_uuid_1.text = str(get_icv_code(invoice_number))
@@ -427,7 +428,7 @@ def additional_reference(invoice, company_abbr):
         cac_additionaldocumentreference2 = ET.SubElement(
             invoice, "cac:AdditionalDocumentReference"
         )
-        cbc_id_1_1 = ET.SubElement(cac_additionaldocumentreference2, "cbc:ID")
+        cbc_id_1_1 = ET.SubElement(cac_additionaldocumentreference2, CBC_ID)
         cbc_id_1_1.text = "PIH"
         cac_attachment = ET.SubElement(
             cac_additionaldocumentreference2, "cac:Attachment"
@@ -446,7 +447,7 @@ def additional_reference(invoice, company_abbr):
         cac_additionaldocumentreference22 = ET.SubElement(
             invoice, "cac:AdditionalDocumentReference"
         )
-        cbc_id_1_12 = ET.SubElement(cac_additionaldocumentreference22, "cbc:ID")
+        cbc_id_1_12 = ET.SubElement(cac_additionaldocumentreference22, CBC_ID)
         cbc_id_1_12.text = "QR"
         cac_attachment22 = ET.SubElement(
             cac_additionaldocumentreference22, "cac:Attachment"
@@ -459,7 +460,7 @@ def additional_reference(invoice, company_abbr):
             "GsiuvGjvchjbFhibcDhjv1886G"  # Example QR code
         )
         cac_sign = ET.SubElement(invoice, "cac:Signature")
-        cbc_id_sign = ET.SubElement(cac_sign, "cbc:ID")
+        cbc_id_sign = ET.SubElement(cac_sign, CBC_ID)
         cbc_method_sign = ET.SubElement(cac_sign, "cbc:SignatureMethod")
         cbc_id_sign.text = "urn:oasis:names:specification:ubl:signature:Invoice"
         cbc_method_sign.text = "urn:oasis:names:specification:ubl:dsig:enveloped:xades"
@@ -484,7 +485,7 @@ def company_data(invoice, sales_invoice_doc):
         )
         cac_party_1 = ET.SubElement(cac_accountingsupplierparty, "cac:Party")
         cac_partyidentification = ET.SubElement(cac_party_1, "cac:PartyIdentification")
-        cbc_id_2 = ET.SubElement(cac_partyidentification, "cbc:ID")
+        cbc_id_2 = ET.SubElement(cac_partyidentification, CBC_ID)
         cbc_id_2.set("schemeID", "CRN")
         cbc_id_2.text = company_doc.custom_company_registration
 
@@ -539,7 +540,7 @@ def company_data(invoice, sales_invoice_doc):
         cbc_companyid.text = company_doc.tax_id
         # frappe.throw(f"Company Tax ID set to: {cbc_CompanyID.text}")
         cac_taxscheme = ET.SubElement(cac_partytaxscheme, "cac:TaxScheme")
-        cbc_id_3 = ET.SubElement(cac_taxscheme, "cbc:ID")
+        cbc_id_3 = ET.SubElement(cac_taxscheme, CBC_ID)
         cbc_id_3.text = "VAT"
         # frappe.throw(f"Tax Scheme ID set to: {cbc_ID_3.text}")
         cac_partylegalentity = ET.SubElement(cac_party_1, "cac:PartyLegalEntity")
@@ -567,7 +568,7 @@ def customer_data(invoice, sales_invoice_doc):
         cac_partyidentification_1 = ET.SubElement(
             cac_party_2, "cac:PartyIdentification"
         )
-        cbc_id_4 = ET.SubElement(cac_partyidentification_1, "cbc:ID")
+        cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
         cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
         cbc_id_4.text = customer_doc.custom_buyer_id
 
@@ -638,7 +639,7 @@ def customer_data(invoice, sales_invoice_doc):
 
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
         cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
-        cbc_id_5 = ET.SubElement(cac_taxscheme_1, "cbc:ID")
+        cbc_id_5 = ET.SubElement(cac_taxscheme_1, CBC_ID)
         cbc_id_5.text = "VAT"
         cac_partylegalentity_1 = ET.SubElement(cac_party_2, "cac:PartyLegalEntity")
         cbc_registrationname_1 = ET.SubElement(
@@ -752,7 +753,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
             cbc_amount.text = f"{discount_amount:.2f}"
 
         cac_tax_category = ET.SubElement(cac_allowance_charge, "cac:TaxCategory")
-        cbc_id = ET.SubElement(cac_tax_category, "cbc:ID")
+        cbc_id = ET.SubElement(cac_tax_category, CBC_ID)
         if sales_invoice_doc.custom_zatca_tax_category == "Standard":
             cbc_id.text = "S"
         elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
@@ -769,7 +770,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
         cbc_percent.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
 
         cac_tax_scheme = ET.SubElement(cac_tax_category, "cac:TaxScheme")
-        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, "cbc:ID")
+        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, CBC_ID)
         cbc_tax_scheme_id.text = "VAT"
 
         return invoice
@@ -825,7 +826,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
 
         # Tax Category Section
         cac_tax_category = ET.SubElement(cac_allowance_charge, "cac:TaxCategory")
-        cbc_id = ET.SubElement(cac_tax_category, "cbc:ID")
+        cbc_id = ET.SubElement(cac_tax_category, CBC_ID)
 
         vat_category_code = "Standard"
         tax_percentage = 0.0
@@ -860,7 +861,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
         cbc_percent.text = f"{tax_percentage:.2f}"
 
         cac_tax_scheme = ET.SubElement(cac_tax_category, "cac:TaxScheme")
-        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, "cbc:ID")
+        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, CBC_ID)
         cbc_tax_scheme_id.text = "VAT"
 
         return invoice
@@ -947,7 +948,7 @@ def add_nominal_discount_tax(invoice, sales_invoice_doc):
             cbc_amount.text = f"{discount_amount:.2f}"
 
         cac_tax_category = ET.SubElement(cac_allowance_charge, "cac:TaxCategory")
-        cbc_id = ET.SubElement(cac_tax_category, "cbc:ID")
+        cbc_id = ET.SubElement(cac_tax_category, CBC_ID)
         cbc_id.text = "O"
 
         cbc_percent = ET.SubElement(cac_tax_category, "cbc:Percent")
@@ -964,7 +965,7 @@ def add_nominal_discount_tax(invoice, sales_invoice_doc):
         cbc_tax_exemption_reason.text = "Special discount offer"
 
         cac_tax_scheme = ET.SubElement(cac_tax_category, "cac:TaxScheme")
-        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, "cbc:ID")
+        cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, CBC_ID)
         cbc_tax_scheme_id.text = "VAT"
 
         return invoice

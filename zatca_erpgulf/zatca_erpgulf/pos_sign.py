@@ -61,6 +61,8 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
 
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
 " all items must have an Item Tax Template."
+
+
 def reporting_api(
     uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_invoice_doc
 ):
@@ -642,9 +644,7 @@ def zatca_call_compliance(
         if any_item_has_tax_template and not all(
             item.item_tax_template for item in pos_invoice_doc.items
         ):
-            frappe.throw(
-                ITEM_TAX_TEMPLATE_WARNING
-            )
+            frappe.throw(ITEM_TAX_TEMPLATE_WARNING)
 
         invoice = invoice_typecode_compliance(invoice, compliance_type)
         invoice = doc_reference_compliance(
@@ -749,9 +749,7 @@ def zatca_background_(invoice_number, source_doc):
         if any_item_has_tax_template and not all(
             item.item_tax_template for item in pos_invoice_doc.items
         ):
-            frappe.throw(
-                ITEM_TAX_TEMPLATE_WARNING
-            )
+            frappe.throw(ITEM_TAX_TEMPLATE_WARNING)
 
         pos_profile = pos_invoice_doc.pos_profile
         if not pos_profile:
@@ -870,9 +868,7 @@ def zatca_background_on_submit(doc, _method=None):
         if any_item_has_tax_template:
             for item in pos_invoice_doc.items:
                 if not item.item_tax_template:
-                    frappe.throw(
-                       ITEM_TAX_TEMPLATE_WARNING
-                    )
+                    frappe.throw(ITEM_TAX_TEMPLATE_WARNING)
 
         pos_profile = pos_invoice_doc.pos_profile
         if not pos_profile:
