@@ -9,7 +9,8 @@ import xml.etree.ElementTree as ET
 import frappe
 from frappe.utils.data import get_time
 CBC_ID = "cbc:ID"
-
+DS_TRANSFORM = "ds:Transform"
+XPATH_ALGORITHM_URL = "http://www.w3.org/TR/1999/REC-xpath-19991116"
 
 def get_icv_code(invoice_number):
     """
@@ -128,21 +129,21 @@ def xml_tags():
         reference.set("Id", "invoiceSignedData")
         reference.set("URI", "")
         transforms = ET.SubElement(reference, "ds:Transforms")
-        transform = ET.SubElement(transforms, "ds:Transform")
-        transform.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
+        transform = ET.SubElement(transforms, DS_TRANSFORM)
+        transform.set("Algorithm", XPATH_ALGORITHM_URL)
         xpath = ET.SubElement(transform, "ds:XPath")
         xpath.text = "not(//ancestor-or-self::ext:UBLExtensions)"
-        transform2 = ET.SubElement(transforms, "ds:Transform")
-        transform2.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
+        transform2 = ET.SubElement(transforms, DS_TRANSFORM)
+        transform2.set("Algorithm", XPATH_ALGORITHM_URL)
         xpath2 = ET.SubElement(transform2, "ds:XPath")
         xpath2.text = "not(//ancestor-or-self::cac:Signature)"
-        transform3 = ET.SubElement(transforms, "ds:Transform")
-        transform3.set("Algorithm", "http://www.w3.org/TR/1999/REC-xpath-19991116")
+        transform3 = ET.SubElement(transforms, DS_TRANSFORM)
+        transform3.set("Algorithm", XPATH_ALGORITHM_URL)
         xpath3 = ET.SubElement(transform3, "ds:XPath")
         xpath3.text = (
             "not(//ancestor-or-self::cac:AdditionalDocumentReference[cbc:ID='QR'])"
         )
-        transform4 = ET.SubElement(transforms, "ds:Transform")
+        transform4 = ET.SubElement(transforms, DS_TRANSFORM)
         transform4.set("Algorithm", "http://www.w3.org/2006/12/xml-c14n11")
         diges_method = ET.SubElement(reference, "ds:DigestMethod")
         diges_method.set("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256")
