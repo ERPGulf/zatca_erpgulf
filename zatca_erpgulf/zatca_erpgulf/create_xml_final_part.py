@@ -18,6 +18,7 @@ CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
 ZERO_RATED = "Zero Rated"
 OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
+CBC_PERCENT = "cbc:Percent"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -147,7 +148,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             ):
                 cbc_id_8.text = "O"
 
-            cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
+            cbc_percent_1 = ET.SubElement(cac_taxcategory_1, CBC_PERCENT)
             cbc_percent_1.text = (
                 f"{item_tax_template.taxes[0].tax_rate:.2f}"
                 if item_tax_template.taxes
@@ -186,7 +187,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_id_9 = ET.SubElement(cac_taxcategory_2, "cbc:ID")
         cbc_id_9.text = "O"
 
-        cbc_percent_2 = ET.SubElement(cac_taxcategory_2, "cbc:Percent")
+        cbc_percent_2 = ET.SubElement(cac_taxcategory_2, CBC_PERCENT)
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
@@ -413,7 +414,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         ):
             cbc_id_8.text = "O"
 
-        cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
+        cbc_percent_1 = ET.SubElement(cac_taxcategory_1, CBC_PERCENT)
         cbc_percent_1.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
 
         # Exemption Reason (if applicable)
@@ -458,7 +459,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cbc_id_9 = ET.SubElement(cac_taxcategory_2, "cbc:ID")
         cbc_id_9.text = "O"
 
-        cbc_percent_2 = ET.SubElement(cac_taxcategory_2, "cbc:Percent")
+        cbc_percent_2 = ET.SubElement(cac_taxcategory_2, CBC_PERCENT)
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
@@ -474,8 +475,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, "cac:TaxScheme")
         cbc_id_10 = ET.SubElement(cac_taxscheme_2, "cbc:ID")
         cbc_id_10.text = "VAT"
-
-        # Legal Monetary Total (adjust for both SAR and USD)
         cac_legalmonetarytotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
         cbc_lineextensionamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:LineExtensionAmount"
@@ -686,7 +685,7 @@ def item_data(invoice, sales_invoice_doc):
                 == OUTSIDE_SCOPE
             ):
                 cbc_id_11.text = "O"
-            cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
+            cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, CBC_PERCENT)
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
@@ -850,7 +849,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             ):
                 cbc_id_11.text = "O"
 
-            cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
+            cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, CBC_PERCENT)
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
 
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
