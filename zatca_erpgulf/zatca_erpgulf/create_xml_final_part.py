@@ -18,7 +18,6 @@ CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
 ZERO_RATED = "Zero Rated"
 OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
-CBC_TAX_EXEMPTION_REASON_CODE = "cbc:TaxExemptionReasonCode"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -157,7 +156,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
             if zatca_tax_category != "Standard":
                 cbc_taxexemptionreasoncode = ET.SubElement(
-                    cac_taxcategory_1, CBC_TAX_EXEMPTION_REASON_CODE
+                    cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
                 )
                 cbc_taxexemptionreasoncode.text = totals["exemption_reason_code"]
                 cbc_taxexemptionreason = ET.SubElement(
@@ -191,7 +190,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
-            cac_taxcategory_2, CBC_TAX_EXEMPTION_REASON_CODE
+            cac_taxcategory_2, "cbc:TaxExemptionReasonCode"
         )
         cbc_taxexemptionreasoncode.text = "VATEX-SA-OOS"
 
@@ -421,7 +420,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         exemption_reason_map = get_exemption_reason_map()
         if sales_invoice_doc.custom_zatca_tax_category != "Standard":
             cbc_taxexemptionreasoncode = ET.SubElement(
-                cac_taxcategory_1, CBC_TAX_EXEMPTION_REASON_CODE
+                cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
             )
             cbc_taxexemptionreasoncode.text = (
                 sales_invoice_doc.custom_exemption_reason_code
@@ -463,7 +462,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
-            cac_taxcategory_2, CBC_TAX_EXEMPTION_REASON_CODE
+            cac_taxcategory_2, "cbc:TaxExemptionReasonCode"
         )
         cbc_taxexemptionreasoncode.text = "VATEX-SA-OOS"
 
@@ -596,6 +595,7 @@ def item_data(invoice, sales_invoice_doc):
     The function defines the xml creating without item tax template
     """
     try:
+        qty = "cbc:BaseQuantity"
         for single_item in sales_invoice_doc.items:
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
                 sales_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
@@ -732,7 +732,7 @@ def item_data(invoice, sales_invoice_doc):
                     if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                         cbc_priceamount.text = str(abs(single_item.rate))
                         cbc_basequantity = ET.SubElement(
-                            cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                            cac_price, qty, unitCode=str(single_item.uom)
                         )
                         cbc_basequantity.text = "1"
                         add_line_item_discount(
@@ -750,7 +750,7 @@ def item_data(invoice, sales_invoice_doc):
                             )
                         )
                         cbc_basequantity = ET.SubElement(
-                            cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                            cac_price, qty, unitCode=str(single_item.uom)
                         )
                         cbc_basequantity.text = "1"
                         add_line_item_discount(
@@ -791,6 +791,7 @@ def custom_round(value):
 def item_data_with_template(invoice, sales_invoice_doc):
     """The defining of xml item data according to the item tax template datas and feilds"""
     try:
+        qty = "cbc:BaseQuantity"
         for single_item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
                 ITEM_TAX_TEMPLATE, single_item.item_tax_template
@@ -874,7 +875,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     # Discount submission to ZATCA
                     cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
                     cbc_basequantity = ET.SubElement(
-                        cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                        cac_price, qty, unitCode=str(single_item.uom)
                     )
                     cbc_basequantity.text = "1"
                     add_line_item_discount(cac_price, single_item, sales_invoice_doc)
