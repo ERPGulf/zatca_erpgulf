@@ -16,6 +16,7 @@ CAC_TAX_TOTAL = "cac:TaxTotal"
 CBC_TAX_AMOUNT = "cbc:TaxAmount"
 CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
+ZERO_RATED = "Zero Rated"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -135,7 +136,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_id_8.text = "S"
-            elif zatca_tax_category == "Zero Rated":
+            elif zatca_tax_category == ZERO_RATED:
                 cbc_id_8.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_8.text = "E"
@@ -273,8 +274,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                     )
                 )
                 total_line_extension += round(line_extension_amount, 2)
-
-            # Calculate the difference between total line extension and discount amount
             discount_amount = abs(round(sales_invoice_doc.discount_amount, 2))
             difference = difference = abs(
                 round(discount_amount - total_line_extension, 2)
@@ -403,7 +402,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
         if sales_invoice_doc.custom_zatca_tax_category == "Standard":
             cbc_id_8.text = "S"
-        elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+        elif sales_invoice_doc.custom_zatca_tax_category == ZERO_RATED:
             cbc_id_8.text = "Z"
         elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
             cbc_id_8.text = "E"
@@ -677,7 +676,7 @@ def item_data(invoice, sales_invoice_doc):
             cbc_id_11 = ET.SubElement(cac_classifiedtaxcategory, "cbc:ID")
             if sales_invoice_doc.custom_zatca_tax_category == "Standard":
                 cbc_id_11.text = "S"
-            elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+            elif sales_invoice_doc.custom_zatca_tax_category == ZERO_RATED:
                 cbc_id_11.text = "Z"
             elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
@@ -840,7 +839,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_id_11.text = "S"
-            elif zatca_tax_category == "Zero Rated":
+            elif zatca_tax_category == ZERO_RATED:
                 cbc_id_11.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
