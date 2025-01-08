@@ -12,18 +12,24 @@ from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_exemption_reason_map,
 )
 ITEM_TAX_TEMPLATE = "Item Tax Template"
+CAC_TAX_TOTAL = "cac:TaxTotal"
+CBC_TAX_AMOUNT = "cbc:TaxAmount"
+CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
+CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
+ZERO_RATED = "Zero Rated"
+OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
-    Adding tax data of nominal invoices which having
+    Adding tax data of nominal  invoices which  having
     item tax template
     """
     try:
 
         # For SAR currency
         if sales_invoice_doc.currency == "SAR":
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_sar.set(
                 "currencyID", "SAR"
             )  # SAR is as ZATCA requires tax amount in SAR
@@ -34,23 +40,23 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             )
             cbc_taxamount_sar.text = str(round(tax_amount_without_retention_sar, 2))
 
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
             )
         else:
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_sar.set("currencyID", sales_invoice_doc.currency)
             tax_amount_without_retention_sar = (
                 sales_invoice_doc.total * float(sales_invoice_doc.taxes[0].rate) / 100
             )
             cbc_taxamount_sar.text = str(tax_amount_without_retention_sar)
 
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount.text = str(tax_amount_without_retention_sar)
 
@@ -114,12 +120,14 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
         # Create XML elements for each ZATCA tax category
         for zatca_tax_category, totals in tax_category_totals.items():
-            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
-            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
+            cbc_taxableamount = ET.SubElement(
+                cac_taxsubtotal, CBC_TAXABLE_AMOUNT
+            )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxableamount.text = str(abs(round(sales_invoice_doc.base_total, 2)))
 
-            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount_2.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
@@ -131,13 +139,13 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_id_8.text = "S"
-            elif zatca_tax_category == "Zero Rated":
+            elif zatca_tax_category == ZERO_RATED:
                 cbc_id_8.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_8.text = "E"
             elif (
                 zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_8.text = "O"
 
@@ -167,12 +175,14 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cbc_taxscheme_id = ET.SubElement(cac_taxscheme, "cbc:ID")
             cbc_taxscheme_id.text = "VAT"
 
-        cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
-        cbc_taxableamount_2 = ET.SubElement(cac_taxsubtotal_2, "cbc:TaxableAmount")
+        cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
+        cbc_taxableamount_2 = ET.SubElement(
+            cac_taxsubtotal_2, CBC_TAXABLE_AMOUNT
+        )
         cbc_taxableamount_2.set("currencyID", "SAR")
         cbc_taxableamount_2.text = str(-round(abs(sales_invoice_doc.total), 2))
 
-        cbc_taxamount_3 = ET.SubElement(cac_taxsubtotal_2, "cbc:TaxAmount")
+        cbc_taxamount_3 = ET.SubElement(cac_taxsubtotal_2, CBC_TAX_AMOUNT)
         cbc_taxamount_3.set("currencyID", "SAR")
         cbc_taxamount_3.text = "0.0"
 
@@ -252,8 +262,8 @@ def tax_data_nominal(invoice, sales_invoice_doc):
     try:
         # Handle SAR-specific logic
         if sales_invoice_doc.currency == "SAR":
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_sar.set(
                 "currencyID", "SAR"
             )  # ZATCA requires tax amount in SAR
@@ -269,8 +279,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                     )
                 )
                 total_line_extension += round(line_extension_amount, 2)
-
-            # Calculate the difference between total line extension and discount amount
             discount_amount = abs(round(sales_invoice_doc.discount_amount, 2))
             difference = difference = abs(
                 round(discount_amount - total_line_extension, 2)
@@ -309,16 +317,18 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 else:
                     taxable_amount = sales_invoice_doc.base_discount_amount
 
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
             )
 
             # Tax Subtotal
-            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
-            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
+            cbc_taxableamount = ET.SubElement(
+                cac_taxsubtotal, CBC_TAXABLE_AMOUNT
+            )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 cbc_taxableamount.text = str(
@@ -332,7 +342,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                         abs(round(sales_invoice_doc.base_discount_amount, 2))
                     )
 
-            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount_2.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
@@ -340,8 +350,8 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
         # Handle USD-specific logic
         else:
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount_usd_1 = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_usd_1 = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_usd_1.set(
                 "currencyID", sales_invoice_doc.currency
             )  # USD currency
@@ -356,8 +366,8 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
             )
             cbc_taxamount_usd_1.text = str(round(tax_amount_without_retention, 2))
-            cac_taxtotal = ET.SubElement(invoice, "cac:TaxTotal")
-            cbc_taxamount_usd = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_usd = ET.SubElement(cac_taxtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_usd.set(
                 "currencyID", sales_invoice_doc.currency
             )  # USD currency
@@ -376,12 +386,14 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cbc_taxamount_usd.text = str(round(tax_amount_without_retention, 2))
 
             # Tax Subtotal
-            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
-            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
+            cbc_taxableamount = ET.SubElement(
+                cac_taxsubtotal, CBC_TAXABLE_AMOUNT
+            )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxableamount.text = str(abs(round(taxable_amount_1, 2)))
 
-            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, CBC_TAX_AMOUNT)
             cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount_2.text = str(
                 abs(
@@ -399,13 +411,13 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
         if sales_invoice_doc.custom_zatca_tax_category == "Standard":
             cbc_id_8.text = "S"
-        elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+        elif sales_invoice_doc.custom_zatca_tax_category == ZERO_RATED:
             cbc_id_8.text = "Z"
         elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
             cbc_id_8.text = "E"
         elif (
             sales_invoice_doc.custom_zatca_tax_category
-            == "Services outside scope of tax / Not subject to VAT"
+            == OUTSIDE_SCOPE
         ):
             cbc_id_8.text = "O"
 
@@ -441,12 +453,14 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 taxable_amount = total_line_extension
             else:
                 taxable_amount = sales_invoice_doc.base_discount_amount
-        cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
-        cbc_taxableamount_2 = ET.SubElement(cac_taxsubtotal_2, "cbc:TaxableAmount")
+        cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
+        cbc_taxableamount_2 = ET.SubElement(
+            cac_taxsubtotal_2, CBC_TAXABLE_AMOUNT
+        )
         cbc_taxableamount_2.set("currencyID", "SAR")
         cbc_taxableamount_2.text = str(-round(taxable_amount, 2))
 
-        cbc_taxamount_3 = ET.SubElement(cac_taxsubtotal_2, "cbc:TaxAmount")
+        cbc_taxamount_3 = ET.SubElement(cac_taxsubtotal_2, CBC_TAX_AMOUNT)
         cbc_taxamount_3.set("currencyID", "SAR")
         cbc_taxamount_3.text = "0.0"
 
@@ -591,6 +605,7 @@ def item_data(invoice, sales_invoice_doc):
     The function defines the xml creating without item tax template
     """
     try:
+        qty = "cbc:BaseQuantity"
         for single_item in sales_invoice_doc.items:
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
                 sales_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
@@ -639,8 +654,8 @@ def item_data(invoice, sales_invoice_doc):
                         )
                     )
 
-            cac_taxtotal_2 = ET.SubElement(cac_invoiceline, "cac:TaxTotal")
-            cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, "cbc:TaxAmount")
+            cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
+            cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
             cbc_taxamount_3.set("currencyID", sales_invoice_doc.currency)
             if sales_invoice_doc.taxes[0].included_in_print_rate == 1:
                 cbc_taxamount_3.text = str(
@@ -673,13 +688,13 @@ def item_data(invoice, sales_invoice_doc):
             cbc_id_11 = ET.SubElement(cac_classifiedtaxcategory, "cbc:ID")
             if sales_invoice_doc.custom_zatca_tax_category == "Standard":
                 cbc_id_11.text = "S"
-            elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+            elif sales_invoice_doc.custom_zatca_tax_category == ZERO_RATED:
                 cbc_id_11.text = "Z"
             elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
             elif (
                 sales_invoice_doc.custom_zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
@@ -727,7 +742,7 @@ def item_data(invoice, sales_invoice_doc):
                     if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                         cbc_priceamount.text = str(abs(single_item.rate))
                         cbc_basequantity = ET.SubElement(
-                            cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                            cac_price, qty, unitCode=str(single_item.uom)
                         )
                         cbc_basequantity.text = "1"
                         add_line_item_discount(
@@ -745,7 +760,7 @@ def item_data(invoice, sales_invoice_doc):
                             )
                         )
                         cbc_basequantity = ET.SubElement(
-                            cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                            cac_price, qty, unitCode=str(single_item.uom)
                         )
                         cbc_basequantity.text = "1"
                         add_line_item_discount(
@@ -786,6 +801,7 @@ def custom_round(value):
 def item_data_with_template(invoice, sales_invoice_doc):
     """The defining of xml item data according to the item tax template datas and feilds"""
     try:
+        qty = "cbc:BaseQuantity"
         for single_item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
                 ITEM_TAX_TEMPLATE, single_item.item_tax_template
@@ -808,8 +824,8 @@ def item_data_with_template(invoice, sales_invoice_doc):
             cbc_lineextensionamount_1.set("currencyID", sales_invoice_doc.currency)
             cbc_lineextensionamount_1.text = str(abs(single_item.amount))
 
-            cac_taxtotal_2 = ET.SubElement(cac_invoiceline, "cac:TaxTotal")
-            cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, "cbc:TaxAmount")
+            cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
+            cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
             cbc_taxamount_3.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount_3.text = str(
                 abs(round(item_tax_percentage * single_item.amount / 100, 2))
@@ -836,13 +852,13 @@ def item_data_with_template(invoice, sales_invoice_doc):
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_id_11.text = "S"
-            elif zatca_tax_category == "Zero Rated":
+            elif zatca_tax_category == ZERO_RATED:
                 cbc_id_11.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
             elif (
                 zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_11.text = "O"
 
@@ -869,7 +885,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     # Discount submission to ZATCA
                     cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
                     cbc_basequantity = ET.SubElement(
-                        cac_price, "cbc:BaseQuantity", unitCode=str(single_item.uom)
+                        cac_price, qty, unitCode=str(single_item.uom)
                     )
                     cbc_basequantity.text = "1"
                     add_line_item_discount(cac_price, single_item, sales_invoice_doc)

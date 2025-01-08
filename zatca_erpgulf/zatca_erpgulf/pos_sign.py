@@ -61,6 +61,7 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
 
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
 " all items must have an Item Tax Template."
+CONTENT_TYPE_JSON = "application/json"
 
 
 def reporting_api(
@@ -99,12 +100,12 @@ def reporting_api(
 
         if production_csid:
             headers = {
-                "accept": "application/json",
+                "accept": CONTENT_TYPE_JSON,
                 "accept-language": "en",
                 "Clearance-Status": "0",
                 "Accept-Version": "V2",
                 "Authorization": "Basic " + production_csid,
-                "Content-Type": "application/json",
+                "Content-Type": CONTENT_TYPE_JSON,
                 "Cookie": (
                     "TS0106293e=0132a679c0639d13d069bcba831384623a2ca6da47fac8d91bef610c47c7119d"
                     "cdd3b817f963ec301682dae864351c67ee3a402866"
@@ -308,12 +309,12 @@ def clearance_api(
 
         if production_csid:
             headers = {
-                "accept": "application/json",
+                "accept": CONTENT_TYPE_JSON,
                 "accept-language": "en",
                 "Clearance-Status": "1",
                 "Accept-Version": "V2",
                 "Authorization": "Basic " + production_csid,
-                "Content-Type": "application/json",
+                "Content-Type": CONTENT_TYPE_JSON,
                 "Cookie": (
                     "TS0106293e=0132a679c03c628e6c49de86c0f6bb76390abb4416868d6368d6d7c05da619c8"
                     "326266f5bc262b7c0c65a6863cd3b19081d64eee99"

@@ -675,7 +675,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 													const reportingStatus = response.message.reportingStatus;
 													const clearanceStatus = response.message.clearanceStatus;
 		
-													// Check the checkbox if either status is "REPORTED" or "CLEARED"
+													// Check the checkbox if either status is "REPORTED" or " sCLEARED"
 													if (
 														reportingStatus === "REPORTED" ||
 														clearanceStatus === "CLEARED"
