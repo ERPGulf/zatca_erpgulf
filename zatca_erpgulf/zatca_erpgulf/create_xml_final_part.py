@@ -17,7 +17,7 @@ CBC_TAX_AMOUNT = "cbc:TaxAmount"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
-    Adding tax data of nominal invoices which having
+    Adding tax data of nominal  invoices which  having
     item tax template
     """
     try:
