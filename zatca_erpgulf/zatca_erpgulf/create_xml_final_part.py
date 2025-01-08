@@ -475,6 +475,8 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, "cac:TaxScheme")
         cbc_id_10 = ET.SubElement(cac_taxscheme_2, "cbc:ID")
         cbc_id_10.text = "VAT"
+
+        # Legal Monetary Total (adjust for both SAR and USD)
         cac_legalmonetarytotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
         cbc_lineextensionamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:LineExtensionAmount"
