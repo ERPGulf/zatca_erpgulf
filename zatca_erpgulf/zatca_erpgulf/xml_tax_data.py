@@ -479,7 +479,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
                 round(totals["taxable_amount"] * totals["tax_rate"] / 100, 2)
             )
 
-        # Create XML elements for each ZATCA tax category
+        # Create XML elements for the  each ZATCA tax category
         for zatca_tax_category, totals in tax_category_totals.items():
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
