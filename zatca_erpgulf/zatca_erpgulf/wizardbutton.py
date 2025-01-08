@@ -53,7 +53,7 @@ def wizard_button(company_abbr, button):
 
         company_doc = frappe.get_doc("Company", company_name)
 
-        # Parse XML and extract encoded hash and UUID
+        # Parse XML and extract encoded hash and UUI D
         namespaces = {
             "ext": "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
             "sig": "urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2",
