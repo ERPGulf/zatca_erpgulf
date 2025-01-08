@@ -641,7 +641,7 @@ def zatca_call(
         signed_xmlfile_name = structuring_signedxml()
         # Example usage
         # file_path = generate_invoice_pdf(
-        #     invoice_number, language="en", letterhead="Sample letterhead"
+        #     invoice_number, l anguage="en", letterhead="Sample letterhead"
         # )
         # frappe.throw(f"PDF saved at: {file_path}")
         if compliance_type == "0":
