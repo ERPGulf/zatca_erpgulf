@@ -18,6 +18,7 @@ CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
 ZERO_RATED = "Zero Rated"
 OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
+CBC_TAX_EXEMPTION_REASON_CODE = "cbc:TaxExemptionReasonCode"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -156,7 +157,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
             if zatca_tax_category != "Standard":
                 cbc_taxexemptionreasoncode = ET.SubElement(
-                    cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
+                    cac_taxcategory_1, CBC_TAX_EXEMPTION_REASON_CODE
                 )
                 cbc_taxexemptionreasoncode.text = totals["exemption_reason_code"]
                 cbc_taxexemptionreason = ET.SubElement(
@@ -190,7 +191,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
-            cac_taxcategory_2, "cbc:TaxExemptionReasonCode"
+            cac_taxcategory_2, CBC_TAX_EXEMPTION_REASON_CODE
         )
         cbc_taxexemptionreasoncode.text = "VATEX-SA-OOS"
 
@@ -420,7 +421,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         exemption_reason_map = get_exemption_reason_map()
         if sales_invoice_doc.custom_zatca_tax_category != "Standard":
             cbc_taxexemptionreasoncode = ET.SubElement(
-                cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
+                cac_taxcategory_1, CBC_TAX_EXEMPTION_REASON_CODE
             )
             cbc_taxexemptionreasoncode.text = (
                 sales_invoice_doc.custom_exemption_reason_code
@@ -462,7 +463,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cbc_percent_2.text = "0.00"
 
         cbc_taxexemptionreasoncode = ET.SubElement(
-            cac_taxcategory_2, "cbc:TaxExemptionReasonCode"
+            cac_taxcategory_2, CBC_TAX_EXEMPTION_REASON_CODE
         )
         cbc_taxexemptionreasoncode.text = "VATEX-SA-OOS"
 
