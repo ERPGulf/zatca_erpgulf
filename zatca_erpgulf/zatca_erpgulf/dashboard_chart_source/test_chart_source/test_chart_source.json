@@ -1,0 +1,13 @@
+{
+ "creation": "2025-01-07 16:38:34.054394",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart Source",
+ "idx": 0,
+ "modified": "2025-01-07 16:38:34.054394",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "test chart source",
+ "owner": "Administrator",
+ "source_name": "test chart source",
+ "timeseries": 0
+}
