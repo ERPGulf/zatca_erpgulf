@@ -181,7 +181,6 @@ def create_csr(zatca_doc, portal_type, company_abbr):
 
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
-        # frappe.throw(doc) 
         # Fetch CSR data based on document type
         if doc.doctype == "Zatca Multiple Setting":
             csr_values = get_csr_data_multiple(doc)
