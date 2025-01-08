@@ -16,8 +16,6 @@ CAC_TAX_TOTAL = "cac:TaxTotal"
 CBC_TAX_AMOUNT = "cbc:TaxAmount"
 CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
-CAC_TAX_CATEGORY = "cac:TaxCategory"
-CAC_TAX_SCHEME = "cac:TaxScheme"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -131,7 +129,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
             )
 
-            cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, CAC_TAX_CATEGORY)
+            cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
             cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
 
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
@@ -169,7 +167,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                         totals["exemption_reason_code"]
                     ]
 
-            cac_taxscheme = ET.SubElement(cac_taxcategory_1, CAC_TAX_SCHEME)
+            cac_taxscheme = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
             cbc_taxscheme_id = ET.SubElement(cac_taxscheme, "cbc:ID")
             cbc_taxscheme_id.text = "VAT"
 
@@ -182,7 +180,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_taxamount_3.set("currencyID", "SAR")
         cbc_taxamount_3.text = "0.0"
 
-        cac_taxcategory_2 = ET.SubElement(cac_taxsubtotal_2, CAC_TAX_CATEGORY)
+        cac_taxcategory_2 = ET.SubElement(cac_taxsubtotal_2, "cac:TaxCategory")
         cbc_id_9 = ET.SubElement(cac_taxcategory_2, "cbc:ID")
         cbc_id_9.text = "O"
 
@@ -199,7 +197,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         )
         cbc_taxexemptionreason.text = "Nominal Invoice"
 
-        cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, CAC_TAX_SCHEME)
+        cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, "cac:TaxScheme")
         cbc_id_10 = ET.SubElement(cac_taxscheme_2, "cbc:ID")
         cbc_id_10.text = "VAT"
         # Discount
@@ -400,7 +398,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
         # Tax Category and Scheme
 
-        cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, CAC_TAX_CATEGORY)
+        cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
         cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
 
         if sales_invoice_doc.custom_zatca_tax_category == "Standard":
@@ -435,7 +433,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
 
         # Tax Scheme
-        cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, CAC_TAX_SCHEME)
+        cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
         cbc_id_9 = ET.SubElement(cac_taxscheme_3, "cbc:ID")
         cbc_id_9.text = "VAT"
 
@@ -456,7 +454,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cbc_taxamount_3.set("currencyID", "SAR")
         cbc_taxamount_3.text = "0.0"
 
-        cac_taxcategory_2 = ET.SubElement(cac_taxsubtotal_2, CAC_TAX_CATEGORY)
+        cac_taxcategory_2 = ET.SubElement(cac_taxsubtotal_2, "cac:TaxCategory")
         cbc_id_9 = ET.SubElement(cac_taxcategory_2, "cbc:ID")
         cbc_id_9.text = "O"
 
@@ -473,7 +471,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         )
         cbc_taxexemptionreason.text = "Nominal Invoice"
 
-        cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, CAC_TAX_SCHEME)
+        cac_taxscheme_2 = ET.SubElement(cac_taxcategory_2, "cac:TaxScheme")
         cbc_id_10 = ET.SubElement(cac_taxscheme_2, "cbc:ID")
         cbc_id_10.text = "VAT"
 
@@ -690,7 +688,7 @@ def item_data(invoice, sales_invoice_doc):
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
-            cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, CAC_TAX_SCHEME)
+            cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"
             cac_price = ET.SubElement(cac_invoiceline, "cac:Price")
@@ -855,7 +853,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
 
-            cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, CAC_TAX_SCHEME)
+            cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"
 
