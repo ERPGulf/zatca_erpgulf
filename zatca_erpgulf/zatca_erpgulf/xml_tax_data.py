@@ -6,6 +6,7 @@ Includes functions for XML parsing, API interactions, and custom handling.
 import json
 import xml.etree.ElementTree as ET
 import frappe
+TAX_CALCULATION_ERROR = "Tax Calculation Error"
 
 
 def get_exemption_reason_map():
@@ -78,17 +79,17 @@ def get_tax_total_from_items(sales_invoice_doc):
     except AttributeError as e:
         frappe.throw(
             f"AttributeError in get_tax_total_from_items: {str(e)}",
-            "Tax Calculation Error",
+            TAX_CALCULATION_ERROR,
         )
         return None
     except KeyError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", "Tax Calculation Error"
+            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
         )
         return None
     except TypeError as e:
         frappe.throw(
-            f"TypeError in get_tax_total_from_items: {str(e)}", "Tax Calculation Error"
+            f"TypeError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
         )
         return None
 
