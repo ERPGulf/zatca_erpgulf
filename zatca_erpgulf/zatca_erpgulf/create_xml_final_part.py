@@ -17,6 +17,7 @@ CBC_TAX_AMOUNT = "cbc:TaxAmount"
 CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
 CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
 ZERO_RATED = "Zero Rated"
+OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
 
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
@@ -142,7 +143,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                 cbc_id_8.text = "E"
             elif (
                 zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_8.text = "O"
 
@@ -408,7 +409,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cbc_id_8.text = "E"
         elif (
             sales_invoice_doc.custom_zatca_tax_category
-            == "Services outside scope of tax / Not subject to VAT"
+            == OUTSIDE_SCOPE
         ):
             cbc_id_8.text = "O"
 
@@ -682,7 +683,7 @@ def item_data(invoice, sales_invoice_doc):
                 cbc_id_11.text = "E"
             elif (
                 sales_invoice_doc.custom_zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
@@ -845,7 +846,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                 cbc_id_11.text = "E"
             elif (
                 zatca_tax_category
-                == "Services outside scope of tax / Not subject to VAT"
+                == OUTSIDE_SCOPE
             ):
                 cbc_id_11.text = "O"
 
