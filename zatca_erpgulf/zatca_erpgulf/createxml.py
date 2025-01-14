@@ -8,6 +8,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import frappe
 from frappe.utils.data import get_time
+
 CBC_ID = "cbc:ID"
 DS_TRANSFORM = "ds:Transform"
 
@@ -487,7 +488,7 @@ def company_data(invoice, sales_invoice_doc):
         cac_party_1 = ET.SubElement(cac_accountingsupplierparty, "cac:Party")
         cac_partyidentification = ET.SubElement(cac_party_1, "cac:PartyIdentification")
         cbc_id_2 = ET.SubElement(cac_partyidentification, CBC_ID)
-        cbc_id_2.set("schemeID", "CRN")
+        cbc_id_2.set("schemeID", company_doc.custom_registration_type)
         cbc_id_2.text = company_doc.custom_company_registration
 
         address_list = frappe.get_all(
