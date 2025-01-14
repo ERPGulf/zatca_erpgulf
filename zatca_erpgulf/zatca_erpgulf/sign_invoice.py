@@ -1095,6 +1095,7 @@ def zatca_background_on_submit(doc, _method=None):
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(f"Error in background call: {str(e)}")
 
+
 @frappe.whitelist()
 def resubmit_invoices(invoice_numbers):
     """
@@ -1111,14 +1112,15 @@ def resubmit_invoices(invoice_numbers):
             # Fetch the Sales Invoice document
             sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
 
-            if sales_invoice_doc.docstatus == 1:  # Check if the invoice is already submitted
+            if (
+                sales_invoice_doc.docstatus == 1
+            ):  # Check if the invoice is already submitted
                 # Call the zatca_background_on_submit function
                 zatca_background_on_submit(sales_invoice_doc)
-            
+
             else:
                 # Submit the invoice
                 sales_invoice_doc.submit()
-            
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(f"Error in background call: {str(e)}")
