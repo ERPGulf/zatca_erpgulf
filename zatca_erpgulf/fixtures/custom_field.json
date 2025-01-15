@@ -2997,7 +2997,7 @@
   "insert_after": "custom_zatca_invoice_enabled",
   "is_system_generated": 0,
   "is_virtual": 0,
-  "label": "POS Submit line item discount to Zatca",
+  "label": "POS Submit line item discount to Zatca ( Applicable for POS Only ) ",
   "length": 0,
   "link_filters": null,
   "mandatory_depends_on": null,
