@@ -488,6 +488,7 @@ def item_data_with_template(invoice, pos_invoice_doc):
             cbc_priceamount.set("currencyID", pos_invoice_doc.currency)
             company_name = pos_invoice_doc.company
             settings = frappe.get_doc("Company", company_name)
+            
             if settings.custom_submit_line_item_discount_to_zatca != 1:
                 cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
             if settings.custom_submit_line_item_discount_to_zatca == 1:
