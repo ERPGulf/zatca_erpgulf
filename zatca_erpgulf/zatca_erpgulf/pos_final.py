@@ -18,10 +18,10 @@ from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_tax_for_item,
     add_line_item_discount,
 )
+
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 CBC_TAX_AMOUNT = "cbc:TaxAmount"
-
 
 
 def tax_data_with_template(invoice, pos_invoice_doc):
@@ -266,7 +266,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(f"Data processing error in tax data with template: {str(e)}")
 
 
 def item_data(invoice, pos_invoice_doc):
@@ -411,7 +411,7 @@ def item_data(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(f"Data processing error in item data: {str(e)}")
 
 
 def item_data_with_template(invoice, pos_invoice_doc):
@@ -501,13 +501,13 @@ def item_data_with_template(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(f"Data processing error in item tax with template data: {str(e)}")
 
 
 def xml_structuring(invoice):
     """function for xml structuring"""
     try:
-        
+
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
         tree = ET.ElementTree(invoice)
         with open(xml_file_path, "wb") as file:
