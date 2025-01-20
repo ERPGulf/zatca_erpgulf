@@ -818,7 +818,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
             cac_allowance_charge, "cbc:Amount", currencyID=sales_invoice_doc.currency
         )
         if sales_invoice_doc.currency == "SAR":
-            base_discount_amount = abs(
+            base_discount_amount = abs( 
                 sales_invoice_doc.get("base_discount_amount", 0.0)
             )
             cbc_amount.text = f"{base_discount_amount:.2f}"

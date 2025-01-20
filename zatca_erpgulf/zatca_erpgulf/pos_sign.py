@@ -58,6 +58,10 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
     update_qr_toxml,
     compliance_api_call,
 )
+from zatca_erpgulf.zatca_erpgulf.pos_submit_with_xml_qr import (
+    extract_invoice_data_from_field,
+    reporting_api_machine,
+)
 
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
 " all items must have an Item Tax Template."
@@ -955,11 +959,48 @@ def zatca_background_on_submit(doc, _method=None):
 
         # Retrieve the company document to access settings
         settings = frappe.get_doc("Company", company_name)
+        # if settings.custom_phase_1_or_2 == "Phase-2":
+        #     zatca_call(
+        #         invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
+        #     )
+        # else:
+        #     create_qr_code(pos_invoice_doc, method=None)
+        settings = frappe.get_doc("Company", company_name)
+
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(
-                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
-            )
+            if pos_invoice_doc.custom_unique_id:
+                if pos_invoice_doc.custom_xml:
+                    # Set the custom XML field
+                    custom_xml_field = pos_invoice_doc.custom_xml
+                    # frappe.throw(custom_xml_field)
+
+                    # Extract data from the XML field
+                    uuid_machine, encoded_hash_machine = (
+                        extract_invoice_data_from_field(custom_xml_field)
+                    )
+                    # frappe.throw(encoded_hash_machine)
+                    # Call the reporting API
+                    reporting_api_machine(
+                        uuid_machine,
+                        encoded_hash_machine,
+                        frappe.local.site + custom_xml_field,
+                        invoice_number,
+                        pos_invoice_doc,
+                    )
+                else:
+                    # Handle the case where custom_unique_id exists but custom_xml is missing
+                    create_qr_code(pos_invoice_doc, method=None)
+            else:
+                # Handle the case where custom_unique_id is missing
+                zatca_call(
+                    invoice_number,
+                    "0",
+                    any_item_has_tax_template,
+                    company_abbr,
+                    source_doc,
+                )
         else:
+            # If not Phase-2, create a QR code
             create_qr_code(pos_invoice_doc, method=None)
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
