@@ -58,9 +58,9 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
     update_qr_toxml,
     compliance_api_call,
 )
-from zatca_erpgulf.zatca_erpgulf.pos_submit_with_xml_qr import (
-    extract_invoice_data_from_field,
-    reporting_api_machine,
+from zatca_erpgulf.zatca_erpgulf.pos_submit_with_xml_qr import submit_pos_withxmlqr
+from zatca_erpgulf.zatca_erpgulf.pos_submit__without_xml import (
+    zatca_call_pos_without_xml,
 )
 
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
@@ -593,7 +593,9 @@ def zatca_call(
                 )
                 attach_qr_image(qrcodeb64, pos_invoice_doc)
         else:
-            compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr)
+            compliance_api_call(
+                uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
+            )
             attach_qr_image(qrcodeb64, pos_invoice_doc)
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
@@ -723,7 +725,9 @@ def zatca_call_compliance(
         signed_xmlfile_name = structuring_signedxml()
 
         # Make the compliance API call
-        compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr)
+        compliance_api_call(
+            uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
+        )
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.log_error(
@@ -835,10 +839,23 @@ def zatca_background_(invoice_number, source_doc):
                 "Please contact your system administrator"
             )
 
+        # if settings.custom_phase_1_or_2 == "Phase-2":
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(
-                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
-            )
+            if pos_invoice_doc.custom_unique_id:
+                if pos_invoice_doc.custom_xml:
+                    # Set the custom XML field
+                    custom_xml_field = pos_invoice_doc.custom_xml
+                    submit_pos_withxmlqr(
+                        pos_invoice_doc, custom_xml_field, invoice_number
+                    )
+            else:
+                zatca_call(
+                    invoice_number,
+                    "0",
+                    any_item_has_tax_template,
+                    company_abbr,
+                    source_doc,
+                )
         else:
             create_qr_code(pos_invoice_doc, method=None)
 
@@ -972,24 +989,17 @@ def zatca_background_on_submit(doc, _method=None):
                 if pos_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = pos_invoice_doc.custom_xml
-                    # frappe.throw(custom_xml_field)
-
-                    # Extract data from the XML field
-                    uuid_machine, encoded_hash_machine = (
-                        extract_invoice_data_from_field(custom_xml_field)
-                    )
-                    # frappe.throw(encoded_hash_machine)
-                    # Call the reporting API
-                    reporting_api_machine(
-                        uuid_machine,
-                        encoded_hash_machine,
-                        frappe.local.site + custom_xml_field,
-                        invoice_number,
-                        pos_invoice_doc,
+                    submit_pos_withxmlqr(
+                        pos_invoice_doc, custom_xml_field, invoice_number
                     )
                 else:
-                    # Handle the case where custom_unique_id exists but custom_xml is missing
-                    create_qr_code(pos_invoice_doc, method=None)
+                    zatca_call_pos_without_xml(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
             else:
                 # Handle the case where custom_unique_id is missing
                 zatca_call(
