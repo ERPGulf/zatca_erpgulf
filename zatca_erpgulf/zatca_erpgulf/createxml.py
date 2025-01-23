@@ -775,7 +775,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
             cbc_id.text = "O"
 
         cbc_percent = ET.SubElement(cac_tax_category, "cbc:Percent")
-        cbc_percent.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
+        git 
 
         cac_tax_scheme = ET.SubElement(cac_tax_category, "cac:TaxScheme")
         cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, CBC_ID)
