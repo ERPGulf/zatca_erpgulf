@@ -415,7 +415,7 @@ def get_pih_for_company(pih_data, company_name):
         return None  # Ensures consistent return
 
 
-def additional_reference(invoice, company_abbr):
+def additional_reference(invoice, company_abbr, sales_invoice_doc):
     """
     Adds additional document references to the XML invoice for PIH, QR, and Signature elements.
     """
@@ -441,8 +441,14 @@ def additional_reference(invoice, company_abbr):
         cbc_embeddeddocumentbinaryobject.set("mimeCode", "text/plain")
 
         # Directly retrieve the PIH data without JSON parsing
-        pih = company_doc.custom_pih  # Assuming this is already in the correct format
-
+        # pih = company_doc.custom_pih  # Assuming this is already in the correct format
+        if sales_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+            )
+            pih = zatca_settings.custom_pih
+        else:
+            pih = company_doc.custom_pih
         cbc_embeddeddocumentbinaryobject.text = pih
 
         # Create the second AdditionalDocumentReference element for QR
@@ -818,7 +824,7 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
             cac_allowance_charge, "cbc:Amount", currencyID=sales_invoice_doc.currency
         )
         if sales_invoice_doc.currency == "SAR":
-            base_discount_amount = abs( 
+            base_discount_amount = abs(
                 sales_invoice_doc.get("base_discount_amount", 0.0)
             )
             cbc_amount.text = f"{base_discount_amount:.2f}"

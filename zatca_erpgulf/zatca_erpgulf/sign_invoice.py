@@ -57,6 +57,12 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
     update_qr_toxml,
     compliance_api_call,
 )
+from zatca_erpgulf.zatca_erpgulf.sales_invoice_with_xmlqr import (
+    submit_sales_invoice_withxmlqr,
+)
+from zatca_erpgulf.zatca_erpgulf.sales_invoice_withoutxml import (
+    zatca_call_withoutxml,
+)
 
 
 def xml_base64_decode(signed_xmlfile_name):
@@ -199,7 +205,14 @@ def reporting_api(
             "uuid": uuid1,
             "invoice": xml_base64_decode(signed_xmlfile_name),
         }
-        production_csid = company_doc.custom_basic_auth_from_production
+        # production_csid = company_doc.custom_basic_auth_from_production
+        if sales_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+            )
+            production_csid = zatca_settings.custom_final_auth_csid
+        else:
+            production_csid = company_doc.custom_basic_auth_from_production
         if production_csid:
             headers = {
                 "accept": "application/json",
@@ -319,13 +332,30 @@ def reporting_api(
                     f"Zatca Response: {response.text}<br><br>"
                 )
                 company_name = sales_invoice_doc.company
-                settings = frappe.get_doc("Company", company_name)
-                company_abbr = settings.abbr
-                if settings.custom_send_einvoice_background:
-                    frappe.msgprint(msg)
+                # settings = frappe.get_doc("Company", company_name)
+                # company_abbr = settings.abbr
+                # if settings.custom_send_einvoice_background:
+                #     frappe.msgprint(msg)
 
-                company_doc.custom_pih = encoded_hash
-                company_doc.save(ignore_permissions=True)
+                # company_doc.custom_pih = encoded_hash
+                # company_doc.save(ignore_permissions=True)
+                if sales_invoice_doc.custom_zatca_pos_name:
+                    if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                        frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                    zatca_settings.custom_pih = encoded_hash
+                    zatca_settings.save(ignore_permissions=True)
+
+                else:
+                    settings = frappe.get_doc("Company", company_name)
+                    company_abbr = settings.abbr
+                    if settings.custom_send_einvoice_background:
+                        frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                    company_doc.custom_pih = encoded_hash
+                    company_doc.save(ignore_permissions=True)
 
                 invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
                 invoice_doc.db_set(
@@ -385,7 +415,14 @@ def clearance_api(
                 f" problem with company name in {sales_invoice_doc.company} not found."
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-        production_csid = company_doc.custom_basic_auth_from_production or ""
+        # production_csid = company_doc.custom_basic_auth_from_production or ""
+        if sales_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+            )
+            production_csid = zatca_settings.custom_final_auth_csid
+        else:
+            production_csid = company_doc.custom_basic_auth_from_production or ""
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,
@@ -483,12 +520,31 @@ def clearance_api(
             )
 
             company_name = sales_invoice_doc.company
-            settings = frappe.get_doc("Company", company_name)
-            company_abbr = settings.abbr
-            if settings.custom_send_einvoice_background:
-                frappe.msgprint(msg)
-            company_doc.custom_pih = encoded_hash
-            company_doc.save(ignore_permissions=True)
+            # settings = frappe.get_doc("Company", company_name)
+            # company_abbr = settings.abbr
+            # if settings.custom_send_einvoice_background:
+            #     frappe.msgprint(msg)
+            # company_doc.custom_pih = encoded_hash
+            # company_doc.save(ignore_permissions=True)
+            # company_name = pos_invoice_doc.company
+            if sales_invoice_doc.custom_zatca_pos_name:
+                if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                    frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                zatca_settings.custom_pih = encoded_hash
+                zatca_settings.save(ignore_permissions=True)
+
+            else:
+                settings = frappe.get_doc("Company", company_name)
+                company_abbr = settings.abbr
+                if settings.custom_send_einvoice_background:
+                    frappe.msgprint(msg)
+
+                    # Update PIH data without JSON formatting
+                company_doc.custom_pih = encoded_hash
+                company_doc.save(ignore_permissions=True)
+
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_zatca_full_response", msg, commit=True, update_modified=True
@@ -566,7 +622,7 @@ def zatca_call(
             invoice = invoice_typecode_compliance(invoice, compliance_type)
 
         invoice = doc_reference(invoice, sales_invoice_doc, invoice_number)
-        invoice = additional_reference(invoice, company_abbr)
+        invoice = additional_reference(invoice, company_abbr, sales_invoice_doc)
         invoice = company_data(invoice, sales_invoice_doc)
         invoice = customer_data(invoice, sales_invoice_doc)
         invoice = delivery_and_payment_means(
@@ -664,7 +720,13 @@ def zatca_call(
                 )
                 attach_qr_image(qrcodeb64, sales_invoice_doc)
         else:
-            compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr)
+            compliance_api_call(
+                uuid1,
+                encoded_hash,
+                signed_xmlfile_name,
+                company_abbr,
+                source_doc,
+            )
             attach_qr_image(qrcodeb64, sales_invoice_doc)
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
@@ -724,7 +786,7 @@ def zatca_call_compliance(
         invoice = doc_reference_compliance(
             invoice, sales_invoice_doc, invoice_number, compliance_type
         )
-        invoice = additional_reference(invoice, company_abbr)
+        invoice = additional_reference(invoice, company_abbr, sales_invoice_doc)
         invoice = company_data(invoice, sales_invoice_doc)
         invoice = customer_data(invoice, sales_invoice_doc)
         invoice = delivery_and_payment_means_for_compliance(
@@ -798,7 +860,7 @@ def zatca_call_compliance(
         update_qr_toxml(qrcodeb64, company_abbr)
         signed_xmlfile_name = structuring_signedxml()
         value = compliance_api_call(
-            uuid1, encoded_hash, signed_xmlfile_name, company_abbr
+            uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
         )
         return value
 
@@ -943,10 +1005,23 @@ def zatca_background(invoice_number, source_doc):
                 "Zatca Invoice is not enabled in Company Settings,"
                 " Please contact your system administrator"
             )
+        # if settings.custom_phase_1_or_2 == "Phase-2":
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(
-                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
-            )
+            if sales_invoice_doc.custom_unique_id:
+                if sales_invoice_doc.custom_xml:
+                    # Set the custom XML field
+                    custom_xml_field = sales_invoice_doc.custom_xml
+                    submit_sales_invoice_withxmlqr(
+                        sales_invoice_doc, custom_xml_field, invoice_number
+                    )
+            else:
+                zatca_call(
+                    invoice_number,
+                    "0",
+                    any_item_has_tax_template,
+                    company_abbr,
+                    source_doc,
+                )
         else:
             create_qr_code(sales_invoice_doc, method=None)
         return "Success"
@@ -1085,10 +1160,32 @@ def zatca_background_on_submit(doc, _method=None):
             )
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
+        # if settings.custom_phase_1_or_2 == "Phase-2":
         if settings.custom_phase_1_or_2 == "Phase-2":
-            zatca_call(
-                invoice_number, "0", any_item_has_tax_template, company_abbr, source_doc
-            )
+            if sales_invoice_doc.custom_unique_id:
+                if sales_invoice_doc.custom_xml:
+                    # Set the custom XML field
+                    custom_xml_field = sales_invoice_doc.custom_xml
+                    submit_sales_invoice_withxmlqr(
+                        sales_invoice_doc, custom_xml_field, invoice_number
+                    )
+                else:
+                    zatca_call_withoutxml(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
+            else:
+                zatca_call(
+                    invoice_number,
+                    "0",
+                    any_item_has_tax_template,
+                    company_abbr,
+                    source_doc,
+                )
+
         else:
             create_qr_code(sales_invoice_doc, method=None)
         doc.reload()

@@ -1174,9 +1174,12 @@ def structuring_signedxml():
         return None
 
 
-def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
+def compliance_api_call(
+    uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
+):
     """compliance api call for testing with sandbox"""
     try:
+
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
@@ -1190,7 +1193,17 @@ def compliance_api_call(uuid1, encoded_hash, signed_xmlfile_name, company_abbr):
             }
         )
 
-        csid = company_doc.custom_basic_auth_from_csid
+        # csid = company_doc.custom_basic_auth_from_csid
+        if (
+            hasattr(source_doc, "custom_zatca_pos_name")
+            and source_doc.custom_zatca_pos_name
+        ):
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+            )
+            csid = zatca_settings.custom_basic_auth_from_csid
+        else:
+            csid = company_doc.custom_basic_auth_from_csid
         if not csid:
             frappe.throw((f"CSID for company {company_abbr} not found"))
 

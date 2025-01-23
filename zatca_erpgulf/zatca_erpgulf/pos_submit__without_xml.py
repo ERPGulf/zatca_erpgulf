@@ -1,62 +1,187 @@
-""" This module is used to submit the POS invoice to ZATCA using the API through xml and qr. """
+"""This file contains the function to call the ZATCA API for POS Invoices"""
 
+import base64
 import frappe
 import requests
-from lxml import etree
-from zatca_erpgulf.zatca_erpgulf.sign_invoice import (
-    xml_base64_decode,
+from zatca_erpgulf.zatca_erpgulf.sales_invoice_with_xmlqr import (
     get_api_url,
+    xml_base64_decode,
     success_log,
     error_log,
 )
+from zatca_erpgulf.zatca_erpgulf.sales_invoice_withoutxml import attach_qr_image
+from zatca_erpgulf.zatca_erpgulf.posxml import (
+    xml_tags,
+    salesinvoice_data,
+    add_document_level_discount_with_tax_template,
+    add_document_level_discount_with_tax,
+    invoice_typecode_simplified,
+    doc_reference,
+    additional_reference,
+    company_data,
+    customer_data,
+    delivery_and_paymentmeans,
+    tax_data,
+    invoice_typecode_compliance,
+)
+from zatca_erpgulf.zatca_erpgulf.pos_final import (
+    tax_data_with_template,
+    item_data_with_template,
+    item_data,
+    xml_structuring,
+)
 
+
+from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
+    removetags,
+    canonicalize_xml,
+    getinvoicehash,
+    digital_signature,
+    extract_certificate_details,
+    certificate_hash,
+    signxml_modify,
+    generate_signed_properties_hash,
+    populate_the_ubl_extensions_output,
+    generate_tlv_xml,
+    structuring_signedxml,
+    get_tlv_for_value,
+    update_qr_toxml,
+    compliance_api_call,
+)
+
+ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
+" all items must have an Item Tax Template."
 CONTENT_TYPE_JSON = "application/json"
 
 
-def extract_invoice_data_from_field(file_path):
-    """
-    Extracts the UUID and DigestValue from an XML file.
-
-    Args:
-        file_path (str): Path to the XML file.
-
-    Returns:
-        dict: A dictionary containing UUID and DigestValue.
-    """
+def zatca_call_pos_without_xml(
+    invoice_number,
+    compliance_type="0",
+    any_item_has_tax_template=False,
+    company_abbr=None,
+    source_doc=None,
+):
+    """Function for zatca call"""
     try:
-        # Read the file content as bytes
-        with open(frappe.local.site + file_path, "rb") as file:
-            custom_xml = file.read()
 
-        # Parse the XML string as bytes
-        tree = etree.fromstring(custom_xml)
+        if not frappe.db.exists("POS Invoice", invoice_number):
+            frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
 
-        # Define the namespaces
-        namespaces = {
-            "cbc": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-            "ds": "http://www.w3.org/2000/09/xmldsig#",
-        }
+        invoice = xml_tags()
+        invoice, uuid1, pos_invoice_doc = salesinvoice_data(invoice, invoice_number)
 
-        # Extract the UUID
-        uuid = tree.find("cbc:UUID", namespaces).text
-
-        # Extract the DigestValue
-        digest_value_element = tree.find(
-            ".//ds:Reference[@Id='invoiceSignedData']/ds:DigestValue", namespaces
-        )
-        digest_value = (
-            digest_value_element.text
-            if digest_value_element is not None
-            else "Not Found"
+        # Get the company abbreviation
+        company_abbr = frappe.db.get_value(
+            "Company", {"name": pos_invoice_doc.company}, "abbr"
         )
 
-        return uuid, digest_value
+        customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
 
-    except Exception as e:
-        return {"error": f"Error parsing or extracting data POS with xml : {e}"}
+        if compliance_type == "0":
+            if customer_doc.custom_b2c == 1:
+                invoice = invoice_typecode_simplified(invoice, pos_invoice_doc)
+            else:
+                frappe.throw(
+                    "customer should be B2C pos without xml during create xml "
+                )
+        else:
+            invoice = invoice_typecode_compliance(invoice, compliance_type)
+
+        invoice = doc_reference(invoice, pos_invoice_doc, invoice_number)
+        invoice = additional_reference(invoice, company_abbr, pos_invoice_doc)
+        invoice = company_data(invoice, pos_invoice_doc)
+        invoice = customer_data(invoice, pos_invoice_doc)
+        invoice = delivery_and_paymentmeans(
+            invoice, pos_invoice_doc, pos_invoice_doc.is_return
+        )
+        if not any_item_has_tax_template:
+            invoice = add_document_level_discount_with_tax(invoice, pos_invoice_doc)
+        else:
+            invoice = add_document_level_discount_with_tax_template(
+                invoice, pos_invoice_doc
+            )
+
+        if not any_item_has_tax_template:
+            invoice = tax_data(invoice, pos_invoice_doc)
+        else:
+            invoice = tax_data_with_template(invoice, pos_invoice_doc)
+
+        if not any_item_has_tax_template:
+            invoice = item_data(invoice, pos_invoice_doc)
+        else:
+            invoice = item_data_with_template(invoice, pos_invoice_doc)
+
+        xml_structuring(invoice)
+
+        try:
+            with open(
+                frappe.local.site + "/private/files/finalzatcaxml.xml",
+                "r",
+                encoding="utf-8",
+            ) as file:
+                file_content = file.read()
+        except FileNotFoundError:
+            frappe.throw("XML file not found")
+
+        tag_removed_xml = removetags(file_content)
+        canonicalized_xml = canonicalize_xml(tag_removed_xml)
+        hash1, encoded_hash = getinvoicehash(canonicalized_xml)
+        encoded_signature = digital_signature(hash1, company_abbr, source_doc)
+        issuer_name, serial_number = extract_certificate_details(
+            company_abbr, source_doc
+        )
+        encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
+        namespaces, signing_time = signxml_modify(company_abbr, source_doc)
+        signed_properties_base64 = generate_signed_properties_hash(
+            signing_time, issuer_name, serial_number, encoded_certificate_hash
+        )
+        populate_the_ubl_extensions_output(
+            encoded_signature,
+            namespaces,
+            signed_properties_base64,
+            encoded_hash,
+            company_abbr,
+            source_doc,
+        )
+        tlv_data = generate_tlv_xml(company_abbr, source_doc)
+
+        tagsbufsarray = []
+        for tag_num, tag_value in tlv_data.items():
+            tagsbufsarray.append(get_tlv_for_value(tag_num, tag_value))
+
+        qrcodebuf = b"".join(tagsbufsarray)
+        qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
+        update_qr_toxml(qrcodeb64, company_abbr)
+        signed_xmlfile_name = structuring_signedxml()
+
+        if compliance_type == "0":
+            if customer_doc.custom_b2c == 1:
+                reporting_api_pos_without_xml(
+                    uuid1,
+                    encoded_hash,
+                    signed_xmlfile_name,
+                    invoice_number,
+                    pos_invoice_doc,
+                )
+                attach_qr_image(qrcodeb64, pos_invoice_doc)
+            else:
+                frappe.throw(
+                    "B2B is not supported for POS Invoices,customer should be B2C pos without xml "
+                )
+        else:
+            compliance_api_call(
+                uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
+            )
+            attach_qr_image(qrcodeb64, pos_invoice_doc)
+
+    except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
+        frappe.log_error(
+            title="Zatca invoice call failed",
+            message=f"{frappe.get_traceback()} \n Error: {str(e)}",
+        )
 
 
-def reporting_api_machine(
+def reporting_api_pos_without_xml(
     uuid1, encoded_hash, signed_xmlfile_name, invoice_number, pos_invoice_doc
 ):
     """Function for reporting api"""
@@ -208,8 +333,6 @@ def reporting_api_machine(
                     f"Status Code: {response.status_code}<br><br>"
                     f"Zatca Response: {response.text}<br><br>"
                 )
-
-                # company_name = pos_invoice_doc.company
                 if pos_invoice_doc.custom_zatca_pos_name:
                     if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
                         frappe.msgprint(msg)
@@ -228,33 +351,30 @@ def reporting_api_machine(
                 invoice_doc.db_set(
                     "custom_zatca_status", "REPORTED", commit=True, update_modified=True
                 )
+
+                xml_base64 = xml_base64_decode(signed_xmlfile_name)
+
+                xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
+                file = frappe.get_doc(
+                    {
+                        "doctype": "File",
+                        "file_name": "Reported xml file "
+                        + pos_invoice_doc.name
+                        + ".xml",
+                        "attached_to_doctype": pos_invoice_doc.doctype,
+                        "attached_to_name": pos_invoice_doc.name,
+                        "content": xml_cleared_data,
+                    }
+                )
+
+                file.save(ignore_permissions=True)
                 success_log(response.text, uuid1, invoice_number)
             else:
                 error_log()
         except (ValueError, TypeError, KeyError) as e:
-            frappe.throw(("Error in reporting API-2 POS with xml " f"error: {str(e)}"))
+            frappe.throw(
+                ("Error in reporting API-2 pos without xml " f"error: {str(e)}")
+            )
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("Error in reporting API-1 with xml pos" f"error: {str(e)}"))
-
-
-def submit_pos_withxmlqr(pos_invoice_doc, file_path, invoice_number):
-    """Function to submit POS invoice to ZATCA using the API through XML and QR."""
-    try:
-        # Extract the UUID and DigestValue from the XML file
-        uuid1, encoded_hash = extract_invoice_data_from_field(file_path)
-        # frappe.throw(f"uuid1: {uuid1} encoded_hash: {encoded_hash}")
-
-        # Call the reporting API
-        reporting_api_machine(
-            uuid1,
-            encoded_hash,
-            frappe.local.site + file_path,
-            invoice_number,
-            pos_invoice_doc,
-        )
-
-    except Exception as e:
-        frappe.throw(
-            f"Error in submitting POS invoice with xml and qr to ZATCA: {str(e)}"
-        )
+        frappe.throw(("Error in reporting API-1 pos without xml" f"error: {str(e)}"))
