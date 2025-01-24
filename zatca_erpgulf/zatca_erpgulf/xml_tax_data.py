@@ -87,12 +87,14 @@ def get_tax_total_from_items(sales_invoice_doc):
         return None
     except KeyError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            f"KeyError in get_tax_total_from_items: 
+            {str(e)}", TAX_CALCULATION_ERROR
         )
         return None
     except TypeError as e:
         frappe.throw(
-            f"TypeError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            f"TypeError in get_tax_total_from_items: 
+            {str(e)}", TAX_CALCULATION_ERROR
         )
         return None
 

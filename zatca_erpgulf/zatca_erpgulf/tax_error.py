@@ -1,4 +1,5 @@
-"""this module contains functions that are used to validate tax information in sales invoices."""
+"""this module contains functions that are used to validate tax information 
+  in sales invoices."""
 
 import frappe
 
@@ -18,14 +19,13 @@ def validate_sales_invoice_taxes(doc, event=None):
             try:
                 # Ensure the Item Tax Template exists
                 frappe.get_doc("Item Tax Template", item.item_tax_template)
-                continue  # Skip further checks for this item as it has a valid tax template
+                continue  
             except frappe.DoesNotExistError:
                 frappe.throw(
                     f"The Item Tax Template '{item.item_tax_template}' "
                     "for item '{item.item_code}' does not exist."
                 )
 
-        # If no Item Tax Template, check if taxes are defined at the invoice level
         if not doc.taxes or len(doc.taxes) == 0:
             frappe.throw(
                 "Tax information is missing from the Sales Invoice."
