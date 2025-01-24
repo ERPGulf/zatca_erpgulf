@@ -37,7 +37,7 @@ def extract_invoice_data_from_field(file_path):
             "ds": "http://www.w3.org/2000/09/xmldsig#",
         }
 
-        # Extract the UUID
+        # Extract the UU ID
         uuid = tree.find("cbc:UUID", namespaces).text
 
         # Extract the DigestValue
