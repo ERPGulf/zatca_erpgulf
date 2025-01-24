@@ -52,6 +52,7 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
 " all items must have an Item Tax Template."
 CONTENT_TYPE_JSON = "application/json"
+POS_INVOICE = "POS Invoice"
 
 
 def zatca_call_pos_without_xml(
@@ -64,7 +65,7 @@ def zatca_call_pos_without_xml(
     """Function for zatca call"""
     try:
 
-        if not frappe.db.exists("POS Invoice", invoice_number):
+        if not frappe.db.exists(POS_INVOICE, invoice_number):
             frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
 
         invoice = xml_tags()
@@ -241,7 +242,7 @@ def reporting_api_pos_without_xml(
             )
             frappe.publish_realtime("hide_gif")
             if response.status_code in (400, 405, 406, 409):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(POS_INVOICE, invoice_number)
                 invoice_doc.db_set(
                     "custom_uuid", "Not Submitted", commit=True, update_modified=True
                 )
@@ -267,7 +268,7 @@ def reporting_api_pos_without_xml(
                 )
 
             if response.status_code in (401, 403, 407, 451):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(POS_INVOICE, invoice_number)
                 invoice_doc.db_set(
                     "custom_uuid", "Not Submitted", commit=True, update_modified=True
                 )
@@ -294,7 +295,7 @@ def reporting_api_pos_without_xml(
                 )
 
             if response.status_code not in (200, 202):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(POS_INVOICE, invoice_number)
                 invoice_doc.db_set(
                     "custom_uuid", "Not Submitted", commit=True, update_modified=True
                 )
@@ -341,7 +342,7 @@ def reporting_api_pos_without_xml(
                     zatca_settings.custom_pih = encoded_hash
                     zatca_settings.save(ignore_permissions=True)
 
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(POS_INVOICE, invoice_number)
                 invoice_doc.db_set(
                     "custom_zatca_full_response", msg, commit=True, update_modified=True
                 )

@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import frappe
 from frappe.utils.data import get_time
 
+
 CBC_ID = "cbc:ID"
 DS_TRANSFORM = "ds:Transform"
 
@@ -727,6 +728,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
     including allowance charges, reason codes, and tax details.
     """
     try:
+
         cac_allowance_charge = ET.SubElement(invoice, "cac:AllowanceCharge")
 
         cbc_charge_indicator = ET.SubElement(
@@ -775,7 +777,7 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
             cbc_id.text = "O"
 
         cbc_percent = ET.SubElement(cac_tax_category, "cbc:Percent")
-        git 
+        cbc_percent.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
 
         cac_tax_scheme = ET.SubElement(cac_tax_category, "cac:TaxScheme")
         cbc_tax_scheme_id = ET.SubElement(cac_tax_scheme, CBC_ID)
@@ -884,6 +886,7 @@ def add_nominal_discount_tax(invoice, sales_invoice_doc):
     Adds nominal discount and related tax details to the XML structure.
     """
     try:
+
         cac_allowance_charge = ET.SubElement(invoice, "cac:AllowanceCharge")
         cbc_charge_indicator = ET.SubElement(
             cac_allowance_charge, "cbc:ChargeIndicator"
@@ -909,6 +912,7 @@ def add_nominal_discount_tax(invoice, sales_invoice_doc):
         )
 
         total_line_extension = 0
+
         for single_item in sales_invoice_doc.items:
             line_extension_amount = abs(
                 round(

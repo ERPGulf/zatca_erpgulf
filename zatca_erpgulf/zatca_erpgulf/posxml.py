@@ -357,7 +357,7 @@ def get_pih_for_company(pih_data, company_name):
         return None  # Ensures consistent return
 
 
-def additional_reference(invoice, company_abbr,pos_invoice_doc):
+def additional_reference(invoice, company_abbr, pos_invoice_doc):
     """Function for additional reference"""
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
@@ -635,6 +635,7 @@ def add_document_level_discount_with_tax(invoice, pos_invoice_doc):
             cbc_id.text = "O"
         # Retrieve the VAT percentage from the first tax entry in the sales_invoice_doc
         cbc_percent = ET.SubElement(cac_taxcategory, "cbc:Percent")
+
         cbc_percent.text = f"{float(pos_invoice_doc.taxes[0].rate):.2f}"
 
         cac_taxscheme = ET.SubElement(cac_taxcategory, "cac:TaxScheme")
@@ -850,6 +851,7 @@ def tax_data(invoice, pos_invoice_doc):
             tax_amount_without_retention = round(
                 abs(get_tax_total_from_items(pos_invoice_doc)), 2
             )
+
             tax_amount_without_retention = (
                 taxable_amount * float(pos_invoice_doc.taxes[0].rate) / 100
             )
@@ -892,7 +894,7 @@ def tax_data(invoice, pos_invoice_doc):
                 taxable_amount_1 = pos_invoice_doc.net_total - pos_invoice_doc.get(
                     "discount_amount", 0.0
                 )
-            
+
             tax_amount_without_retention = (
                 taxable_amount_1 * float(pos_invoice_doc.taxes[0].rate) / 100
             )

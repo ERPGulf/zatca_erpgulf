@@ -19,6 +19,7 @@ from zatca_erpgulf.zatca_erpgulf.posxml import (
     add_line_item_discount,
 )
 
+
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 CBC_TAX_AMOUNT = "cbc:TaxAmount"
@@ -296,7 +297,6 @@ def item_data(invoice, pos_invoice_doc):
             taxes_template_doc = frappe.get_doc(
                 "Sales Taxes and Charges Template", taxes_and_charges
             )
-
             tax_rate = taxes_template_doc.taxes[0]
             if pos_invoice_doc.currency == "SAR":
                 if tax_rate.included_in_print_rate == 0:
