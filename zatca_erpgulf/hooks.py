@@ -224,11 +224,13 @@ from . import __version__ as app_version
 doc_events = {
     "Sales Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+        "before_submit": "zatca_erpgulf.zatca_erpgulf.tax_error.validate_sales_invoice_taxes",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
         "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit",
     },
     "POS Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+        "before_submit": "zatca_erpgulf.zatca_erpgulf.tax_error.validate_sales_invoice_taxes",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
         "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_background_on_submit",
     },

@@ -130,7 +130,7 @@ def reporting_api_xml_sales_invoice(
             "uuid": uuid1,
             "invoice": xml_base64_decode(signed_xmlfile_name),
         }
-        # production_csid = company_doc.custom_basic_auth_from_production
+        # production_csid = company_doc.custom_basic_auth_from_p roduction
         if not sales_invoice_doc.custom_zatca_pos_name:
             frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
 

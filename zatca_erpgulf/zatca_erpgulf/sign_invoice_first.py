@@ -70,7 +70,7 @@ def get_csr_data_multiple(zatca_doc):
         return csr_values
 
     except (frappe.ValidationError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error in fetching CSR data: {e}")
+        frappe.throw(f"Error in fetching CSR data multipe: {e}")
         return None
 
 

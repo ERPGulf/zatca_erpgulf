@@ -6,6 +6,8 @@ Includes functions for XML parsing, API interactions, and custom handling.
 import json
 import xml.etree.ElementTree as ET
 import frappe
+
+
 TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 
@@ -88,18 +90,21 @@ def get_tax_total_from_items(sales_invoice_doc):
             f"KeyError in get_tax_total_from_items: {str(e)}",
             TAX_CALCULATION_ERROR
         )
+
         return None
     except TypeError as e:
         frappe.throw(
-            f"TypeError in get_tax_total_from_items: {str(e)}",
+            f"KeyError in get_tax_total_from_items: {str(e)}",
             TAX_CALCULATION_ERROR
         )
+
         return None
 
 
 def tax_data(invoice, sales_invoice_doc):
     """extract tax data without template"""
     try:
+
         # Handle SAR-specific logic
         if sales_invoice_doc.currency == "SAR":
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
@@ -130,6 +135,7 @@ def tax_data(invoice, sales_invoice_doc):
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
+
             if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 taxable_amount = sales_invoice_doc.base_total - sales_invoice_doc.get(
                     "base_discount_amount", 0.0

@@ -11,6 +11,7 @@ from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
+
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 CBC_TAX_AMOUNT = "cbc:TaxAmount"
@@ -19,13 +20,13 @@ CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
 ZERO_RATED = "Zero Rated"
 OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
 
+
 def tax_data_with_template_nominal(invoice, sales_invoice_doc):
     """
     Adding tax data of nominal  invoices which  having
     item tax template
     """
     try:
-
         # For SAR currency
         if sales_invoice_doc.currency == "SAR":
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
@@ -33,6 +34,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cbc_taxamount_sar.set(
                 "currencyID", "SAR"
             )  # SAR is as ZATCA requires tax amount in SAR
+
             tax_amount_without_retention_sar = (
                 sales_invoice_doc.base_total
                 * float(sales_invoice_doc.taxes[0].rate)
@@ -122,8 +124,9 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         for zatca_tax_category, totals in tax_category_totals.items():
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
             cbc_taxableamount = ET.SubElement(
-                cac_taxsubtotal, CBC_TAXABLE_AMOUNT
-            )
+                    cac_taxsubtotal,
+                    CBC_TAXABLE_AMOUNT
+                )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxableamount.text = str(abs(round(sales_invoice_doc.base_total, 2)))
 
@@ -143,10 +146,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                 cbc_id_8.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_8.text = "E"
-            elif (
-                zatca_tax_category
-                == OUTSIDE_SCOPE
-            ):
+            elif zatca_tax_category == OUTSIDE_SCOPE:
                 cbc_id_8.text = "O"
 
             cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
@@ -234,7 +234,6 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
 
         cbc_allowancetotalamount.text = str(round(abs(sales_invoice_doc.total), 2))
-        
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -328,7 +327,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
             cbc_taxableamount = ET.SubElement(
                 cac_taxsubtotal, CBC_TAXABLE_AMOUNT
-            )
+                )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 cbc_taxableamount.text = str(
@@ -389,7 +388,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
             cbc_taxableamount = ET.SubElement(
                 cac_taxsubtotal, CBC_TAXABLE_AMOUNT
-            )
+                )
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
             cbc_taxableamount.text = str(abs(round(taxable_amount_1, 2)))
 
@@ -415,10 +414,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cbc_id_8.text = "Z"
         elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
             cbc_id_8.text = "E"
-        elif (
-            sales_invoice_doc.custom_zatca_tax_category
-            == OUTSIDE_SCOPE
-        ):
+        elif sales_invoice_doc.custom_zatca_tax_category == OUTSIDE_SCOPE:
             cbc_id_8.text = "O"
 
         cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
@@ -456,7 +452,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
         cbc_taxableamount_2 = ET.SubElement(
             cac_taxsubtotal_2, CBC_TAXABLE_AMOUNT
-        )
+            )
         cbc_taxableamount_2.set("currencyID", "SAR")
         cbc_taxableamount_2.text = str(-round(taxable_amount, 2))
 
@@ -530,7 +526,6 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 cbc_allowancetotalamount.text = str(
                     round(abs(sales_invoice_doc.discount_amount), 2)
                 )
-
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -692,10 +687,7 @@ def item_data(invoice, sales_invoice_doc):
                 cbc_id_11.text = "Z"
             elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
-            elif (
-                sales_invoice_doc.custom_zatca_tax_category
-                == OUTSIDE_SCOPE
-            ):
+            elif sales_invoice_doc.custom_zatca_tax_category == OUTSIDE_SCOPE:
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
@@ -856,10 +848,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                 cbc_id_11.text = "Z"
             elif zatca_tax_category == "Exempted":
                 cbc_id_11.text = "E"
-            elif (
-                zatca_tax_category
-                == OUTSIDE_SCOPE
-            ):
+            elif zatca_tax_category == OUTSIDE_SCOPE:
                 cbc_id_11.text = "O"
 
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
@@ -901,7 +890,7 @@ def xml_structuring(invoice):
     Xml structuring and final saving of the xml into private files
     """
     try:
-    
+
         tree = ET.ElementTree(invoice)
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
 
