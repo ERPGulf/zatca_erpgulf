@@ -41,7 +41,7 @@ def get_icv_code(invoice_number):
     try:
         icv_code = re.sub(
             r"\D", "", invoice_number
-        )  # taking the numb er part only from doc name
+        )  # taking the numb er part onl y from doc name
         return icv_code
     except TypeError as e:
         frappe.throw("Type error in getting ICV number: " + str(e))
