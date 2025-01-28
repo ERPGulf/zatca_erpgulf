@@ -1006,13 +1006,31 @@ def zatca_background(invoice_number, source_doc):
                 " Please contact your system administrator"
             )
         # if settings.custom_phase_1_or_2 == "Phase-2":
+        is_gpos_installed = "gpos" in frappe.get_installed_apps()
+
+        # Check if the field exists
+        field_exists = frappe.get_meta("Sales Invoice").has_field("custom_unique_id")
+        if is_gpos_installed:
+            if sales_invoice_doc.custom_xml and not sales_invoice_doc.custom_qr_code:
+                frappe.throw(
+                    "Please provide the 'qr_code' data when 'xml' is filled for invoice: "
+                    + str(invoice_number)
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
-            if sales_invoice_doc.custom_unique_id:
-                if sales_invoice_doc.custom_xml:
+            if field_exists and sales_invoice_doc.custom_unique_id:
+                if is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = sales_invoice_doc.custom_xml
                     submit_sales_invoice_withxmlqr(
                         sales_invoice_doc, custom_xml_field, invoice_number
+                    )
+                else:
+                    zatca_call_withoutxml(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
                     )
             else:
                 zatca_call(
@@ -1022,6 +1040,7 @@ def zatca_background(invoice_number, source_doc):
                     company_abbr,
                     source_doc,
                 )
+
         else:
             create_qr_code(sales_invoice_doc, method=None)
         return "Success"
@@ -1161,9 +1180,17 @@ def zatca_background_on_submit(doc, _method=None):
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
         # if settings.custom_phase_1_or_2 == "Phase-2":
+        is_gpos_installed = "gpos" in frappe.get_installed_apps()
+        field_exists = frappe.get_meta("Sales Invoice").has_field("custom_unique_id")
+        if is_gpos_installed:
+            if sales_invoice_doc.custom_xml and not sales_invoice_doc.custom_qr_code:
+                frappe.throw(
+                    "Please provide the 'qr_code' field data when have'xml' for invoice: "
+                    + str(invoice_number)
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
-            if sales_invoice_doc.custom_unique_id:
-                if sales_invoice_doc.custom_xml:
+            if field_exists and sales_invoice_doc.custom_unique_id:
+                if is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = sales_invoice_doc.custom_xml
                     submit_sales_invoice_withxmlqr(

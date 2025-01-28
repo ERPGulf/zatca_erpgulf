@@ -840,13 +840,29 @@ def zatca_background_(invoice_number, source_doc):
             )
 
         # if settings.custom_phase_1_or_2 == "Phase-2":
+        is_gpos_installed = "gpos" in frappe.get_installed_apps()
+        field_exists = frappe.get_meta("POS Invoice").has_field("custom_unique_id")
+        if is_gpos_installed:
+            if pos_invoice_doc.custom_xml and not pos_invoice_doc.custom_qr_code:
+                frappe.throw(
+                    "Please provide the 'qr_code' field data when 'custom_xml' is filled for invoice: "
+                    + str(invoice_number)
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
-            if pos_invoice_doc.custom_unique_id:
-                if pos_invoice_doc.custom_xml:
+            if field_exists and pos_invoice_doc.custom_unique_id:
+                if is_gpos_installed and pos_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = pos_invoice_doc.custom_xml
                     submit_pos_withxmlqr(
                         pos_invoice_doc, custom_xml_field, invoice_number
+                    )
+                else:
+                    zatca_call_pos_without_xml(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
                     )
             else:
                 zatca_call(
@@ -984,9 +1000,17 @@ def zatca_background_on_submit(doc, _method=None):
         #     create_qr_code(pos_invoice_doc, method=None)
         settings = frappe.get_doc("Company", company_name)
 
+        is_gpos_installed = "gpos" in frappe.get_installed_apps()
+        field_exists = frappe.get_meta("POS Invoice").has_field("custom_unique_id")
+        if is_gpos_installed:
+            if pos_invoice_doc.custom_xml and not pos_invoice_doc.custom_qr_code:
+                frappe.throw(
+                    "Please provide the 'qr_code' field data when 'custom_xml' is filled for invoice: "
+                    + str(invoice_number)
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
-            if pos_invoice_doc.custom_unique_id:
-                if pos_invoice_doc.custom_xml:
+            if field_exists and pos_invoice_doc.custom_unique_id:
+                if is_gpos_installed and pos_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = pos_invoice_doc.custom_xml
                     submit_pos_withxmlqr(
