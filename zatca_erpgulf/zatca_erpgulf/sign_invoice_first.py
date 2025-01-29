@@ -21,6 +21,8 @@ from cryptography.hazmat.primitives.asymmetric import ec
 import requests
 import asn1
 
+SUPPORTED_INVOICES = ["Sales Invoice", "POS Invoice"]
+
 
 def encode_customoid(custom_string):
     """Encoding of a custom string"""
@@ -408,35 +410,6 @@ def create_csid(zatca_doc, company_abbr):
         return None
 
 
-# def create_public_key(company_abbr):
-#     """Creating public key"""
-#     try:
-#         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
-#         if not company_name:
-#             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
-
-#         company_doc = frappe.get_doc("Company", company_name)
-#         certificate_data_str = company_doc.get("custom_certificate", "")
-
-#         if not certificate_data_str:
-#             frappe.throw("No certificate data found for the company.")
-#         cert_base64 = f"""
-#         -----BEGIN CERTIFICATE-----
-#         {certificate_data_str.strip()}
-#         -----END CERTIFICATE-----
-#         """
-#         cert = x509.load_pem_x509_certificate(cert_base64.encode(), default_backend())
-#         public_key = cert.public_key()
-#         public_key_pem = public_key.public_bytes(
-#             encoding=serialization.Encoding.PEM,
-#             format=serialization.PublicFormat.SubjectPublicKeyInfo,
-#         ).decode()
-#         company_doc.custom_public_key = public_key_pem
-#         company_doc.save(ignore_permissions=True)
-
-
-#     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-#         frappe.throw("error occurred while creating public key for company " + str(e))
 def create_public_key(company_abbr, source_doc):
     """Create a public key based on the company abbreviation and source document."""
     try:
@@ -452,7 +425,7 @@ def create_public_key(company_abbr, source_doc):
         certificate_data_str = ""
 
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
 
@@ -484,7 +457,7 @@ def create_public_key(company_abbr, source_doc):
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode()
-        if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+        if source_doc.doctype in SUPPORTED_INVOICES:
             if source_doc.custom_zatca_pos_name:
                 zatca_settings = frappe.get_doc(
                     "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
@@ -587,7 +560,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
         # frappe.throw(f"Source doc type: {type(source_doc)}, value: {source_doc}")
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
@@ -626,7 +599,7 @@ def extract_certificate_details(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -677,7 +650,7 @@ def certificate_hash(company_abbr, source_doc):
 
         company_doc = frappe.get_doc("Company", company_name)
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
@@ -828,7 +801,7 @@ def populate_the_ubl_extensions_output(
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -885,7 +858,7 @@ def extract_public_key_data(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -962,7 +935,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
+            if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
