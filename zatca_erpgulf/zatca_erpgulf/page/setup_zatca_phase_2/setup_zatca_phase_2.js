@@ -647,6 +647,11 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 								frappe.msgprint(__("Please select a company before running compliance checks."));
 								return;
 							}
+							const isOfflinePOS = slideData["select_company_is_offline_pos"];
+							const selectedMachine = slideData["selected_machine"] ;
+							const doctype = isOfflinePOS? "Zatca Multiple Setting": "Company";
+							const name = isOfflinePOS? selectedMachine: selected_company;
+							
 		
 							// Fetch company abbreviation
 							frappe.call({
@@ -668,7 +673,10 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 											method: "zatca_erpgulf.zatca_erpgulf.wizardbutton.wizard_button",
 											args: {
 												company_abbr: company_abbr,
-												button: buttonClicked, // Pass the corresponding button ID
+												button: buttonClicked, 
+												pos:doctype,
+												machine:name
+												// Pass the corresponding button ID
 											},
 											callback: function (response) {
 												if (response && response.message) {
