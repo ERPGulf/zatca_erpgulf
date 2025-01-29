@@ -452,29 +452,21 @@ def create_public_key(company_abbr, source_doc):
         certificate_data_str = ""
 
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
+
                     zatca_settings = frappe.get_doc(
                         "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate", "")
                 else:
-                    # Use certificate from the company document for Sales Invoice
-                    certificate_data_str = company_doc.get("custom_certificate", "")
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    certificate_data_str = zatca_settings.get("custom_certficate", "")
-                else:
-                    # Fallback to using the company document's certificate
+                    # Use company certificate as fallback
                     certificate_data_str = company_doc.get("custom_certificate", "")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate", "")
+            else:
+                frappe.throw(f"Unsupported document type: {source_doc.doctype}")
 
         if not certificate_data_str:
             frappe.throw("No certificate data found.")
@@ -595,7 +587,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
         # frappe.throw(f"Source doc type: {type(source_doc)}, value: {source_doc}")
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
@@ -603,17 +595,6 @@ def digital_signature(hash1, company_abbr, source_doc):
                     )
                     private_key_data_str = zatca_settings.get("custom_private_key")
                 else:
-                    private_key_data_str = company_doc.get("custom_private_key")
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    private_key_data_str = zatca_settings.get("custom_private_key")
-                else:
-                    # Fallback to using the company document's certificate
                     private_key_data_str = company_doc.get("custom_private_key")
             elif source_doc.doctype == "Company":
                 private_key_data_str = company_doc.get("custom_private_key")
@@ -645,7 +626,7 @@ def extract_certificate_details(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -654,17 +635,6 @@ def extract_certificate_details(company_abbr, source_doc):
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate")
                 else:
-                    certificate_data_str = company_doc.get("custom_certificate")
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    certificate_data_str = zatca_settings.get("custom_certficate")
-                else:
-                    # Fallback to using the company document's certificate
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate")
@@ -706,9 +676,8 @@ def certificate_hash(company_abbr, source_doc):
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
         company_doc = frappe.get_doc("Company", company_name)
-
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
@@ -717,19 +686,6 @@ def certificate_hash(company_abbr, source_doc):
                     certificate_data_str = zatca_settings.get("custom_certficate", "")
                 else:
                     certificate_data_str = company_doc.get("custom_certificate", "")
-
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    certificate_data_str = zatca_settings.get("custom_certficate", "")
-                else:
-                    # Fallback to using the company document's certificate
-                    certificate_data_str = company_doc.get("custom_certificate", "")
-
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate", "")
 
@@ -749,7 +705,7 @@ def certificate_hash(company_abbr, source_doc):
         return base64_encoded_hash
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in obtaining certificate hash: " + str(e))
+        frappe.throw("Error in obtaining certificate hash chcek cert data: " + str(e))
         return None
 
 
@@ -872,7 +828,7 @@ def populate_the_ubl_extensions_output(
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -881,17 +837,6 @@ def populate_the_ubl_extensions_output(
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate")
                 else:
-                    certificate_data_str = company_doc.get("custom_certificate")
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    certificate_data_str = zatca_settings.get("custom_certficate")
-                else:
-                    # Fallback to using the company document's certificate
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate")
@@ -940,7 +885,7 @@ def extract_public_key_data(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -949,17 +894,6 @@ def extract_public_key_data(company_abbr, source_doc):
                     )
                     public_key_pem = zatca_settings.get("custom_public_key", "")
                 else:
-                    public_key_pem = company_doc.get("custom_public_key", "")
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    public_key_pem = zatca_settings.get("custom_public_key", "")
-                else:
-                    # Fallback to using the company document's certificate
                     public_key_pem = company_doc.get("custom_public_key", "")
             elif source_doc.doctype == "Company":
                 public_key_pem = company_doc.get("custom_public_key", "")
@@ -1028,7 +962,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
 
         if source_doc:
-            if source_doc.doctype == "Sales Invoice":
+            if source_doc.doctype in ["Sales Invoice", "POS Invoice"]:
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
@@ -1037,17 +971,6 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
                     )
                     certificate_content = zatca_settings.custom_certficate or ""
                 else:
-                    certificate_content = company_doc.custom_certificate or ""
-            elif source_doc.doctype == "POS Invoice":
-                # Check if custom_zatca_pos_name exists in POS Invoice
-                if source_doc.custom_zatca_pos_name:
-                    # Fetch Zatca settings and use its certificate
-                    zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
-                    )
-                    certificate_content = zatca_settings.custom_certficate or ""
-                else:
-                    # Fallback to using the company document's certificate
                     certificate_content = company_doc.custom_certificate or ""
             elif source_doc.doctype == "Company":
                 certificate_content = company_doc.custom_certificate or ""
