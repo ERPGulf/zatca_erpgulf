@@ -27,7 +27,7 @@ def get_api_url(company_abbr, base_url):
 
 
 @frappe.whitelist(allow_guest=False)
-def wizard_button(company_abbr, button):
+def wizard_button(company_abbr, button,pos=0, machine=None):
     """Compliance check for ZATCA based on file type and company abbreviation."""
     try:
         app_path = frappe.get_app_path("zatca_erpgulf")
@@ -51,7 +51,7 @@ def wizard_button(company_abbr, button):
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
 
-        company_doc = frappe.get_doc("Company", company_name)
+        
 
         # Parse XML and extract encoded hash a nd UUI D
         namespaces = {
@@ -96,9 +96,23 @@ def wizard_button(company_abbr, button):
         )
 
         # Check for CSID in company doc
-        csid = company_doc.custom_basic_auth_from_csid
+        # csid = company_doc.custom_basic_auth_from_csid
+        # if not csid:
+        #     frappe.throw(f"CSID for company {company_abbr} not found.")
+        if pos==1:
+            if not machine:
+                frappe.throw("Machine name is required for offline POS.")
+            doc_type = "Zatca Multiple Setting"
+            doc_name = machine
+            doc = frappe.get_doc(doc_type, doc_name)
+        else:
+            doc_type =frappe.get_doc("Company", company_name)
+            doc_name=company_name
+            doc = frappe.get_doc(doc_type, doc_name)    
+        
+        csid = doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw(f"CSID for company {company_abbr} not found.")
+            frappe.throw(f"CSID not found in {doc_type} for {doc_name}.")        
 
         # Define headers
         headers = {
