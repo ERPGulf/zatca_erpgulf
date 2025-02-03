@@ -64,6 +64,12 @@ from zatca_erpgulf.zatca_erpgulf.sales_invoice_withoutxml import (
     zatca_call_withoutxml,
 )
 
+from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
+    submit_sales_invoice_simplifeid,
+)
+
+REPORTED_XML = "%Reported xml file%"
+
 
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
@@ -206,6 +212,20 @@ def reporting_api(
             "invoice": xml_base64_decode(signed_xmlfile_name),
         }
         # production_csid = company_doc.custom_basic_auth_from_production
+        xml_base64 = xml_base64_decode(signed_xmlfile_name)
+
+        xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
+        file = frappe.get_doc(
+            {
+                "doctype": "File",
+                "file_name": "Reported xml file " + sales_invoice_doc.name + ".xml",
+                "attached_to_doctype": sales_invoice_doc.doctype,
+                "is_private": 1,
+                "attached_to_name": sales_invoice_doc.name,
+                "content": xml_cleared_data,
+            }
+        )
+        file.save(ignore_permissions=True)
         if sales_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
                 "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
@@ -368,22 +388,6 @@ def reporting_api(
                     "custom_zatca_status", "REPORTED", commit=True, update_modified=True
                 )
 
-                xml_base64 = xml_base64_decode(signed_xmlfile_name)
-
-                xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
-                file = frappe.get_doc(
-                    {
-                        "doctype": "File",
-                        "file_name": "Reported xml file "
-                        + sales_invoice_doc.name
-                        + ".xml",
-                        "attached_to_doctype": sales_invoice_doc.doctype,
-                        "is_private": 1,
-                        "attached_to_name": sales_invoice_doc.name,
-                        "content": xml_cleared_data,
-                    }
-                )
-                file.save(ignore_permissions=True)
                 success_log(response.text, uuid1, invoice_number)
             else:
 
@@ -591,6 +595,32 @@ def clearance_api(
         frappe.throw(f"Error in clearance API: {str(e)}")
 
 
+def is_file_attached(file_url):
+    """Check if a file is attached by verifying its existence in the database."""
+    return file_url and frappe.db.exists("File", {"file_url": file_url})
+
+
+def is_qr_and_xml_attached(sales_invoice_doc):
+    """Check if both QR code and XML file are already"""
+
+    # Get the QR Code field value
+    qr_code = sales_invoice_doc.get("ksa_einv_qr")
+
+    # Get the XML file if attached
+    xml_file = frappe.db.get_value(
+        "File",
+        {
+            "attached_to_doctype": sales_invoice_doc.doctype,
+            "attached_to_name": sales_invoice_doc.name,
+            "file_name": ["like", REPORTED_XML],
+        },
+        "file_url",
+    )
+
+    # Ensure both files exist before confirming attachment
+    return is_file_attached(qr_code) and is_file_attached(xml_file)
+
+
 @frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
@@ -702,6 +732,7 @@ def zatca_call(
         # frappe.throw(f"PDF saved at: {file_path}")
         if compliance_type == "0":
             if customer_doc.custom_b2c == 1:
+                attach_qr_image(qrcodeb64, sales_invoice_doc)
                 reporting_api(
                     uuid1,
                     encoded_hash,
@@ -709,7 +740,7 @@ def zatca_call(
                     invoice_number,
                     sales_invoice_doc,
                 )
-                attach_qr_image(qrcodeb64, sales_invoice_doc)
+
             else:
                 clearance_api(
                     uuid1,
@@ -1033,13 +1064,28 @@ def zatca_background(invoice_number, source_doc):
                         source_doc,
                     )
             else:
-                zatca_call(
-                    invoice_number,
-                    "0",
-                    any_item_has_tax_template,
-                    company_abbr,
-                    source_doc,
-                )
+                if is_qr_and_xml_attached(sales_invoice_doc):
+                    custom_xml_field = frappe.db.get_value(
+                        "File",
+                        {
+                            "attached_to_doctype": sales_invoice_doc.doctype,
+                            "attached_to_name": sales_invoice_doc.name,
+                            "file_name": ["like", REPORTED_XML],
+                        },
+                        "file_url",
+                    )
+                    submit_sales_invoice_simplifeid(
+                        sales_invoice_doc, custom_xml_field, invoice_number
+                    )
+                else:
+
+                    zatca_call(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
 
         else:
             create_qr_code(sales_invoice_doc, method=None)
@@ -1205,13 +1251,28 @@ def zatca_background_on_submit(doc, _method=None):
                         source_doc,
                     )
             else:
-                zatca_call(
-                    invoice_number,
-                    "0",
-                    any_item_has_tax_template,
-                    company_abbr,
-                    source_doc,
-                )
+                if is_qr_and_xml_attached(sales_invoice_doc):
+                    custom_xml_field = frappe.db.get_value(
+                        "File",
+                        {
+                            "attached_to_doctype": sales_invoice_doc.doctype,
+                            "attached_to_name": sales_invoice_doc.name,
+                            "file_name": ["like", REPORTED_XML],
+                        },
+                        "file_url",
+                    )
+                    submit_sales_invoice_simplifeid(
+                        sales_invoice_doc, custom_xml_field, invoice_number
+                    )
+                else:
+
+                    zatca_call(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
 
         else:
             create_qr_code(sales_invoice_doc, method=None)
