@@ -68,6 +68,8 @@ from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
     submit_sales_invoice_simplifeid,
 )
 
+REPORTED_XML = "%Reported xml file%"
+
 
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
@@ -610,7 +612,7 @@ def is_qr_and_xml_attached(sales_invoice_doc):
         {
             "attached_to_doctype": sales_invoice_doc.doctype,
             "attached_to_name": sales_invoice_doc.name,
-            "file_name": ["like", "%Reported xml file%"],
+            "file_name": ["like", REPORTED_XML],
         },
         "file_url",
     )
@@ -1068,7 +1070,7 @@ def zatca_background(invoice_number, source_doc):
                         {
                             "attached_to_doctype": sales_invoice_doc.doctype,
                             "attached_to_name": sales_invoice_doc.name,
-                            "file_name": ["like", "%Reported xml file%"],
+                            "file_name": ["like", REPORTED_XML],
                         },
                         "file_url",
                     )
@@ -1255,7 +1257,7 @@ def zatca_background_on_submit(doc, _method=None):
                         {
                             "attached_to_doctype": sales_invoice_doc.doctype,
                             "attached_to_name": sales_invoice_doc.name,
-                            "file_name": ["like", "%Reported xml file%"],
+                            "file_name": ["like", REPORTED_XML],
                         },
                         "file_url",
                     )
