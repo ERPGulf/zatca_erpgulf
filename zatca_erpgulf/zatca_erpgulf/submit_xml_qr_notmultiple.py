@@ -6,6 +6,8 @@ import requests
 from lxml import etree
 
 CONTENT_TYPE_JSON = "application/json"
+NOT_SUBMITTED = "Not Submitted"
+SALES_INVOICE = "Sales Invoice"
 
 
 def xml_base64_decode(signed_xmlfile_name):
@@ -146,12 +148,12 @@ def reporting_api_xml_sales_invoice_simplifeid(
         if not production_csid:
             frappe.throw(f"Production CSID is missing in ZATCA xml {company_abbr}.")
         headers = {
-            "accept": "application/json",
+            "accept": CONTENT_TYPE_JSON,
             "accept-language": "en",
             "Clearance-Status": "0",
             "Accept-Version": "V2",
             "Authorization": "Basic " + production_csid,
-            "Content-Type": "application/json",
+            "Content-Type": CONTENT_TYPE_JSON,
             "Cookie": "TS0106293e=0132a679c0639d13d069bcba831384623a2ca6da47fac8d91bef610c47c7119dcdd3b817f963ec301682dae864351c67ee3a402866",
         }
 
@@ -167,19 +169,19 @@ def reporting_api_xml_sales_invoice_simplifeid(
             )
             frappe.publish_realtime("hide_gif")
             if response.status_code in (400, 405, 406, 409):
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                 invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                    "custom_uuid", NOT_SUBMITTED, commit=True, update_modified=True
                 )
                 invoice_doc.db_set(
                     "custom_zatca_status",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
                 invoice_doc.db_set(
                     "custom_zatca_full_response",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
@@ -193,19 +195,19 @@ def reporting_api_xml_sales_invoice_simplifeid(
                 )
 
             if response.status_code in (401, 403, 407, 451):
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                 invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                    "custom_uuid", NOT_SUBMITTED, commit=True, update_modified=True
                 )
                 invoice_doc.db_set(
                     "custom_zatca_status",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
                 invoice_doc.db_set(
                     "custom_zatca_full_response",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
@@ -220,19 +222,19 @@ def reporting_api_xml_sales_invoice_simplifeid(
                 )
 
             if response.status_code not in (200, 202):
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                 invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                    "custom_uuid", NOT_SUBMITTED, commit=True, update_modified=True
                 )
                 invoice_doc.db_set(
                     "custom_zatca_status",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
                 invoice_doc.db_set(
                     "custom_zatca_full_response",
-                    "Not Submitted",
+                    NOT_SUBMITTED,
                     commit=True,
                     update_modified=True,
                 )
@@ -278,7 +280,7 @@ def reporting_api_xml_sales_invoice_simplifeid(
                     company_doc.custom_pih = encoded_hash
                     company_doc.save(ignore_permissions=True)
 
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                 invoice_doc.db_set(
                     "custom_zatca_full_response", msg, commit=True, update_modified=True
                 )
@@ -297,7 +299,7 @@ def reporting_api_xml_sales_invoice_simplifeid(
             frappe.throw(f"Error in reporting API-2: {str(e)}")
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
         invoice_doc.db_set(
             "custom_zatca_full_response",
             f"Error: {str(e)}",
