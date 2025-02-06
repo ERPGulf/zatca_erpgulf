@@ -824,7 +824,6 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 )
             )
-
             cbc_roundingamount = ET.SubElement(cac_taxtotal_2, "cbc:RoundingAmount")
             cbc_roundingamount.set("currencyID", sales_invoice_doc.currency)
             cbc_roundingamount.text = str(
@@ -839,7 +838,6 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 )
             )
-
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
             cbc_name.text = single_item.item_code
