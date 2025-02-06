@@ -138,6 +138,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
 
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
+            
             if zatca_tax_category == "Standard":
                 cbc_id_8.text = "S"
             elif zatca_tax_category == ZERO_RATED:
