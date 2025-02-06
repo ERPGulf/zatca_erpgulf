@@ -11,6 +11,7 @@ from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
+from decimal import Decimal, ROUND_HALF_UP
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
@@ -132,11 +133,10 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
             cbc_taxamount_2.text = (
                 f"{abs(round(tax_amount_without_retention_sar, 2)):.2f}"
             )
-
             cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
             cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
-
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
+
             if zatca_tax_category == "Standard":
                 cbc_id_8.text = "S"
             elif zatca_tax_category == ZERO_RATED:
@@ -654,14 +654,20 @@ def item_data(invoice, sales_invoice_doc):
                 )
 
             else:
+                # cbc_taxamount_3.text = str(
+                #     abs(custom_round(item_tax_percentage * single_item.amount / 100))
+                # )
+
                 cbc_taxamount_3.text = str(
-                    abs(custom_round(item_tax_percentage * single_item.amount / 100))
+                    Decimal(
+                        str(abs(item_tax_percentage * single_item.amount / 100))
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 )
             cbc_roundingamount = ET.SubElement(cac_taxtotal_2, "cbc:RoundingAmount")
             cbc_roundingamount.set("currencyID", sales_invoice_doc.currency)
             lineextensionamount = float(cbc_lineextensionamount_1.text)
             taxamount = float(cbc_taxamount_3.text)
-
+            # frappe.throw(f"Tax Amount1: {taxamount}")
             cbc_roundingamount.text = str(round(lineextensionamount + taxamount, 2))
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
@@ -809,19 +815,28 @@ def item_data_with_template(invoice, sales_invoice_doc):
             cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
             cbc_taxamount_3.set("currencyID", sales_invoice_doc.currency)
             cbc_taxamount_3.text = str(
-                abs(round(item_tax_percentage * single_item.amount / 100, 2))
+                abs(
+                    (
+                        Decimal(str(item_tax_percentage))
+                        * Decimal(str(single_item.amount))
+                        / Decimal("100")
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                )
             )
             cbc_roundingamount = ET.SubElement(cac_taxtotal_2, "cbc:RoundingAmount")
             cbc_roundingamount.set("currencyID", sales_invoice_doc.currency)
             cbc_roundingamount.text = str(
                 abs(
-                    custom_round(
-                        single_item.amount
-                        + (item_tax_percentage * single_item.amount / 100)
-                    )
+                    (
+                        Decimal(str(single_item.amount))
+                        + (
+                            Decimal(str(item_tax_percentage))
+                            * Decimal(str(single_item.amount))
+                            / Decimal("100")
+                        )
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 )
             )
-
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
             cbc_name.text = single_item.item_code
