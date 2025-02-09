@@ -3,6 +3,7 @@ frappe.realtime.on('hide_gif', () => {
 });
 
 frappe.realtime.on('show_gif', (data) => {
+    console.log("Show gif called");
     const gifHtml = `
         <div id="custom-gif-overlay" style="
             position: fixed;
@@ -148,7 +149,7 @@ frappe.ui.form.on("Company", {
                 "invoice_number": frm.doc.custom_sample_invoice_number_to_test,
                 "compliance_type": "1",
                 "company_abbr": frm.doc.abbr,
-                "source_doc" : frm.doc,
+                "source_doc": frm.doc,
             },
             callback: function (r) {
                 if (!r.exc) {

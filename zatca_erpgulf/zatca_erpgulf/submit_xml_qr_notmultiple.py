@@ -188,7 +188,9 @@ def send_request_and_handle_response(
 ):
     """send_request_and_handle_response"""
     frappe.publish_realtime(
-        "show_gif", {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"}
+        "show_gif",
+        {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
+        user=frappe.session.user,
     )
     response = requests.post(
         url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
@@ -196,7 +198,7 @@ def send_request_and_handle_response(
         json=payload,
         timeout=30,
     )
-    frappe.publish_realtime("hide_gif")
+    frappe.publish_realtime("hide_gif", user=frappe.session.user)
     if response.status_code in (400, 405, 406, 409):
         handle_failed_submission(
             invoice_number,

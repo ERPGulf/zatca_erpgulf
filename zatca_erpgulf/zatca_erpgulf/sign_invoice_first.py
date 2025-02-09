@@ -369,7 +369,9 @@ def create_csid(zatca_doc, company_abbr):
         }
 
         frappe.publish_realtime(
-            "show_gif", {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"}
+            "show_gif",
+            {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
+            user=frappe.session.user,
         )
 
         response = requests.post(
@@ -378,7 +380,7 @@ def create_csid(zatca_doc, company_abbr):
             data=payload,
             timeout=30,
         )
-        frappe.publish_realtime("hide_gif")
+        frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
         if response.status_code == 400:
             frappe.throw("Error: OTP is not valid. " + response.text)
@@ -1251,7 +1253,9 @@ def production_csid(zatca_doc, company_abbr):
             "Content-Type": "application/json",
         }
         frappe.publish_realtime(
-            "show_gif", {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"}
+            "show_gif",
+            {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
+            user=frappe.session.user,
         )
 
         response = requests.post(
@@ -1260,7 +1264,7 @@ def production_csid(zatca_doc, company_abbr):
             json=payload,
             timeout=30,
         )
-        frappe.publish_realtime("hide_gif")
+        frappe.publish_realtime("hide_gif", user=frappe.session.user)
         frappe.msgprint(response.text)
 
         if response.status_code != 200:

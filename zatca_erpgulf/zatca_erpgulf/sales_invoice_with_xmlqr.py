@@ -155,7 +155,9 @@ def reporting_api_xml_sales_invoice(
 
         try:
             frappe.publish_realtime(
-                "show_gif", {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"}
+                "show_gif",
+                {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
+                user=frappe.session.user,
             )
             response = requests.post(
                 url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
@@ -163,7 +165,7 @@ def reporting_api_xml_sales_invoice(
                 json=payload,
                 timeout=30,
             )
-            frappe.publish_realtime("hide_gif")
+            frappe.publish_realtime("hide_gif", user=frappe.session.user)
             if response.status_code in (400, 405, 406, 409):
                 invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
                 invoice_doc.db_set(
