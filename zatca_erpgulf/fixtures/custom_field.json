@@ -3230,7 +3230,7 @@
   "name": "Company-custom_send_invoice_to_zatca",
   "no_copy": 0,
   "non_negative": 0,
-  "options": "Live\nBatches",
+  "options": "Live\nBatches\nBackground",
   "permlevel": 0,
   "precision": "",
   "print_hide": 0,
