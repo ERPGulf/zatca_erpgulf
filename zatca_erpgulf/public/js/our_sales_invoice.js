@@ -1,10 +1,10 @@
 function applyTooltips(context, fieldsWithTooltips) {
     fieldsWithTooltips.forEach((field) => {
         let fieldContainer;
-        if (context.fields_dict?.[field.fieldname]){
+        if (context.fields_dict?.[field.fieldname]) {
             fieldContainer = context.fields_dict[field.fieldname];
         }
-        else if (context.dialog?.fields_dict?.[field.fieldname]){
+        else if (context.dialog?.fields_dict?.[field.fieldname]) {
             fieldContainer = context.dialog.fields_dict[field.fieldname];
         }
         else if (context.page) {
@@ -81,7 +81,7 @@ frappe.ui.form.on("Sales Invoice", {
                     method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
                     args: {
                         "invoice_number": frm.doc.name,
-                        "source_doc":frm.doc
+                        "source_doc": frm.doc
 
                     },
                     callback: function (r) {
@@ -149,7 +149,7 @@ frappe.ui.form.on("Sales Invoice", {
                                 const pdf_url = r.message;
                                 window.open(pdf_url, '_blank');
                                 frm.reload_doc();
-                                
+
                             } else {
                                 frappe.msgprint(__('Failed to generate PDF-A3'));
                             }
