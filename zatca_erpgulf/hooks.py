@@ -221,6 +221,15 @@ from . import __version__ as app_version
 # 	"zatca_erpgulf.auth.validate"
 # ]
 
+scheduler_events = {
+    "cron": {
+        "*/10 * * * *": [
+            "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process"
+        ]
+    }
+}
+
+
 doc_events = {
     "Sales Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
