@@ -36,8 +36,6 @@ from zatca_erpgulf.zatca_erpgulf.create_xml_final_part import (
     item_data_with_template,
     xml_structuring,
 )
-
-# from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
     removetags,
     canonicalize_xml,
@@ -54,6 +52,8 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
     update_qr_toxml,
     compliance_api_call,
 )
+
+SALES_INVOICE = "Sales Invoice"
 
 
 def attach_qr_image(qrcodeb64, sales_invoice_doc):
@@ -113,7 +113,7 @@ def zatca_call_withoutxml(
     """zatca call which includes the function calling and validation reguarding the api and
     based on this the zATCA output and message is getting"""
     try:
-        if not frappe.db.exists("Sales Invoice", invoice_number):
+        if not frappe.db.exists(SALES_INVOICE, invoice_number):
             frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
         invoice = xml_tags()
         invoice, uuid1, sales_invoice_doc = salesinvoice_data(invoice, invoice_number)
@@ -208,11 +208,7 @@ def zatca_call_withoutxml(
         qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
         update_qr_toxml(qrcodeb64, company_abbr)
         signed_xmlfile_name = structuring_signedxml()
-        # Example usage
-        # file_path = generate_invoice_pdf(
-        #     invoice_number, l anguage="en", letterhead="Sample letterhead"
-        # )
-        # frappe.throw(f"PDF saved at: {file_path}")
+
         if compliance_type == "0":
             if customer_doc.custom_b2c == 1:
                 attach_qr_image(qrcodeb64, sales_invoice_doc)
@@ -263,7 +259,6 @@ def reporting_api_sales_withoutxml(
             "uuid": uuid1,
             "invoice": xml_base64_decode(signed_xmlfile_name),
         }
-        # production_csid = company_doc.custom_basic_auth_from_production
         xml_base64 = xml_base64_decode(signed_xmlfile_name)
 
         xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
@@ -314,7 +309,7 @@ def reporting_api_sales_withoutxml(
                 )
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
                 if response.status_code in (400, 405, 406, 409):
-                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     invoice_doc.db_set(
                         "custom_uuid",
                         "Not Submitted",
@@ -343,7 +338,7 @@ def reporting_api_sales_withoutxml(
                     )
 
                 if response.status_code in (401, 403, 407, 451):
-                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     invoice_doc.db_set(
                         "custom_uuid",
                         "Not Submitted",
@@ -373,7 +368,7 @@ def reporting_api_sales_withoutxml(
                     )
 
                 if response.status_code not in (200, 202):
-                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     invoice_doc.db_set(
                         "custom_uuid",
                         "Not Submitted",
@@ -426,7 +421,7 @@ def reporting_api_sales_withoutxml(
                         zatca_settings.custom_pih = encoded_hash
                         zatca_settings.save(ignore_permissions=True)
 
-                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     invoice_doc.db_set(
                         "custom_zatca_full_response",
                         msg,
@@ -453,7 +448,7 @@ def reporting_api_sales_withoutxml(
                 )
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
         invoice_doc.db_set(
             "custom_zatca_full_response",
             f"Error: {str(e)}",
