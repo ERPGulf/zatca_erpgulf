@@ -516,6 +516,8 @@ def get_address(pos_invoice_doc, company_doc):
                 ],
                 filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
             )
+            if not address_list:
+                frappe.throw("Zatca requires a proper address. Please add")
             if address_list:
                 return address_list[0]
 
@@ -537,9 +539,7 @@ def get_address(pos_invoice_doc, company_doc):
     )
 
     if not address_list:
-        frappe.throw(
-            "Zatca requires a proper address. Please add your company or branch address in the Address master."
-        )
+        frappe.throw("require address of company")
 
     # Return the first valid address from Company
     for address in address_list:
@@ -563,7 +563,7 @@ def company_data(invoice, pos_invoice_doc):
                 cost_center_doc.custom_zatca__registration_number
             )
         else:
-            custom_registration_type = "CRN"  # Default schemeID
+            custom_registration_type = company_doc.custom_registration_type
             custom_company_registration = company_doc.custom_company_registration
 
         cac_accountingsupplierparty = ET.SubElement(
