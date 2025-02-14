@@ -257,7 +257,7 @@ def reporting_api(
                     url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
                     headers=headers,
                     json=payload,
-                    timeout=30,
+                    timeout=60,
                 )
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
                 if response.status_code in (400, 405, 406, 409):
@@ -475,7 +475,7 @@ def clearance_api(
             url=get_api_url(company_abbr, base_url="invoices/clearance/single"),
             headers=headers,
             json=payload,
-            timeout=30,
+            timeout=60,
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 

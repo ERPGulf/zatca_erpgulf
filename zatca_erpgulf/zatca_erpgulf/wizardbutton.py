@@ -27,7 +27,7 @@ def get_api_url(company_abbr, base_url):
 
 
 @frappe.whitelist(allow_guest=False)
-def wizard_button(company_abbr, button,pos=0, machine=None):
+def wizard_button(company_abbr, button, pos=0, machine=None):
     """Compliance check for ZATCA based on file type and company abbreviation."""
     try:
         app_path = frappe.get_app_path("zatca_erpgulf")
@@ -50,8 +50,6 @@ def wizard_button(company_abbr, button,pos=0, machine=None):
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(f"Company with abbreviation {company_abbr} not found.")
-
-        
 
         # Parse XML and extract encoded hash a nd UUI D
         namespaces = {
@@ -99,20 +97,20 @@ def wizard_button(company_abbr, button,pos=0, machine=None):
         # csid = company_doc.custom_basic_auth_from_csid
         # if not csid:
         #     frappe.throw(f"CSID for company {company_abbr} not found.")
-        if pos==1:
+        if pos == 1:
             if not machine:
                 frappe.throw("Machine name is required for offline POS.")
             doc_type = "Zatca Multiple Setting"
             doc_name = machine
             doc = frappe.get_doc(doc_type, doc_name)
         else:
-            doc_type =frappe.get_doc("Company", company_name)
-            doc_name=company_name
-            doc = frappe.get_doc(doc_type, doc_name)    
-        
+            doc_type = frappe.get_doc("Company", company_name)
+            doc_name = company_name
+            doc = frappe.get_doc(doc_type, doc_name)
+
         csid = doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw(f"CSID not found in {doc_type} for {doc_name}.")        
+            frappe.throw(f"CSID not found in {doc_type} for {doc_name}.")
 
         # Define headers
         headers = {
@@ -129,7 +127,7 @@ def wizard_button(company_abbr, button,pos=0, machine=None):
             url=get_api_url(company_abbr, base_url="compliance/invoices"),
             headers=headers,
             data=payload,
-            timeout=30,
+            timeout=60,
         )
 
         # Handle response
