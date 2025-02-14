@@ -60,9 +60,10 @@ def submit_invoices_to_zatca_background_process():
                 break
 
         if not any_company_in_range:
-            frappe.log_error(
-                "No companies found with valid submission time.", "ZATCA Background Job"
-            )
+            # frappe.log_error(
+            #     "No companies found with valid submission time.", "ZATCA Background Job"
+            # )
+            pass
             return
 
         past_24_hours_time = add_to_date(now_datetime(), hours=-24)
