@@ -485,27 +485,39 @@ def get_address(sales_invoice_doc, company_doc):
     """
     Fetches the appropriate address for the invoice.
     - If company_doc.custom_costcenter is 1, use the Cost Center's address.
+    - If a cost center is selected but has no address, an error is raised.
     - Otherwise, use the first available company address.
     """
     if company_doc.custom_costcenter == 1 and sales_invoice_doc.cost_center:
         cost_center_doc = frappe.get_doc("Cost Center", sales_invoice_doc.cost_center)
-        if cost_center_doc.custom_zatca_branch_address:
-            address_list = frappe.get_all(
-                "Address",
-                fields=[
-                    "address_line1",
-                    "address_line2",
-                    "custom_building_number",
-                    "city",
-                    "pincode",
-                    "state",
-                ],
-                filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
-            )
-            if address_list:
-                return address_list[0]  # Cost Centers have only one address
 
-    # Fallback to company address if cost center is not used
+        # Ensure the Cost Center has a linked address
+        if not cost_center_doc.custom_zatca_branch_address:
+            frappe.throw(
+                f"No address is set for the selected Cost Center: {cost_center_doc.name}. Please add an address."
+            )
+
+        address_list = frappe.get_all(
+            "Address",
+            fields=[
+                "address_line1",
+                "address_line2",
+                "custom_building_number",
+                "city",
+                "pincode",
+                "state",
+            ],
+            filters={"name": cost_center_doc.custom_zatca_branch_address},
+        )
+
+        if not address_list:
+            frappe.throw(
+                f"ZATCA requires a proper address. Please add an address for Cost Center: {cost_center_doc.name}."
+            )
+
+        return address_list[0]  # Return the Cost Center's address
+
+    # Fetch Company address only if no cost center is used
     address_list = frappe.get_all(
         "Address",
         fields=[
@@ -516,19 +528,14 @@ def get_address(sales_invoice_doc, company_doc):
             "pincode",
             "state",
         ],
-        filters=[
-            ["is_your_company_address", "=", "1"],
-            ["Dynamic Link", "link_name", "=", company_doc.name],
-        ],
+        filters={"is_your_company_address": 1},
     )
 
     if not address_list:
-        frappe.throw(
-            "Zatca requires a proper address. Please add your company or branch address in the Address master."
-        )
+        frappe.throw("requires a proper company address. Please add an address")
 
-    # Return the first valid address from Company
-    return address_list[0]
+    for address in address_list:
+        return address
 
 
 def company_data(invoice, sales_invoice_doc):
