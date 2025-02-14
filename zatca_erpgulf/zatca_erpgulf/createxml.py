@@ -481,6 +481,56 @@ def additional_reference(invoice, company_abbr, sales_invoice_doc):
         return None
 
 
+def get_address(sales_invoice_doc, company_doc):
+    """
+    Fetches the appropriate address for the invoice.
+    - If company_doc.custom_costcenter is 1, use the Cost Center's address.
+    - Otherwise, use the first available company address.
+    """
+    if company_doc.custom_costcenter == 1 and sales_invoice_doc.cost_center:
+        cost_center_doc = frappe.get_doc("Cost Center", sales_invoice_doc.cost_center)
+        if cost_center_doc.custom_zatca_branch_address:
+            address_list = frappe.get_all(
+                "Address",
+                fields=[
+                    "address_line1",
+                    "address_line2",
+                    "custom_building_number",
+                    "city",
+                    "pincode",
+                    "state",
+                ],
+                filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
+            )
+            if address_list:
+                return address_list[0]  # Cost Centers have only one address
+
+    # Fallback to company address if cost center is not used
+    address_list = frappe.get_all(
+        "Address",
+        fields=[
+            "address_line1",
+            "address_line2",
+            "custom_building_number",
+            "city",
+            "pincode",
+            "state",
+        ],
+        filters=[
+            ["is_your_company_address", "=", "1"],
+            ["Dynamic Link", "link_name", "=", company_doc.name],
+        ],
+    )
+
+    if not address_list:
+        frappe.throw(
+            "Zatca requires a proper address. Please add your company or branch address in the Address master."
+        )
+
+    # Return the first valid address from Company
+    return address_list[0]
+
+
 def company_data(invoice, sales_invoice_doc):
     """
     Adds company data elements to the XML invoice, including supplier details, address,
@@ -488,75 +538,71 @@ def company_data(invoice, sales_invoice_doc):
     """
     try:
         company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
-        # frappe.throw(str(company_doc))
+        if company_doc.custom_costcenter == 1 and not sales_invoice_doc.cost_center:
+            frappe.throw("no Cost Center is set in the invoice.Give the feild")
+        # Determine whether to fetch data from Cost Center or Company
+        if company_doc.custom_costcenter == 1 and sales_invoice_doc.cost_center:
+            cost_center_doc = frappe.get_doc(
+                "Cost Center", sales_invoice_doc.cost_center
+            )
+            custom_registration_type = cost_center_doc.custom_zatca__registration_type
+            custom_company_registration = (
+                cost_center_doc.custom_zatca__registration_number
+            )
+        else:
+            custom_registration_type = company_doc.custom_registration_type
+            custom_company_registration = company_doc.custom_company_registration
+
         cac_accountingsupplierparty = ET.SubElement(
             invoice, "cac:AccountingSupplierParty"
         )
         cac_party_1 = ET.SubElement(cac_accountingsupplierparty, "cac:Party")
         cac_partyidentification = ET.SubElement(cac_party_1, "cac:PartyIdentification")
         cbc_id_2 = ET.SubElement(cac_partyidentification, CBC_ID)
-        cbc_id_2.set("schemeID", company_doc.custom_registration_type)
-        cbc_id_2.text = company_doc.custom_company_registration
+        cbc_id_2.set("schemeID", custom_registration_type)
+        cbc_id_2.text = custom_company_registration
 
-        address_list = frappe.get_all(
-            "Address",
-            fields=[
-                "address_line1",
-                "address_line2",
-                "custom_building_number",
-                "city",
-                "pincode",
-                "state",
-            ],
-            filters=[
-                ["is_your_company_address", "=", "1"],
-                ["Dynamic Link", "link_name", "=", company_doc.name],
-            ],
+        # Get the appropriate address
+        address = get_address(sales_invoice_doc, company_doc)
+
+        cac_postaladdress = ET.SubElement(cac_party_1, "cac:PostalAddress")
+        cbc_streetname = ET.SubElement(cac_postaladdress, "cbc:StreetName")
+        cbc_streetname.text = address.address_line1
+        cbc_buildingnumber = ET.SubElement(cac_postaladdress, "cbc:BuildingNumber")
+        cbc_buildingnumber.text = address.custom_building_number
+        cbc_plotidentification = ET.SubElement(
+            cac_postaladdress, "cbc:PlotIdentification"
         )
+        cbc_plotidentification.text = address.address_line1
+        cbc_citysubdivisionname = ET.SubElement(
+            cac_postaladdress, "cbc:CitySubdivisionName"
+        )
+        cbc_citysubdivisionname.text = address.city
+        cbc_cityname = ET.SubElement(cac_postaladdress, "cbc:CityName")
+        cbc_cityname.text = address.city
+        cbc_postalzone = ET.SubElement(cac_postaladdress, "cbc:PostalZone")
+        cbc_postalzone.text = address.pincode
+        cbc_countrysubentity = ET.SubElement(cac_postaladdress, "cbc:CountrySubentity")
+        cbc_countrysubentity.text = address.state
 
-        if len(address_list) == 0:
-            frappe.throw(
-                "Zatca requires proper address. Please add your company address in address master"
-            )
-        for address in address_list:
-            cac_postaladdress = ET.SubElement(cac_party_1, "cac:PostalAddress")
-            cbc_streetname = ET.SubElement(cac_postaladdress, "cbc:StreetName")
-            cbc_streetname.text = address.address_line1
-            cbc_buildingnumber = ET.SubElement(cac_postaladdress, "cbc:BuildingNumber")
-            cbc_buildingnumber.text = address.custom_building_number
-            cbc_plotidentification = ET.SubElement(
-                cac_postaladdress, "cbc:PlotIdentification"
-            )
-            cbc_plotidentification.text = address.address_line1
-            cbc_citysubdivisionname = ET.SubElement(
-                cac_postaladdress, "cbc:CitySubdivisionName"
-            )
-            cbc_citysubdivisionname.text = address.city
-            cbc_cityname = ET.SubElement(cac_postaladdress, "cbc:CityName")
-            cbc_cityname.text = address.city
-            cbc_postalzone = ET.SubElement(cac_postaladdress, "cbc:PostalZone")
-            cbc_postalzone.text = address.pincode
-            cbc_countrysubentity = ET.SubElement(
-                cac_postaladdress, "cbc:CountrySubentity"
-            )
-            cbc_countrysubentity.text = address.state
-            break
         cac_country = ET.SubElement(cac_postaladdress, "cac:Country")
         cbc_identificationcode = ET.SubElement(cac_country, "cbc:IdentificationCode")
         cbc_identificationcode.text = "SA"
+
         cac_partytaxscheme = ET.SubElement(cac_party_1, "cac:PartyTaxScheme")
         cbc_companyid = ET.SubElement(cac_partytaxscheme, "cbc:CompanyID")
         cbc_companyid.text = company_doc.tax_id
-        # frappe.throw(f"Company Tax ID set to: {cbc_CompanyID.text}")
+
         cac_taxscheme = ET.SubElement(cac_partytaxscheme, "cac:TaxScheme")
         cbc_id_3 = ET.SubElement(cac_taxscheme, CBC_ID)
         cbc_id_3.text = "VAT"
-        # frappe.throw(f"Tax Scheme ID set to: {cbc_ID_3.text}")
+
         cac_partylegalentity = ET.SubElement(cac_party_1, "cac:PartyLegalEntity")
         cbc_registrationname = ET.SubElement(
             cac_partylegalentity, "cbc:RegistrationName"
         )
         cbc_registrationname.text = sales_invoice_doc.company
+
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
         frappe.throw(f"Error occurred in company data: {e}")
