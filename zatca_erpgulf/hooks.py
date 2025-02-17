@@ -225,10 +225,12 @@ from . import __version__ as app_version
 scheduler_events = {
     "cron": {
         "*/10 * * * *": [
-            "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process"
+            "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process",
+            "zatca_erpgulf.zatca_erpgulf.schedule_pos.submit_posinvoices_to_zatca_background_process",
         ]
     }
 }
+
 
 # # schdule for every 10 minutes from 1 am to 7 am
 # scheduler_events = {
@@ -261,6 +263,7 @@ doctype_js = {
 
 doctype_list_js = {
     "Sales Invoice": "public/js/resubmit.js",
+    "POS Invoice": "public/js/resubmitpos.js",
 }
 
 

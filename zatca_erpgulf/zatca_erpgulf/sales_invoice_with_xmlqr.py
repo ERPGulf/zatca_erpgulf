@@ -132,7 +132,7 @@ def reporting_api_xml_sales_invoice(
         }
         # production_csid = company_doc.custom_basic_auth_from_p roduction
         if not sales_invoice_doc.custom_zatca_pos_name:
-            frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
+            frappe.throw(f"ZATCA POS name is missing for invoice with xml {invoice_number}.")
 
         zatca_settings = frappe.get_doc(
             "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
