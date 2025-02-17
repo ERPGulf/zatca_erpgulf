@@ -707,7 +707,7 @@ def customer_data(invoice, sales_invoice_doc):
         cbc_registrationname_1 = ET.SubElement(
             cac_partylegalentity_1, "cbc:RegistrationName"
         )
-        cbc_registrationname_1.text = sales_invoice_doc.customer
+        cbc_registrationname_1.text = customer_doc.customer_name
 
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:

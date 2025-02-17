@@ -55,7 +55,8 @@ extend_listview_event("Sales Invoice", "onload", function (listview) {
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.resubmit_invoices",
             args: {
-                invoice_numbers: selected.map(invoice => invoice.name)
+                invoice_numbers: selected.map(invoice => invoice.name),
+                bypass_background_check: true   // Bypass the background check
             },
             callback: function (response) {
                 if (response.message) {

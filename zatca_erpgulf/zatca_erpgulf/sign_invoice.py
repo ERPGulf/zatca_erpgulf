@@ -67,6 +67,9 @@ from zatca_erpgulf.zatca_erpgulf.sales_invoice_withoutxml import (
 from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
     submit_sales_invoice_simplifeid,
 )
+from zatca_erpgulf.zatca_erpgulf.zatca_background_sched import (
+    zatca_call_scheduler_background,
+)
 
 REPORTED_XML = "%Reported xml file%"
 
@@ -925,7 +928,7 @@ def zatca_call_compliance(
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background(invoice_number, source_doc):
+def zatca_background(invoice_number, source_doc, bypass_background_check=False):
     """defines the zatca bacground"""
     try:
         if source_doc:
@@ -1098,6 +1101,17 @@ def zatca_background(invoice_number, source_doc):
                     submit_sales_invoice_simplifeid(
                         sales_invoice_doc, custom_xml_field, invoice_number
                     )
+                elif (
+                    settings.custom_send_invoice_to_zatca == "Background"
+                    and not bypass_background_check
+                ):
+                    zatca_call_scheduler_background(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
                 else:
 
                     zatca_call(
@@ -1116,7 +1130,7 @@ def zatca_background(invoice_number, source_doc):
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_on_submit(doc, _method=None):
+def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
     """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
     try:
         source_doc = doc
@@ -1285,6 +1299,17 @@ def zatca_background_on_submit(doc, _method=None):
                     submit_sales_invoice_simplifeid(
                         sales_invoice_doc, custom_xml_field, invoice_number
                     )
+                elif (
+                    settings.custom_send_invoice_to_zatca == "Background"
+                    and not bypass_background_check 
+                ):
+                    zatca_call_scheduler_background(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
                 else:
 
                     zatca_call(
@@ -1303,7 +1328,7 @@ def zatca_background_on_submit(doc, _method=None):
 
 
 @frappe.whitelist()
-def resubmit_invoices(invoice_numbers):
+def resubmit_invoices(invoice_numbers, bypass_background_check=False):
     """
     Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'.
     If the invoice is already submitted, call `zatca_background_on_submit`.
@@ -1322,11 +1347,16 @@ def resubmit_invoices(invoice_numbers):
                 sales_invoice_doc.docstatus == 1
             ):  # Check if the invoice is already submitted
                 # Call the zatca_background_on_submit function
-                zatca_background_on_submit(sales_invoice_doc)
+                zatca_background_on_submit(
+                    sales_invoice_doc, bypass_background_check=True
+                )
 
             else:
                 # Submit the invoice
                 sales_invoice_doc.submit()
+                zatca_background_on_submit(
+                    sales_invoice_doc, bypass_background_check=True
+                )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(f"Error in background call: {str(e)}")

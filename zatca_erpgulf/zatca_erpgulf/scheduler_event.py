@@ -1,13 +1,10 @@
 """this file is used to schedule the background job for submitting invoices to ZATCA"""
 
 from datetime import datetime, timedelta, time
-from frappe.utils import now_datetime, add_to_date
 import frappe
+from frappe.utils import now_datetime, add_to_date
+
 from zatca_erpgulf.zatca_erpgulf.sign_invoice import zatca_background_on_submit
-
-
-# frappe.init(site="zatca.erpgulf.com")
-# frappe.connect()
 
 
 def convert_to_time(time_value):
@@ -88,13 +85,18 @@ def submit_invoices_to_zatca_background_process():
         for invoice in not_submitted_invoices:
             sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice["name"])
             if sales_invoice_doc.docstatus == 1:
-                zatca_background_on_submit(sales_invoice_doc)
+                zatca_background_on_submit(
+                    sales_invoice_doc, bypass_background_check=True
+                )
                 frappe.log_error(
                     f"Processed {sales_invoice_doc.name}: Sent to ZATCA.",
                     "ZATCA Background Job",
                 )
             else:
                 sales_invoice_doc.submit()
+                zatca_background_on_submit(
+                    sales_invoice_doc, bypass_background_check=True
+                )
                 frappe.log_error(
                     f"Submitted {sales_invoice_doc.name} before sending to ZATCA.",
                     "ZATCA Background Job",
