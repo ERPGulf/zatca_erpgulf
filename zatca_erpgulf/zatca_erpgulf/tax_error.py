@@ -12,6 +12,9 @@ def validate_sales_invoice_taxes(doc, event=None):
     :param sales_invoice_doc: The sales invoice document object
     :return: None
     """
+    customer_doc = frappe.get_doc("Customer", doc.customer)
+    if customer_doc.custom_b2c != 1:
+        frappe.throw("This customer should be B2C for Background")
     company_doc = frappe.get_doc("Company", doc.company)
 
     # If the company requires cost centers, ensure the invoice has one

@@ -672,7 +672,8 @@ def item_data(invoice, sales_invoice_doc):
             cbc_roundingamount.text = str(round(lineextensionamount + taxamount, 2))
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text = single_item.item_code
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
+
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
             )
@@ -840,7 +841,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             )
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text = single_item.item_code
+            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
 
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"

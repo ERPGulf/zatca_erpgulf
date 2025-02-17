@@ -63,6 +63,14 @@ from zatca_erpgulf.zatca_erpgulf.pos_submit__without_xml import (
     zatca_call_pos_without_xml,
 )
 
+from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
+    submit_sales_invoice_simplifeid,
+)
+
+from zatca_erpgulf.zatca_erpgulf.pos_schedule_background import (
+    zatca_call_pos_without_xml_background,
+)
+
 ITEM_TAX_TEMPLATE_WARNING = "If any one item has an Item Tax Template,"
 " all items must have an Item Tax Template."
 CONTENT_TYPE_JSON = "application/json"
@@ -643,7 +651,7 @@ def zatca_call_compliance(
             compliance_type = "6"
         # Validate the invoice number
         if not frappe.db.exists("POS Invoice", invoice_number):
-            frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
+            frappe.throw("Invoice Number is NOT Valid1: " + str(invoice_number))
 
         # Fetch and process the sales invoice data
         invoice = xml_tags()
@@ -742,7 +750,7 @@ def zatca_call_compliance(
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_(invoice_number, source_doc):
+def zatca_background_(invoice_number, source_doc, bypass_background_check=False):
     """Function for zatca background"""
     try:
         if source_doc:
@@ -869,13 +877,38 @@ def zatca_background_(invoice_number, source_doc):
                         source_doc,
                     )
             else:
-                zatca_call(
-                    invoice_number,
-                    "0",
-                    any_item_has_tax_template,
-                    company_abbr,
-                    source_doc,
-                )
+                if is_qr_and_xml_attached(pos_invoice_doc):
+                    custom_xml_field = frappe.db.get_value(
+                        "File",
+                        {
+                            "attached_to_doctype": pos_invoice_doc.doctype,
+                            "attached_to_name": pos_invoice_doc.name,
+                            "file_name": ["like", "%Reported xml file%"],
+                        },
+                        "file_url",
+                    )
+                    submit_sales_invoice_simplifeid(
+                        pos_invoice_doc, custom_xml_field, invoice_number
+                    )
+                elif (
+                    settings.custom_send_invoice_to_zatca == "Background"
+                    and not bypass_background_check
+                ):
+                    zatca_call_pos_without_xml_background(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
+                else:
+                    zatca_call(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
         else:
             create_qr_code(pos_invoice_doc, method=None)
 
@@ -883,8 +916,34 @@ def zatca_background_(invoice_number, source_doc):
         frappe.throw("Error in background call: " + str(e))
 
 
+def is_file_attached(file_url):
+    """Check if a file is attached by verifying its existence in the database."""
+    return file_url and frappe.db.exists("File", {"file_url": file_url})
+
+
+def is_qr_and_xml_attached(sales_invoice_doc):
+    """Check if both QR code and XML file are already"""
+
+    # Get the QR Code field value
+    qr_code = sales_invoice_doc.get("ksa_einv_qr")
+
+    # Get the XML file if attached
+    xml_file = frappe.db.get_value(
+        "File",
+        {
+            "attached_to_doctype": sales_invoice_doc.doctype,
+            "attached_to_name": sales_invoice_doc.name,
+            "file_name": ["like", "%Reported xml file%"],
+        },
+        "file_url",
+    )
+
+    # Ensure both files exist before confirming attachment
+    return is_file_attached(qr_code) and is_file_attached(xml_file)
+
+
 @frappe.whitelist(allow_guest=False)
-def zatca_background_on_submit(doc, _method=None):
+def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
     """Function for zatca background on submit"""
 
     try:
@@ -1029,14 +1088,39 @@ def zatca_background_on_submit(doc, _method=None):
                         source_doc,
                     )
             else:
-                # Handle the case where custom_unique_id is missing
-                zatca_call(
-                    invoice_number,
-                    "0",
-                    any_item_has_tax_template,
-                    company_abbr,
-                    source_doc,
-                )
+                if is_qr_and_xml_attached(pos_invoice_doc):
+                    custom_xml_field = frappe.db.get_value(
+                        "File",
+                        {
+                            "attached_to_doctype": pos_invoice_doc.doctype,
+                            "attached_to_name": pos_invoice_doc.name,
+                            "file_name": ["like", "%Reported xml file%"],
+                        },
+                        "file_url",
+                    )
+                    submit_sales_invoice_simplifeid(
+                        pos_invoice_doc, custom_xml_field, invoice_number
+                    )
+                elif (
+                    settings.custom_send_invoice_to_zatca == "Background"
+                    and not bypass_background_check
+                ):
+                    zatca_call_pos_without_xml_background(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
+                else:
+                    # Handle the case where custom_unique_id is missing
+                    zatca_call(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
         else:
             # If not Phase-2, create a QR code
             create_qr_code(pos_invoice_doc, method=None)

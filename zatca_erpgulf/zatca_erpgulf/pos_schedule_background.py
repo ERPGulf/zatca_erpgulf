@@ -55,7 +55,7 @@ CONTENT_TYPE_JSON = "application/json"
 POS_INVOICE = "POS Invoice"
 
 
-def zatca_call_pos_without_xml(
+def zatca_call_pos_without_xml_background(
     invoice_number,
     compliance_type="0",
     any_item_has_tax_template=False,
@@ -204,6 +204,17 @@ def reporting_api_pos_without_xml(
             "uuid": uuid1,
             "invoice": xml_base64_decode(signed_xmlfile_name),
         }
+
+        # Directly retrieve the production CSID from the company's document field
+
+        if pos_invoice_doc.custom_zatca_pos_name:
+            zatca_settings = frappe.get_doc(
+                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+            )
+            production_csid = zatca_settings.custom_final_auth_csid
+        else:
+            production_csid = company_doc.custom_basic_auth_from_production
+
         xml_base64 = xml_base64_decode(signed_xmlfile_name)
 
         xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
@@ -218,15 +229,6 @@ def reporting_api_pos_without_xml(
         )
 
         file.save(ignore_permissions=True)
-        # Directly retrieve the production CSID from the company's document field
-        if not pos_invoice_doc.custom_zatca_pos_name:
-            frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
-
-        zatca_settings = frappe.get_doc(
-            "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
-        )
-        production_csid = zatca_settings.custom_final_auth_csid
-
         if not production_csid:
             frappe.throw(
                 f"Production CSID is missing in ZATCA settings for {company_abbr}."
@@ -243,7 +245,7 @@ def reporting_api_pos_without_xml(
                 "cdd3b817f963ec301682dae864351c67ee3a402866"
             ),
         }
-        if company_doc.custom_send_invoice_to_zatca != "Batches":
+        if company_doc.custom_send_invoice_to_zatca not in ["Batches", "Background"]:
             try:
                 frappe.publish_realtime(
                     "show_gif",
