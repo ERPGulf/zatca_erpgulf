@@ -1073,6 +1073,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                 )
         if settings.custom_phase_1_or_2 == "Phase-2":
             if field_exists and sales_invoice_doc.custom_unique_id:
+
                 if is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = sales_invoice_doc.custom_xml
@@ -1270,6 +1271,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     + str(invoice_number)
                 )
         if settings.custom_phase_1_or_2 == "Phase-2":
+
             if field_exists and sales_invoice_doc.custom_unique_id:
                 if is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
@@ -1301,7 +1303,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     )
                 elif (
                     settings.custom_send_invoice_to_zatca == "Background"
-                    and not bypass_background_check 
+                    and not bypass_background_check
                 ):
                     zatca_call_scheduler_background(
                         invoice_number,

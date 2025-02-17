@@ -212,6 +212,7 @@ def reporting_api_pos_without_xml(
                 "doctype": "File",
                 "file_name": "Reported xml file " + pos_invoice_doc.name + ".xml",
                 "attached_to_doctype": pos_invoice_doc.doctype,
+                "is_private": 1,
                 "attached_to_name": pos_invoice_doc.name,
                 "content": xml_cleared_data,
             }
@@ -220,7 +221,9 @@ def reporting_api_pos_without_xml(
         file.save(ignore_permissions=True)
         # Directly retrieve the production CSID from the company's document field
         if not pos_invoice_doc.custom_zatca_pos_name:
-            frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
+            frappe.throw(
+                f"ZATCA POS name is missing for invoice pos withoutxml {invoice_number}."
+            )
 
         zatca_settings = frappe.get_doc(
             "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name

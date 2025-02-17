@@ -4,13 +4,9 @@ from datetime import datetime, timedelta, time
 import frappe
 from frappe.utils import now_datetime, add_to_date
 
-from zatca_erpgulf.zatca_erpgulf.sign_invoice import zatca_background_on_submit
-from zatca_erpgulf.zatca_erpgulf.schedule_pos import (
-    submit_posinvoices_to_zatca_background_process,
-)
+from zatca_erpgulf.zatca_erpgulf.pos_sign import zatca_background_on_submit
 
-frappe.init(site="zatca.erpgulf.com")
-frappe.connect()
+
 
 
 def convert_to_time(time_value):
@@ -33,7 +29,7 @@ def is_time_in_range(start_time, end_time, current_time):
         return start_time <= current_time or current_time <= end_time
 
 
-def submit_invoices_to_zatca_background_process():
+def submit_posinvoices_to_zatca_background_process():
     """Submit invoices to ZATCA only if at least one company falls within the time range."""
     try:
         current_time = now_datetime().time()
@@ -46,7 +42,7 @@ def submit_invoices_to_zatca_background_process():
                 "custom_send_invoice_to_zatca",
             ],
         )
-
+        # print(f"companies: {companies}", "ZATCA Background Job")
         any_company_in_range = False
         for company in companies:
             if not company.custom_start_time or not company.custom_end_time:
@@ -54,11 +50,12 @@ def submit_invoices_to_zatca_background_process():
 
             start_time = convert_to_time(company.custom_start_time)
             end_time = convert_to_time(company.custom_end_time)
-
+            # print(f"start_time: {start_time}, end_time: {end_time}, current_time: {current_time}", "ZATCA Background Job")
             if (
                 is_time_in_range(start_time, end_time, current_time)
                 and company.custom_send_invoice_to_zatca == "Background"
             ):
+                # print(f"Company {company.name} falls within the time range.", "ZATCA Background Job")
                 any_company_in_range = True
                 break
 
@@ -72,7 +69,7 @@ def submit_invoices_to_zatca_background_process():
         past_24_hours_time = add_to_date(now_datetime(), hours=-24)
 
         not_submitted_invoices = frappe.get_all(
-            "Sales Invoice",
+            "POS Invoice",
             filters=[
                 ["creation", ">=", past_24_hours_time],
                 ["docstatus", "in", [0, 1]],
@@ -89,22 +86,23 @@ def submit_invoices_to_zatca_background_process():
             return
 
         for invoice in not_submitted_invoices:
-            sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice["name"])
-            if sales_invoice_doc.docstatus == 1:
+            pos_invoice_doc = frappe.get_doc("POS Invoice", invoice["name"])
+            print(f"Processing {pos_invoice_doc.name}", "ZATCA Background Job")
+            if pos_invoice_doc.docstatus == 1:
                 zatca_background_on_submit(
-                    sales_invoice_doc, bypass_background_check=True
+                    pos_invoice_doc, bypass_background_check=True
                 )
                 frappe.log_error(
-                    f"Processed {sales_invoice_doc.name}: Sent to ZATCA.",
+                    f"Processed {pos_invoice_doc.name}: Sent to ZATCA.",
                     "ZATCA Background Job",
                 )
             else:
-                sales_invoice_doc.submit()
+                pos_invoice_doc.submit()
                 zatca_background_on_submit(
-                    sales_invoice_doc, bypass_background_check=True
+                    pos_invoice_doc, bypass_background_check=True
                 )
                 frappe.log_error(
-                    f"Submitted {sales_invoice_doc.name} before sending to ZATCA.",
+                    f"Submitted {pos_invoice_doc.name} before sending to ZATCA.",
                     "ZATCA Background Job",
                 )
 
@@ -114,3 +112,6 @@ def submit_invoices_to_zatca_background_process():
         )
     except Exception:
         frappe.log_error(frappe.get_traceback(), "ZATCA Background Job Error")
+
+
+# submit_posinvoices_to_zatca_background_process()

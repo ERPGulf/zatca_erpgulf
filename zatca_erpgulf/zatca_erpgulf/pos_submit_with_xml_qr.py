@@ -80,7 +80,9 @@ def reporting_api_machine(
 
         # Directly retrieve the production CSID from the company's document field
         if not pos_invoice_doc.custom_zatca_pos_name:
-            frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
+            frappe.throw(
+                f"ZATCA POS name is missing for invoice resporting {invoice_number}."
+            )
 
         zatca_settings = frappe.get_doc(
             "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
@@ -257,6 +259,4 @@ def submit_pos_withxmlqr(pos_invoice_doc, file_path, invoice_number):
         )
 
     except Exception as e:
-        frappe.throw(
-            f"Error in submitting POS invoice with xml and qr to ZATCA: {str(e)}"
-        )
+        frappe.throw(f"Error in submitting POS invoice with xml and qr: {str(e)}")

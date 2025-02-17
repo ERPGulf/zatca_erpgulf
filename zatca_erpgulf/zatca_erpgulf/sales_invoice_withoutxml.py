@@ -274,7 +274,9 @@ def reporting_api_sales_withoutxml(
         )
         file.save(ignore_permissions=True)
         if not sales_invoice_doc.custom_zatca_pos_name:
-            frappe.throw(f"ZATCA POS name is missing for invoice {invoice_number}.")
+            frappe.throw(
+                f"ZATCA POS name is missing for invoice without xml {invoice_number}."
+            )
 
         zatca_settings = frappe.get_doc(
             "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name

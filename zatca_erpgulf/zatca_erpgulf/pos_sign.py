@@ -63,8 +63,8 @@ from zatca_erpgulf.zatca_erpgulf.pos_submit__without_xml import (
     zatca_call_pos_without_xml,
 )
 
-from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
-    submit_sales_invoice_simplifeid,
+from zatca_erpgulf.zatca_erpgulf.submit_poswithqr_notmultiple import (
+    submit_pos_invoice_simplifeid,
 )
 
 from zatca_erpgulf.zatca_erpgulf.pos_schedule_background import (
@@ -95,6 +95,21 @@ def reporting_api(
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
         # Prepare the payload without JSON formatting
+        xml_base64 = xml_base64_decode(signed_xmlfile_name)
+
+        xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
+        file = frappe.get_doc(
+            {
+                "doctype": "File",
+                "file_name": "Reported xml file " + pos_invoice_doc.name + ".xml",
+                "attached_to_doctype": pos_invoice_doc.doctype,
+                "is_private": 1,
+                "attached_to_name": pos_invoice_doc.name,
+                "content": xml_cleared_data,
+            }
+        )
+
+        file.save(ignore_permissions=True)
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,
@@ -126,165 +141,166 @@ def reporting_api(
         else:
             headers = None
             frappe.throw(f"Production CSID for company {company_abbr} not found.")
-
-        try:
-            frappe.publish_realtime(
-                "show_gif",
-                {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
-                user=frappe.session.user,
-            )
-            response = requests.post(
-                url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
-                headers=headers,
-                json=payload,
-                timeout=60,
-            )
-            frappe.publish_realtime("hide_gif", user=frappe.session.user)
-            if response.status_code in (400, 405, 406, 409):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
+        if company_doc.custom_send_invoice_to_zatca != "Batches":
+            try:
+                frappe.publish_realtime(
+                    "show_gif",
+                    {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
+                    user=frappe.session.user,
                 )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
+                response = requests.post(
+                    url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
+                    headers=headers,
+                    json=payload,
+                    timeout=60,
                 )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                frappe.throw(
-                    (
-                        "Error: The request you are sending to Zatca is in incorrect format. "
-                        "Please report to system administrator. "
-                        f"Status code: {response.status_code}<br><br> "
-                        f"{response.text}"
+                frappe.publish_realtime("hide_gif", user=frappe.session.user)
+                if response.status_code in (400, 405, 406, 409):
+                    invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                    invoice_doc.db_set(
+                        "custom_uuid",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
                     )
-                )
-
-            if response.status_code in (401, 403, 407, 451):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                frappe.throw(
-                    (
-                        "Error: Zatca Authentication failed."
-                        "Your access token may be expired or not valid. "
-                        "Please contact your system administrator. "
-                        f"Status code: {response.status_code}<br><br> "
-                        f"{response.text}"
+                    invoice_doc.db_set(
+                        "custom_zatca_status",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
                     )
-                )
-
-            if response.status_code not in (200, 202):
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                frappe.throw(
-                    (
-                        "Error: Zatca server busy or not responding."
-                        " Try after sometime or contact your system administrator. "
-                        f"Status code: {response.status_code}<br><br> "
-                        f"{response.text}"
+                    invoice_doc.db_set(
+                        "custom_zatca_full_response",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
                     )
-                )
-
-            if response.status_code in (200, 202):
-                msg = (
-                    "SUCCESS: <br><br>"
-                    if response.status_code == 200
-                    else (
-                        "REPORTED WITH WARNINGS: <br><br> "
-                        "Please copy the below message and send it to your system administrator "
-                        "to fix this warnings before next submission <br><br>"
+                    frappe.throw(
+                        (
+                            "Error: The request you are sending to Zatca is in incorrect format. "
+                            "Please report to system administrator. "
+                            f"Status code: {response.status_code}<br><br> "
+                            f"{response.text}"
+                        )
                     )
-                )
-                msg += (
-                    f"Status Code: {response.status_code}<br><br>"
-                    f"Zatca Response: {response.text}<br><br>"
-                )
 
-                company_name = pos_invoice_doc.company
-                if pos_invoice_doc.custom_zatca_pos_name:
-                    if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
-                        frappe.msgprint(msg)
+                if response.status_code in (401, 403, 407, 451):
+                    invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                    invoice_doc.db_set(
+                        "custom_uuid",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    invoice_doc.db_set(
+                        "custom_zatca_status",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    invoice_doc.db_set(
+                        "custom_zatca_full_response",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    frappe.throw(
+                        (
+                            "Error: Zatca Authentication failed."
+                            "Your access token may be expired or not valid. "
+                            "Please contact your system administrator. "
+                            f"Status code: {response.status_code}<br><br> "
+                            f"{response.text}"
+                        )
+                    )
 
-                    # Update PIH data without JSON formatting
-                    zatca_settings.custom_pih = encoded_hash
-                    zatca_settings.save(ignore_permissions=True)
+                if response.status_code not in (200, 202):
+                    invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                    invoice_doc.db_set(
+                        "custom_uuid",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    invoice_doc.db_set(
+                        "custom_zatca_status",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    invoice_doc.db_set(
+                        "custom_zatca_full_response",
+                        "Not Submitted",
+                        commit=True,
+                        update_modified=True,
+                    )
+                    frappe.throw(
+                        (
+                            "Error: Zatca server busy or not responding."
+                            " Try after sometime or contact your system administrator. "
+                            f"Status code: {response.status_code}<br><br> "
+                            f"{response.text}"
+                        )
+                    )
 
+                if response.status_code in (200, 202):
+                    msg = (
+                        "SUCCESS: <br><br>"
+                        if response.status_code == 200
+                        else (
+                            "REPORTED WITH WARNINGS: <br><br> "
+                            "Please copy the below message and send it to your system administrator "
+                            "to fix this warnings before next submission <br><br>"
+                        )
+                    )
+                    msg += (
+                        f"Status Code: {response.status_code}<br><br>"
+                        f"Zatca Response: {response.text}<br><br>"
+                    )
+
+                    company_name = pos_invoice_doc.company
+                    if pos_invoice_doc.custom_zatca_pos_name:
+                        if (
+                            zatca_settings.custom_send_pos_invoices_to_zatca_on_background
+                        ):
+                            frappe.msgprint(msg)
+
+                        # Update PIH data without JSON formatting
+                        zatca_settings.custom_pih = encoded_hash
+                        zatca_settings.save(ignore_permissions=True)
+
+                    else:
+                        settings = frappe.get_doc("Company", company_name)
+                        company_abbr = settings.abbr
+                        if settings.custom_send_einvoice_background:
+                            frappe.msgprint(msg)
+
+                        # Update PIH data without JSON formatting
+                        company_doc.custom_pih = encoded_hash
+                        company_doc.save(ignore_permissions=True)
+
+                    invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+                    invoice_doc.db_set(
+                        "custom_zatca_full_response",
+                        msg,
+                        commit=True,
+                        update_modified=True,
+                    )
+                    invoice_doc.db_set(
+                        "custom_uuid", uuid1, commit=True, update_modified=True
+                    )
+                    invoice_doc.db_set(
+                        "custom_zatca_status",
+                        "REPORTED",
+                        commit=True,
+                        update_modified=True,
+                    )
+
+                    success_log(response.text, uuid1, invoice_number)
                 else:
-                    settings = frappe.get_doc("Company", company_name)
-                    company_abbr = settings.abbr
-                    if settings.custom_send_einvoice_background:
-                        frappe.msgprint(msg)
-
-                    # Update PIH data without JSON formatting
-                    company_doc.custom_pih = encoded_hash
-                    company_doc.save(ignore_permissions=True)
-
-                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_zatca_full_response", msg, commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_uuid", uuid1, commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status", "REPORTED", commit=True, update_modified=True
-                )
-
-                xml_base64 = xml_base64_decode(signed_xmlfile_name)
-
-                xml_cleared_data = base64.b64decode(xml_base64).decode("utf-8")
-                file = frappe.get_doc(
-                    {
-                        "doctype": "File",
-                        "file_name": "Reported xml file "
-                        + pos_invoice_doc.name
-                        + ".xml",
-                        "attached_to_doctype": pos_invoice_doc.doctype,
-                        "attached_to_name": pos_invoice_doc.name,
-                        "content": xml_cleared_data,
-                    }
-                )
-
-                file.save(ignore_permissions=True)
-                success_log(response.text, uuid1, invoice_number)
-            else:
-                error_log()
-        except (ValueError, TypeError, KeyError) as e:
-            frappe.throw(("Error in reporting API-2 " f"error: {str(e)}"))
+                    error_log()
+            except (ValueError, TypeError, KeyError) as e:
+                frappe.throw(("Error in reporting API-2 " f"error: {str(e)}"))
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(("Error in reporting API-1 " f"error: {str(e)}"))
@@ -468,6 +484,7 @@ def clearance_api(
                 {
                     "doctype": "File",
                     "file_name": "Cleared xml file " + pos_invoice_doc.name + ".xml",
+                    "is_private": 1,
                     "attached_to_doctype": pos_invoice_doc.doctype,
                     "attached_to_name": pos_invoice_doc.name,
                     "content": xml_cleared,
@@ -862,6 +879,8 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                 )
         if settings.custom_phase_1_or_2 == "Phase-2":
             if field_exists and pos_invoice_doc.custom_unique_id:
+                if not pos_invoice_doc.custom_zatca_pos_name:
+                    frappe.throw("pos name required")
                 if is_gpos_installed and pos_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = pos_invoice_doc.custom_xml
@@ -887,7 +906,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                         },
                         "file_url",
                     )
-                    submit_sales_invoice_simplifeid(
+                    submit_pos_invoice_simplifeid(
                         pos_invoice_doc, custom_xml_field, invoice_number
                     )
                 elif (
@@ -1073,6 +1092,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 )
         if settings.custom_phase_1_or_2 == "Phase-2":
             if field_exists and pos_invoice_doc.custom_unique_id:
+                if not pos_invoice_doc.custom_zatca_pos_name:
+                    frappe.throw("pos name required")
                 if is_gpos_installed and pos_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = pos_invoice_doc.custom_xml
@@ -1098,7 +1119,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         },
                         "file_url",
                     )
-                    submit_sales_invoice_simplifeid(
+                    # frappe.throw(custom_xml_field)
+                    submit_pos_invoice_simplifeid(
                         pos_invoice_doc, custom_xml_field, invoice_number
                     )
                 elif (
@@ -1127,3 +1149,41 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw("Error in background call submit: " + str(e))
+
+
+@frappe.whitelist()
+def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
+    """
+    Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'.
+    If the invoice is already submitted, call `zatca_background_on_submit`.
+    Otherwise, submit the invoice.
+    """
+    if isinstance(invoice_numbers, str):
+        invoice_numbers = frappe.parse_json(invoice_numbers)
+
+    results = {}
+    for invoice_number in invoice_numbers:
+        try:
+            # Fetch the Sales Invoice document
+            pos_invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+
+            if (
+                pos_invoice_doc.docstatus == 1
+            ):  # Check if the invoice is already submitted
+                # Call the zatca_background_on_submit function
+                zatca_background_on_submit(
+                    pos_invoice_doc, bypass_background_check=True
+                )
+
+            else:
+                # Submit the invoice
+                pos_invoice_doc.submit()
+                zatca_background_on_submit(
+                    pos_invoice_doc, bypass_background_check=True
+                )
+
+        except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+            frappe.throw(f"Error in background call: {str(e)}")
+            # Log errors and add to the results
+
+    return results
