@@ -102,14 +102,17 @@ def reporting_api(
             {
                 "doctype": "File",
                 "file_name": "Reported xml file " + pos_invoice_doc.name + ".xml",
-                "attached_to_doctype": pos_invoice_doc.doctype,
                 "is_private": 1,
+                "attached_to_doctype": pos_invoice_doc.doctype,
                 "attached_to_name": pos_invoice_doc.name,
                 "content": xml_cleared_data,
             }
         )
-
+        file.is_private = 1
         file.save(ignore_permissions=True)
+        if file.is_private == 0:
+            frappe.db.set_value("File", file.name, "is_private", 1)
+            frappe.db.commit()
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,
@@ -484,13 +487,18 @@ def clearance_api(
                 {
                     "doctype": "File",
                     "file_name": "Cleared xml file " + pos_invoice_doc.name + ".xml",
-                    "is_private": 1,
+                    "is_private": 1,  # Ensure this is explicitly set
                     "attached_to_doctype": pos_invoice_doc.doctype,
                     "attached_to_name": pos_invoice_doc.name,
                     "content": xml_cleared,
                 }
             )
+
+            file.is_private = 1  # Force private before saving
             file.save(ignore_permissions=True)
+            if file.is_private == 0:
+                frappe.db.set_value("File", file.name, "is_private", 1)
+                frappe.db.commit()
 
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
@@ -1175,12 +1183,12 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
                     pos_invoice_doc, bypass_background_check=True
                 )
 
-            else:
-                # Submit the invoice
-                pos_invoice_doc.submit()
-                zatca_background_on_submit(
-                    pos_invoice_doc, bypass_background_check=True
-                )
+            # else:
+            #     # Submit the invoice
+            #     pos_invoice_doc.submit()
+            #     zatca_background_on_submit(
+            #         pos_invoice_doc, bypass_background_check=True
+            #     )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(f"Error in background call: {str(e)}")
