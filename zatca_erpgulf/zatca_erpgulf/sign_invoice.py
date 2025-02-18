@@ -1353,12 +1353,12 @@ def resubmit_invoices(invoice_numbers, bypass_background_check=False):
                     sales_invoice_doc, bypass_background_check=True
                 )
 
-            else:
-                # Submit the invoice
-                sales_invoice_doc.submit()
-                zatca_background_on_submit(
-                    sales_invoice_doc, bypass_background_check=True
-                )
+            # else:
+            #     # Submit the invoice
+            #     sales_invoice_doc.submit()
+            #     zatca_background_on_submit(
+            #         sales_invoice_doc, bypass_background_check=True
+            #     )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(f"Error in background call: {str(e)}")

@@ -217,8 +217,11 @@ def reporting_api_pos_without_xml(
                 "content": xml_cleared_data,
             }
         )
-
+        file.is_private = 1
         file.save(ignore_permissions=True)
+        if file.is_private == 0:
+            frappe.db.set_value("File", file.name, "is_private", 1)
+            frappe.db.commit()
         # Directly retrieve the production CSID from the company's document field
         if not pos_invoice_doc.custom_zatca_pos_name:
             frappe.throw(

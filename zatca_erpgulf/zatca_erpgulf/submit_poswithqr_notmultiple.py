@@ -85,9 +85,10 @@ def extract_uuid_and_invoicehash_simplifeid(file_path):
     """
     try:
         # Read the file content as bytes
-
+        # frappe.throw(f"custom_xml: {frappe.local.site + file_path}")
         with open(frappe.local.site + file_path, "rb") as file:
             custom_xml = file.read()
+            # frappe.throw(f"custom_xml: {custom_xml}")
 
         # Parse the XML string as bytes
         tree = etree.fromstring(custom_xml)
