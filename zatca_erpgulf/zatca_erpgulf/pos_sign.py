@@ -1127,7 +1127,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         },
                         "file_url",
                     )
-                    # frappe.throw(custom_xml_field)
+                    # frappe.throw("custom_xml_field: " + str(custom_xml_field))
                     submit_pos_invoice_simplifeid(
                         pos_invoice_doc, custom_xml_field, invoice_number
                     )
@@ -1174,6 +1174,7 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
         try:
             # Fetch the Sales Invoice document
             pos_invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+            company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
 
             if (
                 pos_invoice_doc.docstatus == 1
@@ -1183,12 +1184,11 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
                     pos_invoice_doc, bypass_background_check=True
                 )
 
-            # else:
-            #     # Submit the invoice
-            #     pos_invoice_doc.submit()
-            #     zatca_background_on_submit(
-            #         pos_invoice_doc, bypass_background_check=True
-            #     )
+            elif company_doc.custom_submit_or_not == 1:
+                pos_invoice_doc.submit()
+                zatca_background_on_submit(
+                    pos_invoice_doc, bypass_background_check=True
+                )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(f"Error in background call: {str(e)}")
