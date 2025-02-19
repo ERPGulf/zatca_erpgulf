@@ -80,15 +80,17 @@ def submit_posinvoices_to_zatca_background_process():
         )
 
         if not not_submitted_invoices:
-            frappe.log_error(
-                "No pending invoices found for ZATCA submission.",
-                "ZATCA Background Job",
-            )
+            # frappe.log_error(
+            #     "No pending invoices found for ZATCA submission.",
+            #     "ZATCA Background Job",
+            # )
+            pass
             return
 
         for invoice in not_submitted_invoices:
             pos_invoice_doc = frappe.get_doc("POS Invoice", invoice["name"])
-            print(f"Processing {pos_invoice_doc.name}", "ZATCA Background Job")
+            company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
+            # print(f"Processing {pos_invoice_doc.name}", "ZATCA Background Job")
             if pos_invoice_doc.docstatus == 1:
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
@@ -97,15 +99,15 @@ def submit_posinvoices_to_zatca_background_process():
                     f"Processed {pos_invoice_doc.name}: Sent to ZATCA.",
                     "ZATCA Background Job",
                 )
-        #     else:
-        #         pos_invoice_doc.submit()
-        #         zatca_background_on_submit(
-        #             pos_invoice_doc, bypass_background_check=True
-        #         )
-        #         frappe.log_error(
-        #             f"Submitted {pos_invoice_doc.name} before sending to ZATCA.",
-        #             "ZATCA Background Job",
-        #         )
+            elif company_doc.custom_submit_or_not == 1:
+                pos_invoice_doc.submit()
+                zatca_background_on_submit(
+                    pos_invoice_doc, bypass_background_check=True
+                )
+                frappe.log_error(
+                    f"Submitted {pos_invoice_doc.name} before sending to ZATCA.",
+                    "ZATCA Background Job",
+                )
 
         # frappe.log_error(
         #     f"Processed {len(not_submitted_invoices)} invoices for ZATCA submission.",

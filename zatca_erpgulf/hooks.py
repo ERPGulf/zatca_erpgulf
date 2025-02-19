@@ -256,7 +256,7 @@ doc_events = {
     },
 }
 doctype_js = {
-    "Sales Invoice": ["public/js/our_sales_invoice.js", "public/js/print.js"],
+    "Sales Invoice": ["public/js/our_sales_invoice.js", "public/js/print.js", "public/js/badge.js"],
     "Company": "public/js/company.js",
     "POS Invoice": "public/js/our_pos_invoice.js",
 }
