@@ -115,10 +115,20 @@ frappe.ui.form.on('Sales Invoice', {
             try {
                 console.log("custom_zatca_full_response found:", frm.doc.custom_zatca_full_response);
                 let ztcaresponse = frm.doc.custom_zatca_full_response;
+
+        // ✅ Check if the response starts with "Error"
+                if (ztcaresponse.trim().toUpperCase().startsWith("ERROR")) {
+                    console.log("Error detected in ZATCA response. Displaying Failed badge.");
+                    let badgeHtml = '<div class="zatca-badge-container"><img src="/private/files/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 215px;"></div>';
+                    frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
+                    frm.refresh_field('custom_zatca_status_notification');
+                    return; // Exit since it's an error
+                }
+            
                 let zatcaResponse = JSON.parse(ztcaresponse.match(/Zatca Response: ({.*})/)[1]);
 
                 const validationResults = zatcaResponse.validationResults || {};
-                const status = validationResults.status; // PASS/WARNING/FAILED
+                const status = validationResults.status; // PASS/WARNINGAILED
 
                 // Use reporting status from custom_zatca_status field
                 const reportingStatus = frm.doc.custom_zatca_status || ''; // Cleared/Reported
@@ -154,7 +164,7 @@ frappe.ui.form.on('Sales Invoice', {
                 }
 
                 // 🔴 FAILED Condition
-                else if (reportingStatus === '503 Service Unavailable') {
+                else {
                     console.log('FAILED');
                     badgeHtml = '<div class="zatca-badge-container"><img src="/private/files/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 215px;"></div>';
                 }
