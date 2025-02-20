@@ -113,6 +113,8 @@ def reporting_api(
         if file.is_private == 0:
             frappe.db.set_value("File", file.name, "is_private", 1)
             frappe.db.commit()
+        # file.reload()
+        # frappe.throw(file.is_private)
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,

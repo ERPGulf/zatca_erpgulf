@@ -85,27 +85,8 @@ def extract_uuid_and_invoicehash_simplifeid(file_path):
         dict: A dictionary containing UUID and DigestValue.
     """
     try:
-        # Read the file content as bytes
-        # frappe.throw(f"custom_xml: {frappe.local.site + file_path}")
-        full_path = os.path.join(
-            frappe.get_site_path(), "public", file_path.lstrip("/")
-        )
-
-        # Check if the file exists in public
-        if not os.path.exists(full_path):
-            # Try private folder
-            full_path = os.path.join(
-                frappe.get_site_path(), "private", file_path.lstrip("/")
-            )
-
-        # Ensure the file actually exists before opening
-        if not os.path.exists(full_path):
-            return {"error": f"File not found: {full_path}"}
-        frappe.throw(f"full_path: {frappe.local.site + full_path}")
-        with open(frappe.local.site + full_path, "rb") as file:
-            frappe.throw(f"file: {file}")
+        with open(frappe.local.site + file_path, "rb") as file:
             custom_xml = file.read()
-            # frappe.throw(f"custom_xml: {custom_xml}")
 
         # Parse the XML string as bytes
         tree = etree.fromstring(custom_xml)
