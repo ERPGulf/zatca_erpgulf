@@ -6,9 +6,6 @@ from frappe.utils import now_datetime, add_to_date
 
 from zatca_erpgulf.zatca_erpgulf.pos_sign import zatca_background_on_submit
 
-# frappe.init(site="zatca.erpgulf.com")
-# frappe.connect()
-
 
 def convert_to_time(time_value):
     """Convert timedelta or string to datetime.time object."""

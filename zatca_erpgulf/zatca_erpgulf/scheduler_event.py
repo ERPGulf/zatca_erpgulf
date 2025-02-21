@@ -6,6 +6,9 @@ from frappe.utils import now_datetime, add_to_date
 
 from zatca_erpgulf.zatca_erpgulf.sign_invoice import zatca_background_on_submit
 
+from zatca_erpgulf.zatca_erpgulf.schedule_pos import (
+    submit_posinvoices_to_zatca_background_process,
+)
 
 # frappe.init(site="zatca.erpgulf.com")
 # frappe.connect()
@@ -31,7 +34,7 @@ def is_time_in_range(start_time, end_time, current_time):
         return start_time <= current_time or current_time <= end_time
 
 
-def submit_invoices_to_zatca_background_process():
+def submit_invoices_to_zatca_background():
     """Submit invoices to ZATCA only if at least one company falls within the time range."""
     try:
         current_time = now_datetime().time()
@@ -114,3 +117,43 @@ def submit_invoices_to_zatca_background_process():
         # )
     except Exception:
         frappe.log_error(frappe.get_traceback(), "ZATCA Background Job Error")
+
+
+def submit_invoices_to_zatca_background_process():
+    """Submit invoices to ZATCA only if at least one company falls within the time range."""
+    try:
+        past_24_hours_time = add_to_date(now_datetime(), hours=-24)
+
+        # Check for pending Sales Invoices
+        sales_invoices = frappe.get_all(
+            "Sales Invoice",
+            filters=[
+                ["creation", ">=", past_24_hours_time],
+                ["docstatus", "in", [0, 1]],
+                ["custom_zatca_status", "=", "Not Submitted"],
+            ],
+            fields=["name"],
+        )
+
+        if sales_invoices:
+            submit_invoices_to_zatca_background()  # Process Sales Invoices
+
+        # Check for pending POS Invoices
+        pos_invoices = frappe.get_all(
+            "POS Invoice",
+            filters=[
+                ["creation", ">=", past_24_hours_time],
+                ["docstatus", "in", [0, 1]],
+                ["custom_zatca_status", "=", "Not Submitted"],
+            ],
+            fields=["name"],
+        )
+
+        if pos_invoices:
+            submit_posinvoices_to_zatca_background_process()  # Process POS Invoices
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "ZATCA Background Job Error")
+
+
+# submit_invoices_to_zatca_background_process()

@@ -225,8 +225,7 @@ from . import __version__ as app_version
 scheduler_events = {
     "cron": {
         "*/10 * * * *": [
-            "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process",
-            "zatca_erpgulf.zatca_erpgulf.schedule_pos.submit_posinvoices_to_zatca_background_process",
+            "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process"
         ]
     }
 }
@@ -256,9 +255,13 @@ doc_events = {
     },
 }
 doctype_js = {
-    "Sales Invoice": ["public/js/our_sales_invoice.js", "public/js/print.js", "public/js/badge.js"],
+    "Sales Invoice": [
+        "public/js/our_sales_invoice.js",
+        "public/js/print.js",
+        "public/js/badge.js",
+    ],
     "Company": "public/js/company.js",
-    "POS Invoice": ["public/js/our_pos_invoice.js","public/js/badge_pos.js"],
+    "POS Invoice": ["public/js/our_pos_invoice.js", "public/js/badge_pos.js"],
 }
 
 doctype_list_js = {
