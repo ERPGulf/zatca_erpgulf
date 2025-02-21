@@ -123,7 +123,7 @@ def submit_invoices_to_zatca_background_process():
     """Submit invoices to ZATCA only if at least one company falls within the time range."""
     try:
         past_24_hours_time = add_to_date(now_datetime(), hours=-24)
-        frappe.msgprint("ZATCA Background Job: Processing Invoices")
+
         # Check for pending Sales Invoices
         sales_invoices = frappe.get_all(
             "Sales Invoice",
@@ -134,7 +134,7 @@ def submit_invoices_to_zatca_background_process():
             ],
             fields=["name"],
         )
-        frappe.msgprint(f"Sales Invoices: {sales_invoices}")
+
         if sales_invoices:
             submit_invoices_to_zatca_background()  # Process Sales Invoices
 
@@ -148,7 +148,7 @@ def submit_invoices_to_zatca_background_process():
             ],
             fields=["name"],
         )
-        frappe.msgprint(f"POS Invoices: {pos_invoices}")
+
         if pos_invoices:
             submit_posinvoices_to_zatca_background_process()  # Process POS Invoices
 
