@@ -5636,7 +5636,7 @@
   "modified": "2024-11-07 11:04:09.370588",
   "module": "Zatca Erpgulf",
   "name": "POS Invoice-custom_zatca_full_response",
-  "no_copy": 0,
+  "no_copy": 1,
   "non_negative": 0,
   "options": null,
   "permlevel": 0,
