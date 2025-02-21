@@ -614,6 +614,7 @@ def zatca_call(
 
         if compliance_type == "0":
             if customer_doc.custom_b2c == 1:
+                attach_qr_image(qrcodeb64, pos_invoice_doc)
                 reporting_api(
                     uuid1,
                     encoded_hash,
@@ -621,7 +622,7 @@ def zatca_call(
                     invoice_number,
                     pos_invoice_doc,
                 )
-                attach_qr_image(qrcodeb64, pos_invoice_doc)
+
             else:
                 clearance_api(
                     uuid1,
