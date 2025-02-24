@@ -141,6 +141,22 @@ frappe.ui.form.on("Company", {
             },
         });
     },
+    custom_create_csr_configuration: function (frm) {
+        frappe.call({
+            method: "zatca_erpgulf.zatca_erpgulf.csr_configuration.get_csr_config", // Adjust the path if necessary
+            args: {
+                company_abbr: frm.doc.abbr
+            },
+            callback: function (r) {
+                if (!r.exc && r.message) {
+                    // Set the returned CSR configuration string into a custom field
+                    frm.set_value("custom_csr_config", r.message);
+                    frappe.msgprint("CSR Configuration generated successfully.");
+                    frm.save();
+                }
+            },
+        });
+    },
     custom_check_compliance: function (frm) {
 
         frappe.call({
