@@ -619,6 +619,16 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			name: "zatca_compliance_check",
 			title: __("Zatca Compliance Check"),
 			fields: [
+				// {
+				// 	fieldname: "conditions_section",
+				// 	label: __("Compliance Conditions"),
+				// 	fieldtype: "Section Break",
+				// },
+				{
+					fieldname: "sub_heading",
+					fieldtype: "HTML",
+					options: `<h5 style="color: #777; margin-bottom: 15px; font-weight: normal;">Click all the buttons below to check compliance before proceeding to the next page</h5>`,
+				},
 				{
 					fieldname: "conditions_section",
 					label: __("Compliance Conditions"),
@@ -720,6 +730,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				]),
 			],
 			primary_action_label: __("Next"),
+			
 		},
 		
 		
@@ -818,9 +829,16 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			title: __("Steps to Follow Next"),
 			fields: [
 				{
-					fieldname: "comments",
-					label: __("Steps to Follow Next"),
-					fieldtype: "Small Text",
+					fieldname: "success_message",
+					fieldtype: "HTML",
+					options: `
+						<div style="text-align: center; padding: 20px;">
+                        <h2 style="color: green;">✅ SUCCESS!</h2>
+                        <p>You have successfully finished <strong>ZATCA Phase-2</strong> on-boarding.</p>
+                        <p>You can now send invoices to ZATCA as they get submitted.</p>
+                        <p>If you want to make any changes to ZATCA settings, please use the <strong>"Zatca Setting"</strong> inside the <strong>Company</strong> master.</p>
+                    </div>
+					`,
 				},
 			],
 			primary_action_label: __("Submit"),
@@ -834,6 +852,72 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			primary_action_label: slide.primary_action_label,
 			primary_action(values) {
 				slideData[slides_settings[current_slide_index].name] = values;
+				if (slides_settings[current_slide_index].name === "final_csid_generation") {
+					// Set 'custom_zatca_invoice_enabled' to 1 in Company
+					frappe.call({
+						method: "frappe.client.set_value",
+						args: {
+							doctype: "Company",
+							name: selected_company,  // Ensure 'selected_company' has the current company name
+							fieldname: "custom_zatca_invoice_enabled",
+							value: 1,
+						},
+						callback: function (response) {
+							if (response && response.message) {
+								console.log(__("✅ 'Zatca Invoice Enabled' has been activated for the company."));
+							} else {
+								frappe.msgprint(__("⚠️ Failed to enable 'Zatca Invoice'. Please check logs."));
+							}
+			
+							// Proceed to next slide after setting the value
+			
+						}
+					});
+				} 
+			
+				// ✅ Helper function to move to the next slide
+				
+				
+				if (slide.name === "zatca_compliance_check") {
+					console.log("Starting validation for compliance checks..."); // Debug log
+	
+					let allChecked = true;
+					const conditions = [
+						"simplified_invoice",
+						"standard_invoice",
+						"simplified_credit_note",
+						"standard_credit_note",
+						"simplified_debit_note",
+						"standard_debit_note",
+					];
+	
+					// ✅ Loop through each checkbox and verify if all are checked (value == 1)
+					conditions.forEach((condition) => {
+						const fieldname = `${condition}_checkbox`;
+						const checkboxValue = dialog.get_value(fieldname); // Use dialog.get_value()
+	
+						// Debug logs for each checkbox
+						console.log(`Checking field: ${fieldname} | Value: ${checkboxValue}`);
+	
+						if (checkboxValue !== 1) {
+							allChecked = false;
+							console.log(`❌ ${fieldname} is not checked.`);
+						} else {
+							console.log(`✅ ${fieldname} is checked.`);
+						}
+					});
+	
+					// ✅ Block Next if any checkbox is not checked
+					if (!allChecked) {
+						console.log("❌ Validation failed: Not all checkboxes are checked.");
+						frappe.msgprint(__("⚠️ Please complete all compliance checks before proceeding."));
+						return;
+					}
+	
+					// ✅ Allow Next if all checkboxes are checked
+					console.log("✅ All checkboxes are checked. Proceeding to the next page...");
+					// frappe.msgprint(__("✅ All compliance checks passed. Proceeding to the next page..."));
+				}
 				if (slide.name === "integration_type") {
 					if (!values.integration_type) {
 						frappe.msgprint({
@@ -855,6 +939,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 					}
 					fetch_company_details(values.company);
 				}
+				
 				if (slide.name === "company_details") {
 					const savedData = slideData[slide.name];
 					dialog.set_values(savedData);
@@ -879,6 +964,25 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 						return;
 					}
+					frappe.call({
+						method: "frappe.client.set_value",
+						args: {
+							doctype: "Company",
+							name: selected_company,  // Ensure 'selected_company' has the current company
+							fieldname: {
+								"custom_zatca__location_for_csr_configuratoin": values.city,  // Save city
+								"custom_zatca__company_category_for_csr_configuration": values.business_category  // Save business category
+							},
+						},
+						callback: function (response) {
+							if (response && response.message) {
+								console.log(__("✅ Company details have been updated successfully."));
+							} else {
+								frappe.msgprint(__("⚠️ Failed to update Company details. Please try again."));
+							}
+						}
+					});
+				
 
 					generate_csr_config(values);
 				}
@@ -962,7 +1066,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			dialog.set_value("csr_config_box", csr_config.replace(/^\s+|\s+$/gm, ""));
 
 			// dialog.set_value("created_csr_config",JSON.stringify(response, null, 2))
-
+		
 
 		
 		if (name) {
@@ -984,6 +1088,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 
 	}
+	
 
 	}
 
