@@ -177,7 +177,7 @@ def attach_qr_image(qrcodeb64, sales_invoice_doc):
         file_doc = frappe.get_doc(
             {
                 "doctype": "File",
-                "file_name": f"QR_image_{sales_invoice_doc.name}.png".replace(
+                "file_name": f"QR_Phase2_{sales_invoice_doc.name}.png".replace(
                     os.path.sep, "__"
                 ),
                 "attached_to_doctype": sales_invoice_doc.doctype,
