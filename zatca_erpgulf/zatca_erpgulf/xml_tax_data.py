@@ -576,11 +576,16 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
             cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
             # cbc_taxamount_2.text = str(round(totals["tax_amount"], 2))
-            cbc_taxamount_2.text = str(
-                Decimal(totals["tax_amount"]).quantize(
-                    Decimal("0.01"), rounding=ROUND_HALF_UP
-                )
-            )
+            cbc_taxamount_value = str(tax_amount_without_retention)
+            cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
+
+            # Check if values match
+            if cbc_taxamount_value != cbc_taxamount_2_value:
+                cbc_taxamount_2_value = str(tax_amount_without_retention)
+            else:
+                cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
+
+            cbc_taxamount_2.text = cbc_taxamount_2_value
 
             cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
             cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
