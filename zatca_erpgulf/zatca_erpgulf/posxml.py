@@ -582,7 +582,7 @@ def company_data(invoice, pos_invoice_doc):
         cbc_streetname = ET.SubElement(cac_postaladdress, "cbc:StreetName")
         cbc_streetname.text = address.address_line1
         cbc_buildingnumber = ET.SubElement(cac_postaladdress, "cbc:BuildingNumber")
-        cbc_buildingnumber.text = address.address_line2
+        cbc_buildingnumber.text = address.custom_building_number
         cbc_plotidentification = ET.SubElement(
             cac_postaladdress, "cbc:PlotIdentification"
         )
@@ -646,7 +646,7 @@ def customer_data(invoice, pos_invoice_doc):
         cbc_streetname_1 = ET.SubElement(cac_postaladdress_1, "cbc:StreetName")
         cbc_streetname_1.text = address.address_line1
         cbc_buildingnumber_1 = ET.SubElement(cac_postaladdress_1, "cbc:BuildingNumber")
-        cbc_buildingnumber_1.text = address.address_line2
+        cbc_buildingnumber_1.text = address.custom_building_number
         cbc_plotidentification_1 = ET.SubElement(
             cac_postaladdress_1, "cbc:PlotIdentification"
         )

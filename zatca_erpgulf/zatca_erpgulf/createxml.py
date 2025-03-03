@@ -584,7 +584,7 @@ def company_data(invoice, sales_invoice_doc):
         cbc_citysubdivisionname = ET.SubElement(
             cac_postaladdress, "cbc:CitySubdivisionName"
         )
-        cbc_citysubdivisionname.text = address.city
+        cbc_citysubdivisionname.text = address.address_line2
         cbc_cityname = ET.SubElement(cac_postaladdress, "cbc:CityName")
         cbc_cityname.text = address.city
         cbc_postalzone = ET.SubElement(cac_postaladdress, "cbc:PostalZone")
