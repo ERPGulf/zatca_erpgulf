@@ -1,50 +1,91 @@
-Saudi Arabian E-Invoicing Zatca Phase-2
-A Frappe ERPNext App for users in Saudi Arabia, to be compliant with country tax laws
 
-Features:
+🇸🇦 Saudi Arabian E-Invoicing (ZATCA Phase-2) – A Frappe ERPNext App
 
-Creates CSR by sending API to Zatca server
+A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZATCA Phase-2 e-invoicing regulations.
 
-Creates Compliance token
+🚀 Features
 
-Do system compliance test as per Zatca UBL formats
+✅ Compliance with ZATCA E-Invoicing Phase-2 <br>
+✅ Integration with ZATCA APIs for clearance & reporting <br>
+✅ Automatic CSR generation & compliance checks<br>
+✅ Secure authentication & token management<br>
+✅ Invoice submission for clearance & reporting<br>
+✅ Support for standard invoices, credit notes, debit notes <br>
+✅ Retrieve and attach QR Codes to invoices<br>
+✅ Logging for audit trails & error handling<br>
+✅ Reports to compare invoices with ZATCA portal statistics <br>
 
-Send API Compliance test
 
-Get Production token
+🔹 Compatibility<br>
+🌐 ERPNext Version13, 14 and 15<br>
+🖥️ Platforms	Ubuntu, Centos, Oracle Linux<br>
 
-Send Standard invoices for Clearance to Zatca
+🛠 Installation & Setup
 
-Send Simplified invoices for Reporting
+🔹 For Frappe Cloud Users
 
-Send Credit notes, debit notes for both Clearance and Reporting
+Frappe Cloud users can install the app directly from the Marketplace.
 
-Get QR Code from Zatca
+🔹 Build cloud server in Jeddah or Riyadh with  ERPNext & Zatca using Claudion https://saudi.claudion.com/onboarding 
 
-Attach QR COde from zatca on the invoices.
 
-Keep success_log for Zatca for future reference
+🔹 For Self-Hosted ERPNext Users
 
-Error logs in case of error
+Follow the standard Frappe app installation process:
 
-Reports to compare with Zatca portal statitics.
+# Get the app from GitHub
+bench get-app https://github.com/ERPGulf/zatca_erpgulf.git
 
-Installation and Troubleshooting
-
-Frappe Cloud users can install it from Marketplace
-
-Others can follow standard Frappe methods for installing apps. Please see it here below bench
-
-get-app https://github.com/ERPGulf/zatca_erpgulf.git
-
+# Install the app on your site
 bench --site yoursite.erpgulf.com install-app zatca_erpgulf
 
+# Apply necessary migrations
 bench --site yoursite.erpgulf.com migrate
 
-Goto Help->About and make sure you have Zatca app installaed.
+# Researt bench or supervisor
+bench restart 
+or
+sudo service supervisor restart
 
-We have published a video tutorial on how to use this . ( https://www.youtube.com/watch?v=P0ChplXoKYg )
 
-Please contact support@ERPGulf.com for implementation support or customization.
+🔹 Verify Installation<br>
+	1.	Login to ERPNext.<br>
+	2.	Navigate to Help → About.<br>
+	3.	Ensure the ZATCA app is listed.<br>
 
-Husna M
+📈 Project Status
+
+Feature	Details
+🔓 License	MIT (Or another license)<br>
+🌍 Website	https://erpgulf.com<br>
+🛠 Maintenance<br>	✅ Actively Maintained<br>
+🔄 PRs Welcome	<br>✅ Contributions Encouraged<br>
+🏆 Open Source	✅
+
+📺 Video Tutorial  https://www.youtube.com/watch?v=P0ChplXoKYg<br>
+📺 Detailed documentation  https://docs.claudion.com/zatca%20pdf-a3<br>
+📺 Handling Error messages from ZATCA  https://docs.claudion.com/Claudion-Docs/ErrorMessage1<br>
+📺 Coding policy  https://docs.claudion.com/Claudion-Docs/Coding%20Policy<br>
+
+🎥 Watch our step-by-step tutorial on YouTube:
+
+🌟 Development & Contributions
+
+We welcome contributions! To contribute:<br>
+	1.	Fork this repository. <br>
+	2.	Make your changes (improve the code, add features, fix bugs).<br>
+	3.	Submit a Pull Request for review.<br>
+	4.	If you find issues, please report them via the Issues section.<br>
+
+Your contributions help make this project better! 🙌
+
+📩 Support & Customization
+
+For implementation support or customization, contact:
+📧 support@ERPGulf.com
+
+👥 Social
+
+🚀 Now you’re ready to be fully ZATCA-compliant! 🎯
+
+Let me know if you need any further modifications! 😊🔥
