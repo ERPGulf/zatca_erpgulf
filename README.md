@@ -62,10 +62,10 @@ Feature	Details
 🔄 PRs Welcome	<br>✅ Contributions Encouraged<br>
 🏆 Open Source	✅
 
-📺 Video Tutorial  https://www.youtube.com/watch?v=P0ChplXoKYg
-📺 Detailed documentation  https://docs.claudion.com/zatca%20pdf-a3
-📺 Handling Error messages from ZATCA  https://docs.claudion.com/Claudion-Docs/ErrorMessage1
-📺 Coding policy  https://docs.claudion.com/Claudion-Docs/Coding%20Policy
+📺 Video Tutorial  https://www.youtube.com/watch?v=P0ChplXoKYg<br>
+📺 Detailed documentation  https://docs.claudion.com/zatca%20pdf-a3<br>
+📺 Handling Error messages from ZATCA  https://docs.claudion.com/Claudion-Docs/ErrorMessage1<br>
+📺 Coding policy  https://docs.claudion.com/Claudion-Docs/Coding%20Policy<br>
 
 🎥 Watch our step-by-step tutorial on YouTube:
 
