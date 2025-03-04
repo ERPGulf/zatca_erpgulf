@@ -45,10 +45,10 @@ or
 sudo service supervisor restart
 
 
-🔹 Verify Installation
-	1.	Login to ERPNext.
-	2.	Navigate to Help → About.
-	3.	Ensure the ZATCA app is listed.
+🔹 Verify Installation<br>
+	1.	Login to ERPNext.<br>
+	2.	Navigate to Help → About.<br>
+	3.	Ensure the ZATCA app is listed.<br>
 
 📈 Project Status
 
@@ -59,7 +59,7 @@ Feature	Details
 🔄 PRs Welcome	<br>✅ Contributions Encouraged<br>
 🏆 Open Source	✅
 
-📺 Video Tutorial
+📺 Video Tutorial  https://www.youtube.com/watch?v=P0ChplXoKYg
 
 🎥 Watch our step-by-step tutorial on YouTube:
 
