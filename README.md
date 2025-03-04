@@ -7,20 +7,18 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 
 ✅ Compliance with ZATCA E-Invoicing Phase-2 <br>
 ✅ Integration with ZATCA APIs for clearance & reporting <br>
-✅ Automatic CSR generation & compliance checks
-✅ Secure authentication & token management
-✅ Invoice submission for clearance & reporting
-✅ Support for standard invoices, credit notes, debit notes
-✅ Retrieve and attach QR Codes to invoices
-✅ Logging for audit trails & error handling
-✅ Reports to compare invoices with ZATCA portal statistics
+✅ Automatic CSR generation & compliance checks<br>
+✅ Secure authentication & token management<br>
+✅ Invoice submission for clearance & reporting<br>
+✅ Support for standard invoices, credit notes, debit notes <br>
+✅ Retrieve and attach QR Codes to invoices<br>
+✅ Logging for audit trails & error handling<br>
+✅ Reports to compare invoices with ZATCA portal statistics <br>
 
 
-🔄 Compatibility
-
-🌐 ERPNext Version13, 14 and 15
-
-🖥️ Platforms	Ubuntu, Centos, Oracle Linux
+🔹 Compatibility<br>
+🌐 ERPNext Version13, 14 and 15<br>
+🖥️ Platforms	Ubuntu, Centos, Oracle Linux<br>
 
 🛠 Installation & Setup
 
@@ -55,10 +53,10 @@ sudo service supervisor restart
 📈 Project Status
 
 Feature	Details
-🔓 License	MIT (Or another license)
-🌍 Website	erpgulf.com
-🛠 Maintenance	✅ Actively Maintained
-🔄 PRs Welcome	✅ Contributions Encouraged
+🔓 License	MIT (Or another license)<br>
+🌍 Website	erpgulf.com<br>
+🛠 Maintenance<br>	✅ Actively Maintained<br>
+🔄 PRs Welcome	<br>✅ Contributions Encouraged<br>
 🏆 Open Source	✅
 
 📺 Video Tutorial
@@ -67,11 +65,11 @@ Feature	Details
 
 🌟 Development & Contributions
 
-We welcome contributions! To contribute:
-	1.	Fork this repository.
-	2.	Make your changes (improve the code, add features, fix bugs).
-	3.	Submit a Pull Request for review.
-	4.	If you find issues, please report them via the Issues section.
+We welcome contributions! To contribute:<br>
+	1.	Fork this repository. <br>
+	2.	Make your changes (improve the code, add features, fix bugs).<br>
+	3.	Submit a Pull Request for review.<br>
+	4.	If you find issues, please report them via the Issues section.<br>
 
 Your contributions help make this project better! 🙌
 
