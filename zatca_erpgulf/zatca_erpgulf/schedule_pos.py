@@ -37,30 +37,34 @@ def submit_posinvoices_to_zatca_background_process():
                 "name",
                 "custom_start_time",
                 "custom_end_time",
+                "custom_start_time_session",
+                "custom_end_time_session",
                 "custom_send_invoice_to_zatca",
             ],
         )
         # print(f"companies: {companies}", "ZATCA Background Job")
-        any_company_in_range = False
         for company in companies:
-            if not company.custom_start_time or not company.custom_end_time:
-                continue
+            start_time = None
+            end_time = None
 
-            start_time = convert_to_time(company.custom_start_time)
-            end_time = convert_to_time(company.custom_end_time)
-            # print(f"start_time: {start_time}, end_time: {end_time}, current_time: {current_time}", "ZATCA Background Job")
+            if company.custom_start_time and company.custom_end_time:
+                start_time = convert_to_time(company.custom_start_time)
+                end_time = convert_to_time(company.custom_end_time)
+            elif company.custom_start_time_session and company.end_time_session:
+                start_time = convert_to_time(company.custom_start_time_session)
+                end_time = convert_to_time(company.custom_end_time_session)
+
+            if not (start_time and end_time):
+                continue
             if (
-                is_time_in_range(start_time, end_time, current_time)
+                start_time
+                and end_time
+                and is_time_in_range(start_time, end_time, current_time)
                 and company.custom_send_invoice_to_zatca == "Background"
             ):
-                # print(f"Company {company.name} falls within the time range.", "ZATCA Background Job")
                 any_company_in_range = True
                 break
-
         if not any_company_in_range:
-            # frappe.log_error(
-            #     "No companies found with valid submission time.", "ZATCA Background Job"
-            # )
             pass
             return
 
@@ -98,6 +102,7 @@ def submit_posinvoices_to_zatca_background_process():
                 )
             elif company_doc.custom_submit_or_not == 1:
                 pos_invoice_doc.submit()
+
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
                 )
