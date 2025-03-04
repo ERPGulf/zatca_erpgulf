@@ -102,6 +102,7 @@ def submit_posinvoices_to_zatca_background_process():
                 )
             elif company_doc.custom_submit_or_not == 1:
                 pos_invoice_doc.submit()
+
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
                 )
