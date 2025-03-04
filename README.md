@@ -26,6 +26,9 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 
 Frappe Cloud users can install the app directly from the Marketplace.
 
+🔹 Build cloud server in Jeddah or Riyadh with  ERPNext & Zatca using Claudion https://saudi.claudion.com/onboarding 
+
+
 🔹 For Self-Hosted ERPNext Users
 
 Follow the standard Frappe app installation process:
@@ -54,12 +57,15 @@ sudo service supervisor restart
 
 Feature	Details
 🔓 License	MIT (Or another license)<br>
-🌍 Website	erpgulf.com<br>
+🌍 Website	https://erpgulf.com<br>
 🛠 Maintenance<br>	✅ Actively Maintained<br>
 🔄 PRs Welcome	<br>✅ Contributions Encouraged<br>
 🏆 Open Source	✅
 
 📺 Video Tutorial  https://www.youtube.com/watch?v=P0ChplXoKYg
+📺 Detailed documentation  https://docs.claudion.com/zatca%20pdf-a3
+📺 Handling Error messages from ZATCA  https://docs.claudion.com/Claudion-Docs/ErrorMessage1
+📺 Coding policy  https://docs.claudion.com/Claudion-Docs/Coding%20Policy
 
 🎥 Watch our step-by-step tutorial on YouTube:
 
