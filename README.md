@@ -5,8 +5,8 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 
 🚀 Features
 
-✅ Compliance with ZATCA E-Invoicing Phase-2 
-✅ Integration with ZATCA APIs for clearance & reporting
+✅ Compliance with ZATCA E-Invoicing Phase-2 <br>
+✅ Integration with ZATCA APIs for clearance & reporting <br>
 ✅ Automatic CSR generation & compliance checks
 ✅ Secure authentication & token management
 ✅ Invoice submission for clearance & reporting
