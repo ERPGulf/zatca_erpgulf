@@ -959,7 +959,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         source_doc = doc
         sales_invoice_doc = doc
         invoice_number = sales_invoice_doc.name
-        sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        sales_invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
         company_abbr = frappe.db.get_value(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
