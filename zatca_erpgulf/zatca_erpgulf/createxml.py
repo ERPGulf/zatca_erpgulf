@@ -8,7 +8,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import frappe
 from frappe.utils.data import get_time
-
+from zatca_erpgulf.zatca_erpgulf.country_code import country_code_mapping
 
 CBC_ID = "cbc:ID"
 DS_TRANSFORM = "ds:Transform"
@@ -506,6 +506,7 @@ def get_address(sales_invoice_doc, company_doc):
                 "city",
                 "pincode",
                 "state",
+                "country",
             ],
             filters={"name": cost_center_doc.custom_zatca_branch_address},
         )
@@ -527,6 +528,7 @@ def get_address(sales_invoice_doc, company_doc):
             "city",
             "pincode",
             "state",
+            "country",
         ],
         filters={"is_your_company_address": 1},
     )
@@ -633,7 +635,7 @@ def customer_data(invoice, sales_invoice_doc):
         cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
         cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
         cbc_id_4.text = customer_doc.custom_buyer_id
-
+        country_dict = country_code_mapping()
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
@@ -697,7 +699,14 @@ def customer_data(invoice, sales_invoice_doc):
             cbc_identificationcode_1 = ET.SubElement(
                 cac_country_1, "cbc:IdentificationCode"
             )
-            cbc_identificationcode_1.text = "SA"
+            # frappe.throw(country_dict[address.country.lower()])
+            if sales_invoice_doc.custom_zatca_export_invoice == 1:
+                if address.country and address.country.lower() in country_dict:
+                    cbc_identificationcode_1.text = country_dict[
+                        address.country.lower()
+                    ]
+            else:
+                cbc_identificationcode_1.text = "SA"
 
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
         cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
