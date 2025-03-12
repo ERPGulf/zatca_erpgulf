@@ -75,7 +75,11 @@ def submit_posinvoices_to_zatca_background_process():
             filters=[
                 ["creation", ">=", past_24_hours_time],
                 ["docstatus", "in", [0, 1]],
-                ["custom_zatca_status", "=", "Not Submitted"],
+                [
+                    "custom_zatca_status",
+                    "in",
+                    ["Not Submitted", "503 Service Unavailable"],
+                ],
             ],
             fields=["name", "docstatus", "company"],
         )
