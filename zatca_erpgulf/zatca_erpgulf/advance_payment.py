@@ -441,7 +441,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
     try:
         # Initialize tax category totals
         tax_category_totals = {}
-        for item in sales_invoice_doc.items:
+        for item in sales_invoice_doc.custom_item:
             item_tax_template = frappe.get_doc(
                 "Item Tax Template", item.item_tax_template
             )
@@ -595,7 +595,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         tax_category_totals = {}
 
         # Process Items and Calculate Taxable Amounts
-        for item in sales_invoice_doc.items:
+        for item in sales_invoice_doc.custom_item:
             item_tax_template = frappe.get_doc(
                 "Item Tax Template", item.item_tax_template
             )
@@ -1295,7 +1295,7 @@ def custom_round(value):
 def item_data_with_template_adavance(invoice, sales_invoice_doc):
     """The defining of xml item data according to the item tax template datas and feilds"""
     try:
-        for single_item in sales_invoice_doc.items:
+        for single_item in sales_invoice_doc.custom_item:
             item_tax_template = frappe.get_doc(
                 ITEM_TAX_TEMPLATE, single_item.item_tax_template
             )
@@ -1864,25 +1864,25 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             sales_invoice_doc.taxes
             and sales_invoice_doc.taxes[0].included_in_print_rate == 1
         ):
-            if any(item.item_tax_template for item in sales_invoice_doc.items):
+            if any(item.item_tax_template for item in sales_invoice_doc.custom_item):
                 frappe.throw(
                     "Item Tax Template cannot be used when taxes are included"
                     " in the print rate. Please remove Item Tax Templates."
                 )
         any_item_has_tax_template = False
-        for item in sales_invoice_doc.items:
+        for item in sales_invoice_doc.custom_item:
             if item.item_tax_template:
                 any_item_has_tax_template = True
                 break
         if any_item_has_tax_template:
-            for item in sales_invoice_doc.items:
+            for item in sales_invoice_doc.custom_item:
                 if not item.item_tax_template:
                     frappe.throw(
                         "If any one item has an Item Tax Template,"
                         " all items must have an Item Tax Template."
                     )
         tax_categories = set()
-        for item in sales_invoice_doc.items:
+        for item in sales_invoice_doc.custom_item:
             if item.item_tax_template:
                 item_tax_template = frappe.get_doc(
                     "Item Tax Template", item.item_tax_template
