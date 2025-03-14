@@ -13,6 +13,7 @@ import frappe
 from frappe.utils.data import get_time
 from decimal import Decimal, ROUND_DOWN
 import xml.etree.ElementTree as ET
+from datetime import datetime
 from xml.dom import minidom
 import frappe
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
@@ -40,12 +41,13 @@ from zatca_erpgulf.zatca_erpgulf.createxml import (
     customer_data,
 )
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
-    tax_data,
-    tax_data_with_template,
+    get_exemption_reason_map,
+    get_tax_for_item,
+    get_tax_total_from_items,
 )
 
 
-from zatca_erpgulf.zatca_erpgulf.sign_invoice_first import (
+from zatca_erpgulf.zatca_erpgulf.createxml_advance import (
     removetags,
     canonicalize_xml,
     getinvoicehash,
@@ -69,8 +71,9 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice import get_api_url, attach_qr_imag
 
 from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 
-frappe.init(site="claudion4saudi.erpgulf.com")
-frappe.connect()
+
+# frappe.init(site="zatca.erpgulf.com")
+# frappe.connect()
 def get_issue_time(invoice_number):
     """
     Extracts and formats the posting time of a Sales Invoice as HH:MM:SS.
@@ -146,6 +149,640 @@ def salesinvoice_data_advance(invoice, invoice_number):
         return None
 
 
+def tax_data(invoice, sales_invoice_doc):
+    """extract tax data without template"""
+    try:
+
+        # Handle SAR-specific logic
+        if sales_invoice_doc.currency == "SAR":
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount_sar.set(
+                "currencyID", "SAR"
+            )  # ZATCA requires tax amount in SAR
+            # tax_amount_without_retention_sar = round(
+            #     abs(get_tax_total_from_items(sales_invoice_doc)), 2
+            # )
+
+            tax_amount_without_retention_sar = Decimal(
+                str(abs(get_tax_total_from_items(sales_invoice_doc)))
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            cbc_taxamount_sar.text = str(
+                tax_amount_without_retention_sar
+            )  # Tax amount in SAR
+
+            taxable_amount = sales_invoice_doc.base_total - sales_invoice_doc.get(
+                "base_discount_amount", 0.0
+            )
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
+            # tax_amount_without_retention = round(
+            #     abs(get_tax_total_from_items(sales_invoice_doc)), 2
+            # )
+
+            tax_amount_without_retention = float(
+                Decimal(str(abs(get_tax_total_from_items(sales_invoice_doc)))).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+            )
+
+            cbc_taxamount.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
+
+            # Tax Subtotal
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
+            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
+
+            if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+                taxable_amount = sales_invoice_doc.base_total - sales_invoice_doc.get(
+                    "base_discount_amount", 0.0
+                )
+
+            else:
+                taxable_amount = (
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("base_discount_amount", 0.0)
+                )
+
+            cbc_taxableamount.text = str(abs(round(taxable_amount, 2)))
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxamount_2.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
+
+        # Handle USD-specific logic
+        else:
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_usd_1 = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount_usd_1.set(
+                "currencyID", sales_invoice_doc.currency
+            )  # USD currency
+            if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+                taxable_amount_1 = sales_invoice_doc.total - sales_invoice_doc.get(
+                    "discount_amount", 0.0
+                )
+            else:
+                taxable_amount_1 = (
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+            tax_amount_without_retention = (
+                taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
+            )
+            cbc_taxamount_usd_1.text = str(round(tax_amount_without_retention, 2))
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_usd = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount_usd.set(
+                "currencyID", sales_invoice_doc.currency
+            )  # USD currency
+            if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+                taxable_amount_1 = sales_invoice_doc.total - sales_invoice_doc.get(
+                    "discount_amount", 0.0
+                )
+
+            else:
+                taxable_amount_1 = (
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+            tax_amount_without_retention = (
+                taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
+            )
+            cbc_taxamount_usd.text = str(round(tax_amount_without_retention, 2))
+
+            # Tax Subtotal
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
+            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxableamount.text = str(abs(round(taxable_amount_1, 2)))
+
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxamount_2.text = str(
+                abs(
+                    round(
+                        taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100,
+                        2,
+                    )
+                )
+            )
+
+        # Tax Category and Scheme
+
+        cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
+        cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
+
+        if sales_invoice_doc.custom_zatca_tax_category == "Standard":
+            cbc_id_8.text = "S"
+        elif sales_invoice_doc.custom_zatca_tax_category == "Zero Rated":
+            cbc_id_8.text = "Z"
+        elif sales_invoice_doc.custom_zatca_tax_category == "Exempted":
+            cbc_id_8.text = "E"
+        elif (
+            sales_invoice_doc.custom_zatca_tax_category
+            == "Services outside scope of tax / Not subject to VAT"
+        ):
+            cbc_id_8.text = "O"
+
+        cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
+        cbc_percent_1.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
+
+        # Exemption Reason (if applicable)
+        exemption_reason_map = get_exemption_reason_map()
+        if sales_invoice_doc.custom_zatca_tax_category != "Standard":
+            cbc_taxexemptionreasoncode = ET.SubElement(
+                cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
+            )
+            cbc_taxexemptionreasoncode.text = (
+                sales_invoice_doc.custom_exemption_reason_code
+            )
+            cbc_taxexemptionreason = ET.SubElement(
+                cac_taxcategory_1, "cbc:TaxExemptionReason"
+            )
+            reason_code = sales_invoice_doc.custom_exemption_reason_code
+            if reason_code in exemption_reason_map:
+                cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
+
+        # Tax Scheme
+        cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
+        cbc_id_9 = ET.SubElement(cac_taxscheme_3, "cbc:ID")
+        cbc_id_9.text = "VAT"
+
+        # Legal Monetary Total (adjust for both SAR and USD)
+        cac_legalmonetarytotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
+        cbc_lineextensionamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:LineExtensionAmount"
+        )
+        cbc_lineextensionamount.set("currencyID", sales_invoice_doc.currency)
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
+        else:
+
+            cbc_lineextensionamount.text = str(
+                round(abs(sales_invoice_doc.base_net_total), 2)
+            )
+        cbc_taxexclusiveamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:TaxExclusiveAmount"
+        )
+        cbc_taxexclusiveamount.set("currencyID", sales_invoice_doc.currency)
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            cbc_taxexclusiveamount.text = str(
+                round(
+                    abs(
+                        sales_invoice_doc.total
+                        - sales_invoice_doc.get("discount_amount", 0.0)
+                    ),
+                    2,
+                )
+            )
+        else:
+            cbc_taxexclusiveamount.text = str(
+                round(
+                    abs(
+                        sales_invoice_doc.base_net_total
+                        - sales_invoice_doc.get("discount_amount", 0.0)
+                    ),
+                    2,
+                )
+            )
+        cbc_taxinclusiveamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:TaxInclusiveAmount"
+        )
+        cbc_taxinclusiveamount.set("currencyID", sales_invoice_doc.currency)
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            cbc_taxinclusiveamount.text = str(
+                round(
+                    abs(
+                        sales_invoice_doc.total
+                        - sales_invoice_doc.get("discount_amount", 0.0)
+                    )
+                    + abs(tax_amount_without_retention),
+                    2,
+                )
+            )
+        else:
+            cbc_taxinclusiveamount.text = str(
+                round(
+                    abs(
+                        sales_invoice_doc.base_net_total
+                        - sales_invoice_doc.get("discount_amount", 0.0)
+                    )
+                    + abs(tax_amount_without_retention),
+                    2,
+                )
+            )
+        cbc_allowancetotalamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
+        )
+        cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
+        cbc_allowancetotalamount.text = str(
+            abs(sales_invoice_doc.get("discount_amount", 0.0))
+        )
+
+        cbc_prepaidamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PrepaidAmount")
+        cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+        cbc_prepaidamount.text = str(round(abs(sales_invoice_doc.grand_total), 2))
+
+        cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
+        cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            inclusive_amount = round(
+                abs(
+                    sales_invoice_doc.total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+        else:
+            inclusive_amount = round(
+                abs(
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+
+        cbc_payableamount.text = str(
+            round(float(cbc_prepaidamount.text) - inclusive_amount, 2)
+        )
+        # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        # else:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.base_net_total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        return invoice
+
+    except (AttributeError, KeyError, ValueError, TypeError) as e:
+        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        return None
+
+
+def tax_data_with_template(invoice, sales_invoice_doc):
+    """Adding tax data with template to the xml"""
+    try:
+        # Initialize tax category totals
+        tax_category_totals = {}
+        for item in sales_invoice_doc.items:
+            item_tax_template = frappe.get_doc(
+                "Item Tax Template", item.item_tax_template
+            )
+            zatca_tax_category = item_tax_template.custom_zatca_tax_category
+
+            if zatca_tax_category not in tax_category_totals:
+                tax_category_totals[zatca_tax_category] = {
+                    "taxable_amount": 0,
+                    "tax_amount": 0,
+                    "tax_rate": (
+                        item_tax_template.taxes[0].tax_rate
+                        if item_tax_template.taxes
+                        else 15
+                    ),
+                    "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+                }
+            if sales_invoice_doc.currency == "SAR":
+                tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(
+                    item.base_amount
+                )
+            else:
+                tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(
+                    item.amount
+                )
+
+        first_tax_category = next(
+            iter(tax_category_totals)
+        )  # Get the first tax category
+        base_discount_amount = sales_invoice_doc.get("discount_amount", 0.0)
+
+        # Subtract the base discount from the taxable amount of the first tax category
+        tax_category_totals[first_tax_category]["taxable_amount"] -= abs(
+            base_discount_amount
+        )
+
+        # Calculate the total tax using the same technique as the 3rd place
+        # for zatca_tax_category, totals in tax_category_totals.items():
+        #     totals["tax_amount"] = abs(
+        #         round(totals["taxable_amount"] * totals["tax_rate"] / 100, 2)
+        #     )
+        # total_tax = sum(
+        #     category_totals["tax_amount"]
+        #     for category_totals in tax_category_totals.values()
+        # )
+        for zatca_tax_category, totals in tax_category_totals.items():
+            totals["taxable_amount"] = Decimal(
+                str(totals["taxable_amount"])
+            )  # Convert to Decimal
+            totals["tax_rate"] = Decimal(str(totals["tax_rate"]))  # Convert to Decimal
+
+            # Calculate tax amount with proper rounding
+            totals["tax_amount"] = (
+                totals["taxable_amount"] * totals["tax_rate"] / Decimal("100")
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # Compute total tax
+        total_tax = sum(
+            category_totals["tax_amount"]
+            for category_totals in tax_category_totals.values()
+        )
+        total_tax = total_tax.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # For SAR currency
+        if sales_invoice_doc.currency == "SAR":
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount_sar.set(
+                "currencyID", "SAR"
+            )  # SAR is as ZATCA requires tax amount in SAR
+            tax_amount_without_retention_sar = round(abs(total_tax), 2)
+            cbc_taxamount_sar.text = str(tax_amount_without_retention_sar)
+
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
+            # tax_amount_without_retention = round(abs(total_tax), 2)
+            tax_amount_without_retention = total_tax.quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            cbc_taxamount.text = str(tax_amount_without_retention)
+        else:
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount_sar.set("currencyID", sales_invoice_doc.currency)
+            tax_amount_without_retention_sar = round(abs(total_tax), 2)
+            cbc_taxamount_sar.text = str(tax_amount_without_retention_sar)
+
+            cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
+            cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
+            cbc_taxamount.set("currencyID", sales_invoice_doc.currency)
+            tax_amount_without_retention = round(abs(total_tax), 2)
+            cbc_taxamount.text = str(tax_amount_without_retention)
+
+        # Group items by ZATCA tax category
+        # tax_category_totals = {}
+
+        # for item in sales_invoice_doc.items:
+        #     item_tax_template = frappe.get_doc(
+        #         "Item Tax Template", item.item_tax_template
+        #     )
+        #     zatca_tax_category = item_tax_template.custom_zatca_tax_category
+
+        #     if zatca_tax_category not in tax_category_totals:
+        #         tax_category_totals[zatca_tax_category] = {
+        #             "taxable_amount": 0,
+        #             "tax_amount": 0,
+        #             "tax_rate": (
+        #                 item_tax_template.taxes[0].tax_rate
+        #                 if item_tax_template.taxes
+        #                 else 15
+        #             ),
+        #             "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+        #         }
+        #     if sales_invoice_doc.currency == "SAR":
+        #         tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(
+        #             item.base_amount
+        #         )
+        #     else:
+        #         tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(
+        #             item.amount
+        #         )
+
+        # first_tax_category = next(iter(tax_category_totals))
+        # tax_category_totals[first_tax_category]["taxable_amount"] -= abs(
+        #     sales_invoice_doc.get("discount_amount", 0.0)
+        # )
+
+        # for item in sales_invoice_doc.items:
+        #     item_tax_template = frappe.get_doc(
+        #         "Item Tax Template", item.item_tax_template
+        #     )
+        #     zatca_tax_category = item_tax_template.custom_zatca_tax_category
+
+        #     if zatca_tax_category not in tax_category_totals:
+        #         tax_category_totals[zatca_tax_category] = {
+        #             "taxable_amount": 0,
+        #             "tax_amount": 0,
+        #             "tax_rate": (
+        #                 item_tax_template.taxes[0].tax_rate
+        #                 if item_tax_template.taxes
+        #                 else 15
+        #             ),
+        #             "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+        #         }
+
+        # # Use the same technique for calculating tax amount
+        # for zatca_tax_category, totals in tax_category_totals.items():
+        #     totals["tax_amount"] = abs(
+        #         round(totals["taxable_amount"] * totals["tax_rate"] / 100, 2)
+        #     )
+
+        tax_category_totals = {}
+
+        # Process Items and Calculate Taxable Amounts
+        for item in sales_invoice_doc.items:
+            item_tax_template = frappe.get_doc(
+                "Item Tax Template", item.item_tax_template
+            )
+            zatca_tax_category = item_tax_template.custom_zatca_tax_category
+
+            if zatca_tax_category not in tax_category_totals:
+                tax_category_totals[zatca_tax_category] = {
+                    "taxable_amount": Decimal("0.00"),  # Ensure it's Decimal
+                    "tax_amount": Decimal("0.00"),
+                    "tax_rate": (
+                        Decimal(str(item_tax_template.taxes[0].tax_rate))
+                        if item_tax_template.taxes
+                        else Decimal("15.00")
+                    ),
+                    "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+                }
+
+            # Convert item amounts to Decimal before adding
+            item_amount = Decimal(
+                str(
+                    abs(
+                        item.base_amount
+                        if sales_invoice_doc.currency == "SAR"
+                        else item.amount
+                    )
+                )
+            )
+
+            tax_category_totals[zatca_tax_category]["taxable_amount"] += item_amount
+
+        # Apply Discount to the First Tax Category
+        first_tax_category = next(iter(tax_category_totals))
+
+        discount_amount = Decimal(
+            str(abs(sales_invoice_doc.get("discount_amount", 0.0)))
+        )
+        tax_category_totals[first_tax_category]["taxable_amount"] -= discount_amount
+
+        # Calculate the tax amount using Decimal and proper rounding
+        for zatca_tax_category, totals in tax_category_totals.items():
+            totals["tax_amount"] = (
+                totals["taxable_amount"] * totals["tax_rate"] / Decimal("100")
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # Debugging Output
+        # frappe.throw(f"tax_category_totals: {tax_category_totals}")
+
+        for zatca_tax_category, totals in tax_category_totals.items():
+            cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
+            cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
+            cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxableamount.text = str(round(totals["taxable_amount"], 2))
+
+            cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
+            cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
+            # cbc_taxamount_2.text = str(round(totals["tax_amount"], 2))
+            cbc_taxamount_value = str(tax_amount_without_retention)
+            cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
+
+            # Check if values match
+            if cbc_taxamount_value != cbc_taxamount_2_value:
+                cbc_taxamount_2_value = str(tax_amount_without_retention)
+            else:
+                cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
+
+            cbc_taxamount_2.text = cbc_taxamount_2_value
+
+            cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
+            cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
+
+            if zatca_tax_category == "Standard":
+                cbc_id_8.text = "S"
+            elif zatca_tax_category == "Zero Rated":
+                cbc_id_8.text = "Z"
+            elif zatca_tax_category == "Exempted":
+                cbc_id_8.text = "E"
+            elif (
+                zatca_tax_category
+                == "Services outside scope of tax / Not subject to VAT"
+            ):
+                cbc_id_8.text = "O"
+
+            cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
+            cbc_percent_1.text = f"{totals['tax_rate']:.2f}"
+
+            if zatca_tax_category != "Standard":
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
+                )
+                cbc_taxexemptionreasoncode.text = totals["exemption_reason_code"]
+                cbc_taxexemptionreason = ET.SubElement(
+                    cac_taxcategory_1, "cbc:TaxExemptionReason"
+                )
+
+                exemption_reason_map = get_exemption_reason_map()
+                if totals["exemption_reason_code"] in exemption_reason_map:
+                    cbc_taxexemptionreason.text = exemption_reason_map[
+                        totals["exemption_reason_code"]
+                    ]
+
+            cac_taxscheme = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
+            cbc_taxscheme_id = ET.SubElement(cac_taxscheme, "cbc:ID")
+            cbc_taxscheme_id.text = "VAT"
+
+        # Discount
+        cac_legalmonetarytotal = ET.SubElement(invoice, "cac:LegalMonetaryTotal")
+        cbc_lineextensionamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:LineExtensionAmount"
+        )
+        cbc_lineextensionamount.set("currencyID", sales_invoice_doc.currency)
+        cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
+
+        # Tax-Exclusive Amount (base_total - base_discount_amount)
+        cbc_taxexclusiveamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:TaxExclusiveAmount"
+        )
+        cbc_taxexclusiveamount.set("currencyID", sales_invoice_doc.currency)
+        cbc_taxexclusiveamount.text = str(
+            round(
+                abs(
+                    sales_invoice_doc.total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                ),
+                2,
+            )
+        )
+
+        # Tax-Inclusive Amount (Tax-Exclusive Amount + tax_amount_without_retention)
+        cbc_taxinclusiveamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:TaxInclusiveAmount"
+        )
+        cbc_taxinclusiveamount.set("currencyID", sales_invoice_doc.currency)
+        # cbc_taxinclusiveamount.text = str(
+        #     round(
+        #         abs(
+        #             sales_invoice_doc.total
+        #             - sales_invoice_doc.get("discount_amount", 0.0)
+        #         )
+        #         + abs(tax_amount_without_retention),
+        #         2,
+        #     )
+        # )
+
+        total_amount = Decimal(str(sales_invoice_doc.total))
+        discount_amount = Decimal(str(sales_invoice_doc.get("discount_amount", 0.0)))
+        tax_amount = abs(tax_amount_without_retention)  # Already Decimal
+        tax_inclusive_amount = (
+            abs(total_amount - discount_amount) + tax_amount
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        cbc_taxinclusiveamount.text = str(tax_inclusive_amount)
+
+        cbc_allowancetotalamount = ET.SubElement(
+            cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
+        )
+        cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
+
+        cbc_allowancetotalamount.text = str(
+            round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
+        )
+        cbc_prepaidamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PrepaidAmount")
+        cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+        cbc_prepaidamount.text = "1150"
+
+        cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
+        cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
+        # cbc_payableamount.text = str(
+        #     round(
+        #         abs(
+        #             sales_invoice_doc.total
+        #             - sales_invoice_doc.get("discount_amount", 0.0)
+        #         )
+        #         + abs(tax_amount_without_retention),
+        #         2,
+        #     )
+        # )
+        payable_amount = (abs(total_amount - discount_amount) + tax_amount).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+        cbc_payableamount.text = str(payable_amount)
+
+        return invoice
+
+    except (AttributeError, KeyError, ValueError, TypeError) as e:
+        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        return None
+
+
 def additional_reference_advanve(invoice, company_abbr, sales_invoice_doc):
     """
     Adds additional document references to the XML invoice for PIH, QR, and Signature elements.
@@ -170,14 +807,8 @@ def additional_reference_advanve(invoice, company_abbr, sales_invoice_doc):
             cac_attachment, "cbc:EmbeddedDocumentBinaryObject"
         )
         cbc_embeddeddocumentbinaryobject.set("mimeCode", "text/plain")
-
-        # Directly retrieve the PIH data without JSON parsing
-        # pih = company_doc.custom_pih  # Assuming this is already in the correct format
-
         pih = company_doc.custom_pih
         cbc_embeddeddocumentbinaryobject.text = pih
-
-        # Create the second AdditionalDocumentReference element for QR
         cac_additionaldocumentreference22 = ET.SubElement(
             invoice, "cac:AdditionalDocumentReference"
         )
@@ -190,9 +821,7 @@ def additional_reference_advanve(invoice, company_abbr, sales_invoice_doc):
             cac_attachment22, "cbc:EmbeddedDocumentBinaryObject"
         )
         cbc_embeddeddocumentbinaryobject22.set("mimeCode", "text/plain")
-        cbc_embeddeddocumentbinaryobject22.text = (
-            "GsiuvGjvchjbFhibcDhjv1886G"  # Example QR code
-        )
+        cbc_embeddeddocumentbinaryobject22.text = "GsiuvGjvchjbFhibcDhjv1886G"
         cac_sign = ET.SubElement(invoice, "cac:Signature")
         cbc_id_sign = ET.SubElement(cac_sign, CBC_ID)
         cbc_method_sign = ET.SubElement(cac_sign, "cbc:SignatureMethod")
@@ -215,8 +844,6 @@ def company_data_advance(invoice, sales_invoice_doc):
         company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
         if company_doc.custom_costcenter == 1 and not sales_invoice_doc.cost_center:
             frappe.throw("no Cost Center is set in the invoice.Give the feild")
-        # Determine whether to fetch data from Cost Center or Company
-
         custom_registration_type = company_doc.custom_registration_type
         custom_company_registration = company_doc.custom_company_registration
 
@@ -228,8 +855,6 @@ def company_data_advance(invoice, sales_invoice_doc):
         cbc_id_2 = ET.SubElement(cac_partyidentification, CBC_ID)
         cbc_id_2.set("schemeID", custom_registration_type)
         cbc_id_2.text = custom_company_registration
-
-        # Get the appropriate address
         address = get_address(sales_invoice_doc, company_doc)
 
         cac_postaladdress = ET.SubElement(cac_party_1, "cac:PostalAddress")
@@ -273,6 +898,106 @@ def company_data_advance(invoice, sales_invoice_doc):
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
         frappe.throw(f"Error occurred in company data: {e}")
+        return None
+
+
+def customer_data_advance(invoice, sales_invoice_doc):
+    """
+    customer data of address and need values
+    """
+    try:
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        # frappe.throw(str(customer_doc))
+        cac_accountingcustomerparty = ET.SubElement(
+            invoice, "cac:AccountingCustomerParty"
+        )
+        cac_party_2 = ET.SubElement(cac_accountingcustomerparty, "cac:Party")
+        cac_partyidentification_1 = ET.SubElement(
+            cac_party_2, "cac:PartyIdentification"
+        )
+        cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
+        cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
+        cbc_id_4.text = customer_doc.custom_buyer_id
+
+        address = None
+        if customer_doc.custom_b2c != 1:
+            if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
+                if sales_invoice_doc.customer_address:
+                    address = frappe.get_doc(
+                        "Address", sales_invoice_doc.customer_address
+                    )
+            else:
+                if customer_doc.customer_primary_address:
+                    address = frappe.get_doc(
+                        "Address", customer_doc.customer_primary_address
+                    )
+
+            if not address:
+                frappe.throw("Customer address is mandatory for non-B2C customers.")
+
+            cac_postaladdress_1 = ET.SubElement(cac_party_2, "cac:PostalAddress")
+            # frappe.throw(address.address_line1)
+            if address.address_line1:
+                cbc_streetname_1 = ET.SubElement(cac_postaladdress_1, "cbc:StreetName")
+                cbc_streetname_1.text = address.address_line1
+
+            if (
+                hasattr(address, "custom_building_number")
+                and address.custom_building_number
+            ):
+                cbc_buildingnumber_1 = ET.SubElement(
+                    cac_postaladdress_1, "cbc:BuildingNumber"
+                )
+                cbc_buildingnumber_1.text = address.custom_building_number
+
+            cbc_plotidentification_1 = ET.SubElement(
+                cac_postaladdress_1, "cbc:PlotIdentification"
+            )
+            if hasattr(address, "po_box") and address.po_box:
+                cbc_plotidentification_1.text = address.po_box
+            elif address.address_line1:
+                cbc_plotidentification_1.text = address.address_line1
+
+            if address.address_line2:
+                cbc_citysubdivisionname_1 = ET.SubElement(
+                    cac_postaladdress_1, "cbc:CitySubdivisionName"
+                )
+                cbc_citysubdivisionname_1.text = address.address_line2
+
+            if address.city:
+                cbc_cityname_1 = ET.SubElement(cac_postaladdress_1, "cbc:CityName")
+                cbc_cityname_1.text = address.city
+
+            if address.pincode:
+                cbc_postalzone_1 = ET.SubElement(cac_postaladdress_1, "cbc:PostalZone")
+                cbc_postalzone_1.text = address.pincode
+
+            if address.state:
+                cbc_countrysubentity_1 = ET.SubElement(
+                    cac_postaladdress_1, "cbc:CountrySubentity"
+                )
+                cbc_countrysubentity_1.text = address.state
+
+            cac_country_1 = ET.SubElement(cac_postaladdress_1, "cac:Country")
+            cbc_identificationcode_1 = ET.SubElement(
+                cac_country_1, "cbc:IdentificationCode"
+            )
+
+            cbc_identificationcode_1.text = "SA"
+
+        cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
+        cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
+        cbc_id_5 = ET.SubElement(cac_taxscheme_1, CBC_ID)
+        cbc_id_5.text = "VAT"
+        cac_partylegalentity_1 = ET.SubElement(cac_party_2, "cac:PartyLegalEntity")
+        cbc_registrationname_1 = ET.SubElement(
+            cac_partylegalentity_1, "cbc:RegistrationName"
+        )
+        cbc_registrationname_1.text = customer_doc.customer_name
+
+        return invoice
+    except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
+        frappe.throw(f"Error occurred in customer data: {e}")
         return None
 
 
@@ -330,7 +1055,7 @@ def delivery_and_payment_means_for_compliance_advance(
         return None
 
 
-def item_data_advance(invoice, sales_invoice_doc):
+def item_data_advance(invoice, sales_invoice_doc, invoice_number):
     """
     The function defines the xml creating without item tax template
     """
@@ -453,6 +1178,89 @@ def item_data_advance(invoice, sales_invoice_doc):
                     )
                 )
 
+            cac_invoiceline_adv = ET.SubElement(invoice, "cac:InvoiceLine")
+            ET.SubElement(cac_invoiceline_adv, "cbc:ID").text = str(single_item.idx + 1)
+            ET.SubElement(
+                cac_invoiceline_adv,
+                "cbc:InvoicedQuantity",
+                unitCode=str(single_item.uom),
+            ).text = "0.000000"
+            ET.SubElement(
+                cac_invoiceline_adv,
+                "cbc:LineExtensionAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = "0.00"
+
+            cac_docref = ET.SubElement(cac_invoiceline_adv, "cac:DocumentReference")
+            ET.SubElement(cac_docref, "cbc:ID").text = str(get_icv_code(invoice_number))
+            # ET.SubElement(cac_docref, "cbc:UUID").text = (
+            #     "a79760f7-2f48-4da9-85a5-40459a147c80"
+            # )
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            ET.SubElement(cac_docref, "cbc:IssueDate").text = current_date
+            current_time = datetime.now().strftime("%H:%M:%S")
+            ET.SubElement(cac_docref, "cbc:IssueTime").text = current_time
+            ET.SubElement(cac_docref, "cbc:DocumentTypeCode").text = "386"
+
+            cac_taxtotal_adv = ET.SubElement(cac_invoiceline_adv, CAC_TAX_TOTAL)
+            ET.SubElement(
+                cac_taxtotal_adv, CBC_TAX_AMOUNT, currencyID=sales_invoice_doc.currency
+            ).text = "0"
+            ET.SubElement(
+                cac_taxtotal_adv,
+                "cbc:RoundingAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = "0"
+
+            cac_taxsubtotal_adv = ET.SubElement(cac_taxtotal_adv, "cac:TaxSubtotal")
+            ET.SubElement(
+                cac_taxsubtotal_adv,
+                "cbc:TaxableAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = str(abs(single_item.amount))
+            ET.SubElement(
+                cac_taxsubtotal_adv,
+                "cbc:TaxAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = str(abs(round(single_item.amount * item_tax_percentage / 100, 2)))
+
+            cac_taxcategory_adv = ET.SubElement(cac_taxsubtotal_adv, "cac:TaxCategory")
+            cbc_id_adv = ET.SubElement(cac_taxcategory_adv, "cbc:ID")
+            cbc_id_adv.text = {
+                "Standard": "S",
+                ZERO_RATED: "Z",
+                "Exempted": "E",
+                OUTSIDE_SCOPE: "O",
+            }.get(sales_invoice_doc.custom_zatca_tax_category, "S")
+            cbc_percent_adv = ET.SubElement(cac_taxcategory_adv, "cbc:Percent")
+            cbc_percent_adv.text = f"{float(item_tax_percentage):.2f}"
+
+            cac_taxscheme_adv = ET.SubElement(cac_taxcategory_adv, "cac:TaxScheme")
+            ET.SubElement(cac_taxscheme_adv, "cbc:ID").text = "VAT"
+
+            cac_item_adv = ET.SubElement(cac_invoiceline_adv, "cac:Item")
+            ET.SubElement(cac_item_adv, "cbc:Name").text = (
+                f"{single_item.item_code}:{single_item.item_name}"
+            )
+
+            cac_classifiedtaxcategory_adv = ET.SubElement(
+                cac_item_adv, "cac:ClassifiedTaxCategory"
+            )
+            ET.SubElement(cac_classifiedtaxcategory_adv, "cbc:ID").text = (
+                cbc_id_adv.text
+            )
+            ET.SubElement(cac_classifiedtaxcategory_adv, "cbc:Percent").text = (
+                cbc_percent_adv.text
+            )
+            cac_taxscheme_item_adv = ET.SubElement(
+                cac_classifiedtaxcategory_adv, "cac:TaxScheme"
+            )
+            ET.SubElement(cac_taxscheme_item_adv, "cbc:ID").text = "VAT"
+
+            cac_price_adv = ET.SubElement(cac_invoiceline_adv, "cac:Price")
+            ET.SubElement(
+                cac_price_adv, "cbc:PriceAmount", currencyID=sales_invoice_doc.currency
+            ).text = "0.00"
         return invoice
     except (ValueError, KeyError, TypeError) as e:
         frappe.throw(f"Error occurred in item data processing: {str(e)}")
@@ -578,7 +1386,7 @@ def xml_structuring_advance(invoice):
     try:
 
         tree = ET.ElementTree(invoice)
-        xml_file_path = frappe.local.site + "/private/files/xml_filesadavance.xml"
+        xml_file_path = frappe.local.site + "/private/files/xml_filesadavance1.xml"
 
         # Save the XML tree to a file
         with open(xml_file_path, "wb") as file:
@@ -593,7 +1401,7 @@ def xml_structuring_advance(invoice):
         pretty_xml_string = xml_dom.toprettyxml(indent="  ")
 
         # Write the formatted XML to the final file
-        final_xml_path = frappe.local.site + "/private/files/finalzatcaxmladavance.xml"
+        final_xml_path = frappe.local.site + "/private/files/finalzatcaxmladavance1.xml"
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
 
@@ -709,7 +1517,7 @@ def clearance_api(
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
         if response.status_code in (400, 405, 406, 409):
-            invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_uuid", "Not Submitted", commit=True, update_modified=True
             )
@@ -728,7 +1536,7 @@ def clearance_api(
                 )
             )
         if response.status_code in (401, 403, 407, 451):
-            invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_uuid", "Not Submitted", commit=True, update_modified=True
             )
@@ -747,7 +1555,7 @@ def clearance_api(
                 )
             )
         if response.status_code not in (200, 202):
-            invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_uuid", "Not Submitted", commit=True, update_modified=True
             )
@@ -774,14 +1582,6 @@ def clearance_api(
             )
 
             company_name = sales_invoice_doc.company
-            # settings = frappe.get_doc("Company", company_name)
-            # company_abbr = settings.abbr
-            # if settings.custom_send_einvoice_background:
-            #     frappe.msgprint(msg)
-            # company_doc.custom_pih = encoded_hash
-            # company_doc.save(ignore_permissions=True)
-            # company_name = pos_invoice_doc.company
-
             settings = frappe.get_doc("Company", company_name)
             company_abbr = settings.abbr
             if settings.custom_send_einvoice_background:
@@ -791,7 +1591,7 @@ def clearance_api(
             company_doc.custom_pih = encoded_hash
             company_doc.save(ignore_permissions=True)
 
-            invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_zatca_full_response", msg, commit=True, update_modified=True
             )
@@ -806,7 +1606,9 @@ def clearance_api(
             file = frappe.get_doc(
                 {
                     "doctype": "File",
-                    "file_name": "Cleared xml file " + sales_invoice_doc.name + ".xml",
+                    "file_name": "Cleared Advance xml file "
+                    + sales_invoice_doc.name
+                    + ".xml",
                     "attached_to_doctype": sales_invoice_doc.doctype,
                     "is_private": 1,
                     "attached_to_name": sales_invoice_doc.name,
@@ -821,7 +1623,7 @@ def clearance_api(
             error_log()
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
         invoice_doc.db_set(
             "custom_zatca_full_response",
             f"Error: {str(e)}",
@@ -835,6 +1637,88 @@ def clearance_api(
             update_modified=True,
         )
         frappe.throw(f"Error in clearance API: {str(e)}")
+
+
+def invoice_typecode_standard_advance(invoice, sales_invoice_doc):
+    """
+    Sets the InvoiceTypeCode for a standard invoice based on sales invoice document attributes.
+    """
+    try:
+        cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+
+        cbc_invoicetypecode.set("name", "0100000")
+        cbc_invoicetypecode.text = "386"
+        return invoice
+    except (ET.ParseError, AttributeError, ValueError) as e:
+        frappe.throw(f"Error in standard invoice type code: {e}")
+        return None
+
+
+def invoice_typecode_compliance_advance(invoice, compliance_type):
+    """
+    Creates and populates XML tags for a UBL Invoice document.
+    """
+
+    try:
+
+        if compliance_type == "1":  # simplified invoice
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0200000")
+            cbc_invoicetypecode.text = "388"
+
+        elif compliance_type == "2":  # standard invoice
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0100000")
+            cbc_invoicetypecode.text = "388"
+
+        elif compliance_type == "3":  # simplified Credit note
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0200000")
+            cbc_invoicetypecode.text = "381"
+
+        elif compliance_type == "4":  # Standard Credit note
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0100000")
+            cbc_invoicetypecode.text = "381"
+
+        elif compliance_type == "5":  # simplified Debit note
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0211000")
+            cbc_invoicetypecode.text = "383"
+
+        elif compliance_type == "6":  # Standard Debit note
+            cbc_invoicetypecode = ET.SubElement(invoice, "cbc:InvoiceTypeCode")
+            cbc_invoicetypecode.set("name", "0100000")
+            cbc_invoicetypecode.text = "383"
+        return invoice
+
+    except (ET.ParseError, AttributeError, ValueError) as e:
+        frappe.throw(f"Error occurred in compliance typecode: {e}")
+        return None
+
+
+def doc_reference_advance(invoice, sales_invoice_doc, invoice_number):
+    """
+    Adds document reference elements to the XML invoice,
+    including currency codes and additional document references.
+    """
+    try:
+        cbc_documentcurrencycode = ET.SubElement(invoice, "cbc:DocumentCurrencyCode")
+        cbc_documentcurrencycode.text = sales_invoice_doc.currency
+        cbc_taxcurrencycode = ET.SubElement(invoice, "cbc:TaxCurrencyCode")
+        cbc_taxcurrencycode.text = "SAR"  # SAR is as zatca requires tax amount in SAR
+
+        cac_additionaldocumentreference = ET.SubElement(
+            invoice, "cac:AdditionalDocumentReference"
+        )
+        cbc_id_1 = ET.SubElement(cac_additionaldocumentreference, CBC_ID)
+        cbc_id_1.text = "ICV"
+        cbc_uuid_1 = ET.SubElement(cac_additionaldocumentreference, "cbc:UUID")
+        cbc_uuid_1.text = str(get_icv_code(invoice_number))
+        return invoice
+    except (ET.ParseError, AttributeError, ValueError) as e:
+        frappe.throw(f"Error occurred in reference doc: {e}")
+        return None
 
 
 @frappe.whitelist(allow_guest=False)
@@ -860,36 +1744,39 @@ def zatca_call(
         )
 
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        # frappe.throw(str(customer_doc))
 
-        if compliance_type == "0":
-            invoice = invoice_typecode_standard(invoice, sales_invoice_doc)
-        else:
-            invoice = invoice_typecode_compliance(invoice, compliance_type)
+        invoice = invoice_typecode_standard_advance(invoice, sales_invoice_doc)
 
-        invoice = doc_reference(invoice, sales_invoice_doc, invoice_number)
+        invoice = doc_reference_advance(invoice, sales_invoice_doc, invoice_number)
         invoice = additional_reference_advanve(invoice, company_abbr, sales_invoice_doc)
         invoice = company_data_advance(invoice, sales_invoice_doc)
-        invoice = customer_data(invoice, sales_invoice_doc)
+        invoice = customer_data_advance(invoice, sales_invoice_doc)
         invoice = delivery_and_payment_means_adavance(invoice, sales_invoice_doc)
+        # frappe.throw(str(sales_invoice_doc))
         if not any_item_has_tax_template:
             invoice = tax_data(invoice, sales_invoice_doc)
+            # frappe.msgprint("invoiceis", str(invoice))
         else:
             invoice = tax_data_with_template(invoice, sales_invoice_doc)
+            # frappe.msgprint(invoice)
 
         if not any_item_has_tax_template:
-            invoice = item_data_advance(invoice, sales_invoice_doc)
+            invoice = item_data_advance(invoice, sales_invoice_doc, invoice_number)
+            # frappe.msgprint(invoice)
         else:
             invoice = item_data_with_template_adavance(invoice, sales_invoice_doc)
+            # frappe.msgprint(invoice)
         xml_structuring_advance(invoice)
-        try:
-            with open(
-                frappe.local.site + "/private/files/finalzatcaxmladvance.xml",
-                "r",
-                encoding="utf-8",
-            ) as file:
-                file_content = file.read()
-        except FileNotFoundError:
-            frappe.throw("XML file not found")
+
+        with open(
+            frappe.local.site + "/private/files/finalzatcaxmladavance1.xml",
+            "r",
+            encoding="utf-8",
+        ) as file:
+            file_content = file.read()
+            # frappe.msgprint(file_content)
+
         tag_removed_xml = removetags(file_content)
         canonicalized_xml = canonicalize_xml(tag_removed_xml)
         hash1, encoded_hash = getinvoicehash(canonicalized_xml)
@@ -921,12 +1808,13 @@ def zatca_call(
         update_qr_toxml(qrcodeb64, company_abbr)
         signed_xmlfile_name = structuring_signedxml()
         # Example usage
-        # file_path = generate_invoice_pdf(
-        #     invoice_number, l anguage="en", letterhead="Sample letterhead"
+        # # file_path = generate_invoice_pdf(
+        # #     invoice_number, l anguage="en", letterhead="Sample letterhead"
         # )
-        # frappe.throw(f"PDF saved at: {file_path}")
+        # frappe.throw(f"PDF saved at: {signed_xmlfile_name}")
         if compliance_type == "0":
             if customer_doc.custom_b2c != 1:
+
                 clearance_api(
                     uuid1,
                     encoded_hash,
@@ -1044,7 +1932,6 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         # if settings.custom_phase_1_or_2 == "Phase-2":
 
         if settings.custom_phase_1_or_2 == "Phase-2":
-
             zatca_call(
                 invoice_number,
                 "0",
