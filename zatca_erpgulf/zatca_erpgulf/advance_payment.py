@@ -1060,7 +1060,7 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
     The function defines the xml creating without item tax template
     """
     try:
-        for single_item in sales_invoice_doc.items:
+        for single_item in sales_invoice_doc.custom_item:
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
                 sales_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
             )
