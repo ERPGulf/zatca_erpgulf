@@ -127,7 +127,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
             url=get_api_url(company_abbr, base_url="compliance/invoices"),
             headers=headers,
             data=payload,
-            timeout=60,
+            timeout=300,
         )
 
         # Handle response
