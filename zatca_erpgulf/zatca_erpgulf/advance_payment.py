@@ -1512,7 +1512,7 @@ def clearance_api(
             url=get_api_url(company_abbr, base_url="invoices/clearance/single"),
             headers=headers,
             json=payload,
-            timeout=60,
+            timeout=300,
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 

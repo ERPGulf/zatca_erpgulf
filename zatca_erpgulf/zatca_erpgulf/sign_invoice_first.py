@@ -1,6 +1,6 @@
 """
 This module facilitates the generation, validation, and submission of
- ZATCA-compliant e-invoices for companies 
+ ZATCA-compliant e-invoices for companies
 using ERPNext
 """
 
@@ -378,7 +378,7 @@ def create_csid(zatca_doc, company_abbr):
             url=get_api_url(company_abbr, base_url="compliance"),
             headers=headers,
             data=payload,
-            timeout=60,
+            timeout=300,
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
@@ -1189,7 +1189,7 @@ def compliance_api_call(
             url=get_api_url(company_abbr, base_url="compliance/invoices"),
             headers=headers,
             data=payload,
-            timeout=60,
+            timeout=300,
         )
         # frappe.throw(response.status_code)
         frappe.throw(response.text)
@@ -1262,7 +1262,7 @@ def production_csid(zatca_doc, company_abbr):
             url=get_api_url(company_abbr, base_url="production/csids"),
             headers=headers,
             json=payload,
-            timeout=60,
+            timeout=300,
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
         frappe.msgprint(response.text)

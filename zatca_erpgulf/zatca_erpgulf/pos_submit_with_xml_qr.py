@@ -1,4 +1,4 @@
-""" This module is used to submit the POS invoice to ZATCA using the API through xml and qr. """
+"""This module is used to submit the POS invoice to ZATCA using the API through xml and qr."""
 
 import frappe
 import requests
@@ -116,7 +116,7 @@ def reporting_api_machine(
                 url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
                 headers=headers,
                 json=payload,
-                timeout=60,
+                timeout=300,
             )
             frappe.publish_realtime("hide_gif", user=frappe.session.user)
             if response.status_code in (400, 405, 406, 409):
