@@ -50,7 +50,7 @@ def submit_posinvoices_to_zatca_background_process():
             if company.custom_start_time and company.custom_end_time:
                 start_time = convert_to_time(company.custom_start_time)
                 end_time = convert_to_time(company.custom_end_time)
-            elif company.custom_start_time_session and company.end_time_session:
+            elif company.custom_start_time_session and company.custom_end_time_session:
                 start_time = convert_to_time(company.custom_start_time_session)
                 end_time = convert_to_time(company.custom_end_time_session)
 
