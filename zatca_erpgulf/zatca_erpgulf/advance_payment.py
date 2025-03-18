@@ -42,8 +42,6 @@ from zatca_erpgulf.zatca_erpgulf.createxml import (
 )
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_exemption_reason_map,
-    get_tax_for_item,
-    get_tax_total_from_items,
 )
 
 
@@ -72,6 +70,8 @@ from zatca_erpgulf.zatca_erpgulf.sign_invoice import get_api_url, attach_qr_imag
 from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 
 
+TAX_CALCULATION_ERROR = "Tax Calculation Error"
+CAC_TAX_TOTAL = "cac:TaxTotal"
 # frappe.init(site="zatca.erpgulf.com")
 # frappe.connect()
 def get_issue_time(invoice_number):
@@ -82,6 +82,56 @@ def get_issue_time(invoice_number):
     time = get_time(doc.posting_time)
     issue_time = time.strftime("%H:%M:%S")  # time in format of  hour,mints,secnds
     return issue_time
+
+
+def get_tax_for_item(full_string, item):
+    """
+    Extracts the tax amount and tax percentage for a specific item from a JSON-encoded string.
+    """
+    try:  # getting tax percentage and tax amount
+        data = json.loads(full_string)
+        tax_percentage = data.get(item, [0, 0])[0]
+        tax_amount = data.get(item, [0, 0])[1]
+        return tax_amount, tax_percentage
+    except json.JSONDecodeError as e:
+        frappe.throw("JSON decoding error occurred in tax for item: " + str(e))
+        return None
+    except KeyError as e:
+        frappe.throw(f"Key error occurred while accessing item '{item}': " + str(e))
+        return None
+    except TypeError as e:
+        frappe.throw("Type error occurred in tax for item: " + str(e))
+        return None
+
+
+def get_tax_total_from_items(sales_invoice_doc):
+    """Getting tax total for items"""
+    try:
+        total_tax = 0
+        for single_item in sales_invoice_doc.custom_item:
+            _item_tax_amount, tax_percent = get_tax_for_item(
+                sales_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
+            )
+            total_tax = total_tax + (single_item.net_amount * (tax_percent / 100))
+        return total_tax
+    except AttributeError as e:
+        frappe.throw(
+            f"AttributeError in get_tax_total_from_items: {str(e)}",
+            TAX_CALCULATION_ERROR,
+        )
+        return None
+    except KeyError as e:
+        frappe.throw(
+            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+        )
+
+        return None
+    except TypeError as e:
+        frappe.throw(
+            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+        )
+
+        return None
 
 
 # def billing_reference_adavancepayment(invoice, invoice_number):
@@ -1435,7 +1485,7 @@ def item_data_with_template_adavance(invoice, sales_invoice_doc):
         return None
 
 
-def xml_structuring_advance(invoice):
+def xml_structuring_advance(invoice, sales_invoice_doc):
     """
     Xml structuring and final saving of the xml into private files
     """
@@ -1460,6 +1510,51 @@ def xml_structuring_advance(invoice):
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxmladavance1.xml"
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
+        try:
+            if frappe.db.exists(
+                "File",
+                {
+                    "attached_to_name": sales_invoice_doc.name,
+                    "attached_to_doctype": sales_invoice_doc.doctype,
+                },
+            ):
+                frappe.db.delete(
+                    "File",
+                    {
+                        "attached_to_name": sales_invoice_doc.name,
+                        "attached_to_doctype": sales_invoice_doc.doctype,
+                    },
+                )
+        except Exception as e:
+            frappe.throw(frappe.get_traceback())
+
+        try:
+            fileX = frappe.get_doc(
+                {
+                    "doctype": "File",
+                    "file_type": "xml",
+                    "file_name": "E-invoice-" + sales_invoice_doc.name + ".xml",
+                    "attached_to_doctype": sales_invoice_doc.doctype,
+                    "attached_to_name": sales_invoice_doc.name,
+                    "content": pretty_xml_string,
+                    "is_private": 1,
+                }
+            )
+            fileX.save()
+        except Exception as e:
+            frappe.throw(frappe.get_traceback())
+
+        try:
+            frappe.db.get_value(
+                "File",
+                {
+                    "attached_to_name": sales_invoice_doc.name,
+                    "attached_to_doctype": sales_invoice_doc.doctype,
+                },
+                ["file_name"],
+            )
+        except Exception as e:
+            frappe.throw(frappe.get_traceback())
 
     except (FileNotFoundError, IOError):
         frappe.throw(
@@ -1823,7 +1918,7 @@ def zatca_call(
         else:
             invoice = item_data_with_template_adavance(invoice, sales_invoice_doc)
             # frappe.msgprint(invoice)
-        xml_structuring_advance(invoice)
+        xml_structuring_advance(invoice, sales_invoice_doc)
 
         with open(
             frappe.local.site + "/private/files/finalzatcaxmladavance1.xml",
