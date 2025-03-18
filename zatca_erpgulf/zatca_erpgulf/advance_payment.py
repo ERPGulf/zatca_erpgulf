@@ -900,7 +900,7 @@ def customer_data_advance(invoice, sales_invoice_doc):
     customer data of address and need values
     """
     try:
-        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.party)
         # frappe.throw(str(customer_doc))
         cac_accountingcustomerparty = ET.SubElement(
             invoice, "cac:AccountingCustomerParty"
@@ -914,17 +914,15 @@ def customer_data_advance(invoice, sales_invoice_doc):
         cbc_id_4.text = customer_doc.custom_buyer_id
 
         address = None
-        if customer_doc.custom_b2c != 1:
-            if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
-                if sales_invoice_doc.customer_address:
-                    address = frappe.get_doc(
-                        "Address", sales_invoice_doc.customer_address
-                    )
-            else:
-                if customer_doc.customer_primary_address:
-                    address = frappe.get_doc(
-                        "Address", customer_doc.customer_primary_address
-                    )
+        # if customer_doc.custom_b2c != 1:
+        #     if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
+        #         if sales_invoice_doc.customer_address:
+        #             address = frappe.get_doc(
+        #                 "Address", sales_invoice_doc.customer_address
+        #             )
+        #     else:
+        if customer_doc.customer_primary_address:
+            address = frappe.get_doc("Address", customer_doc.customer_primary_address)
 
             if not address:
                 frappe.throw("Customer address is mandatory for non-B2C customers.")
@@ -1737,7 +1735,7 @@ def zatca_call(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
 
-        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.party)
         # frappe.throw(str(customer_doc))
 
         invoice = invoice_typecode_standard_advance(invoice, sales_invoice_doc)
@@ -1807,7 +1805,7 @@ def zatca_call(
         # )
         # frappe.throw(f"PDF saved at: {signed_xmlfile_name}")
         if compliance_type == "0":
-            if customer_doc.custom_b2c != 1:
+            # if customer_doc.custom_b2c != 1:
 
                 clearance_api(
                     uuid1,
