@@ -1045,7 +1045,7 @@ def delivery_and_payment_means_adavance(invoice, sales_invoice_doc):
     try:
         cac_delivery = ET.SubElement(invoice, "cac:Delivery")
         cbc_actual_delivery_date = ET.SubElement(cac_delivery, "cbc:ActualDeliveryDate")
-        cbc_actual_delivery_date.text = str(sales_invoice_doc.due_date)
+        cbc_actual_delivery_date.text = str(sales_invoice_doc.posting_date)
 
         cac_payment_means = ET.SubElement(invoice, "cac:PaymentMeans")
         cbc_payment_means_code = ET.SubElement(
@@ -1070,7 +1070,7 @@ def delivery_and_payment_means_for_compliance_advance(
     try:
         cac_delivery = ET.SubElement(invoice, "cac:Delivery")
         cbc_actual_delivery_date = ET.SubElement(cac_delivery, "cbc:ActualDeliveryDate")
-        cbc_actual_delivery_date.text = str(sales_invoice_doc.due_date)
+        cbc_actual_delivery_date.text = str(sales_invoice_doc.posting_date)
 
         cac_payment_means = ET.SubElement(invoice, "cac:PaymentMeans")
         cbc_payment_means_code = ET.SubElement(
