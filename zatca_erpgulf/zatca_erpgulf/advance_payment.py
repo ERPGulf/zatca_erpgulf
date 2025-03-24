@@ -72,6 +72,8 @@ from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 
 TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
+
+
 # frappe.init(site="zatca.erpgulf.com")
 # frappe.connect()
 def get_issue_time(invoice_number):
