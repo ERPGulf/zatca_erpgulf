@@ -223,9 +223,7 @@ def tax_data(invoice, sales_invoice_doc):
                 tax_amount_without_retention_sar
             )  # Tax amount in SAR
 
-            taxable_amount = sales_invoice_doc.base_total - sales_invoice_doc.get(
-                "base_discount_amount", 0.0
-            )
+            taxable_amount = sales_invoice_doc.base_total
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount.set(
@@ -251,9 +249,7 @@ def tax_data(invoice, sales_invoice_doc):
             )
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            taxable_amount = sales_invoice_doc.base_total - sales_invoice_doc.get(
-                "base_discount_amount", 0.0
-            )
+            taxable_amount = sales_invoice_doc.base_total
 
             # else:
             # taxable_amount = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
@@ -275,9 +271,7 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )  # USD currency
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            taxable_amount_1 = sales_invoice_doc.total - sales_invoice_doc.get(
-                "discount_amount", 0.0
-            )
+            taxable_amount_1 = sales_invoice_doc.total
             # else:
             # taxable_amount_1 = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
             #     "discount_amount", 0.0
@@ -292,9 +286,7 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )  # USD currency
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            taxable_amount_1 = sales_invoice_doc.total - sales_invoice_doc.get(
-                "discount_amount", 0.0
-            )
+            taxable_amount_1 = sales_invoice_doc.total
 
             # else:
             # taxable_amount_1 = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
@@ -391,10 +383,7 @@ def tax_data(invoice, sales_invoice_doc):
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_taxexclusiveamount.text = str(
             round(
-                abs(
-                    sales_invoice_doc.total
-                    - sales_invoice_doc.get("discount_amount", 0.0)
-                ),
+                abs(sales_invoice_doc.total),
                 2,
             )
         )
@@ -417,11 +406,7 @@ def tax_data(invoice, sales_invoice_doc):
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_taxinclusiveamount.text = str(
             round(
-                abs(
-                    sales_invoice_doc.total
-                    - sales_invoice_doc.get("discount_amount", 0.0)
-                )
-                + abs(tax_amount_without_retention),
+                abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
                 2,
             )
         )
@@ -458,8 +443,7 @@ def tax_data(invoice, sales_invoice_doc):
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         inclusive_amount = round(
-            abs(sales_invoice_doc.total - sales_invoice_doc.get("discount_amount", 0.0))
-            + abs(tax_amount_without_retention),
+            abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
             2,
         )
         # else:
@@ -869,7 +853,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(f"Data processing error in tax datatemplate: {str(e)}")
         return None
 
 
