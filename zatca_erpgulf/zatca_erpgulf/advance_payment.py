@@ -240,7 +240,6 @@ def tax_data(invoice, sales_invoice_doc):
             )
             # frappe.throw(f"Tax amount in SAR: {tax_amount_without_retention}")
             cbc_taxamount.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-            frappe.throw(f"Tax amount in SAR: {cbc_taxamount.text}")
             # Tax Subtotal
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
@@ -250,7 +249,7 @@ def tax_data(invoice, sales_invoice_doc):
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             taxable_amount = sales_invoice_doc.base_total
-            frappe.msgprint(f"Taxable amount in SAR: {taxable_amount}")
+            frappe.throw(f"Taxable amount in SAR: {taxable_amount}")
             # else:
             # taxable_amount = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
             #     "base_discount_amount", 0.0
