@@ -238,9 +238,9 @@ def tax_data(invoice, sales_invoice_doc):
                     Decimal("0.01"), rounding=ROUND_HALF_UP
                 )
             )
-            frappe.throw(f"Tax amount in SAR: {tax_amount_without_retention}")
+            # frappe.throw(f"Tax amount in SAR: {tax_amount_without_retention}")
             cbc_taxamount.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-            frappe.msgprint(f"Tax amount in SAR: {cbc_taxamount.text}")
+            frappe.throw(f"Tax amount in SAR: {cbc_taxamount.text}")
             # Tax Subtotal
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, "cbc:TaxableAmount")
