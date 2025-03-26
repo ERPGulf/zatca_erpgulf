@@ -238,7 +238,7 @@ def tax_data(invoice, sales_invoice_doc):
                     Decimal("0.01"), rounding=ROUND_HALF_UP
                 )
             )
-            frappe.msgprint(f"Tax amount in SAR: {tax_amount_without_retention}")
+            frappe.throw(f"Tax amount in SAR: {tax_amount_without_retention}")
             cbc_taxamount.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
             frappe.msgprint(f"Tax amount in SAR: {cbc_taxamount.text}")
             # Tax Subtotal
