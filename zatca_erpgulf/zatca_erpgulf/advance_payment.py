@@ -261,7 +261,7 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )
             cbc_taxamount_2.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-            frappe.throw(f"Tax amount 22in SAR: {cbc_taxamount_2.text}")
+            # frappe.throw(f"Tax amount 22in SAR: {cbc_taxamount_2.text}")
         # Handle USD-specific logic
         else:
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
