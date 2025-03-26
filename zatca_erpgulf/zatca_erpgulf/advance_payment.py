@@ -249,7 +249,7 @@ def tax_data(invoice, sales_invoice_doc):
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             taxable_amount = sales_invoice_doc.base_total
-            frappe.throw(f"Taxable amount in SAR: {taxable_amount}")
+            # frappe.throw(f"Taxable amount in SAR: {taxable_amount}")
             # else:
             # taxable_amount = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
             #     "base_discount_amount", 0.0
@@ -261,7 +261,7 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )
             cbc_taxamount_2.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-            frappe.msgprint(f"Tax amount in SAR: {cbc_taxamount_2.text}")
+            frappe.throw(f"Tax amount 22in SAR: {cbc_taxamount_2.text}")
         # Handle USD-specific logic
         else:
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
@@ -336,7 +336,7 @@ def tax_data(invoice, sales_invoice_doc):
 
         cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
         cbc_percent_1.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
-        frappe.msgprint(f"Tax rate: {cbc_percent_1.text}")
+        frappe.throw(f"Tax rate: {cbc_percent_1.text}")
         # Exemption Reason (if applicable)
         exemption_reason_map = get_exemption_reason_map()
         if sales_invoice_doc.custom_zatca_tax_category != "Standard":
@@ -368,7 +368,7 @@ def tax_data(invoice, sales_invoice_doc):
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
-        frappe.msgprint(f"Line extension amount: {cbc_lineextensionamount.text}")
+        frappe.throw(f"Line extension amount: {cbc_lineextensionamount.text}")
         # else:
 
         # cbc_lineextensionamount.text = str(
@@ -387,7 +387,7 @@ def tax_data(invoice, sales_invoice_doc):
                 2,
             )
         )
-        frappe.msgprint(f"Tax exclusive amount: {cbc_taxexclusiveamount.text}")
+        frappe.throw(f"Tax exclusive amount: {cbc_taxexclusiveamount.text}")
         # else:
         # cbc_taxexclusiveamount.text = str(
         #     round(
@@ -411,7 +411,7 @@ def tax_data(invoice, sales_invoice_doc):
                 2,
             )
         )
-        frappe.msgprint(f"Tax inclusive amount: {cbc_taxinclusiveamount.text}")
+        frappe.throw(f"Tax inclusive amount: {cbc_taxinclusiveamount.text}")
         # else:
         # cbc_taxinclusiveamount.text = str(
         #     round(
@@ -448,7 +448,7 @@ def tax_data(invoice, sales_invoice_doc):
             abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
             2,
         )
-        frappe.msgprint(f"Inclusive amount: {inclusive_amount}")
+        frappe.throw(f"Inclusive amount: {inclusive_amount}")
         # else:
         # inclusive_amount = round(
         #     abs(
