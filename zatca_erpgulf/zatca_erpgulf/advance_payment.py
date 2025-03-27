@@ -524,7 +524,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         first_tax_category = next(
             iter(tax_category_totals)
         )  # Get the first tax category
-        base_discount_amount = sales_invoice_doc.get("discount_amount", 0.0)
+        base_discount_amount = "0.0"
 
         # Subtract the base discount from the taxable amount of the first tax category
         tax_category_totals[first_tax_category]["taxable_amount"] -= abs(
