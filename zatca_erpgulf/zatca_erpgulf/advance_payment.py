@@ -368,7 +368,7 @@ def tax_data(invoice, sales_invoice_doc):
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
-        frappe.throw(f"Line extension amount: {cbc_lineextensionamount.text}")
+        # frappe.throw(f"Line extension amount: {cbc_lineextensionamount.text}")
         # else:
 
         # cbc_lineextensionamount.text = str(
