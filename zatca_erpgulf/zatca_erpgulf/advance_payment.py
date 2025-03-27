@@ -336,7 +336,7 @@ def tax_data(invoice, sales_invoice_doc):
 
         cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
         cbc_percent_1.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
-        frappe.throw(f"Tax rate: {cbc_percent_1.text}")
+        # frappe.throw(f"Tax rate: {cbc_percent_1.text}")
         # Exemption Reason (if applicable)
         exemption_reason_map = get_exemption_reason_map()
         if sales_invoice_doc.custom_zatca_tax_category != "Standard":
