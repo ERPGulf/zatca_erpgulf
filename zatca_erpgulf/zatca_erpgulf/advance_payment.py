@@ -444,11 +444,8 @@ def tax_data(invoice, sales_invoice_doc):
             "currencyID", sales_invoice_doc.paid_from_account_currency
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-        inclusive_amount = round(
-            abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
-            2,
-        )
-        frappe.throw(f"Inclusive amount: {inclusive_amount}")
+        inclusive_amount = "1000"
+        # frappe.throw(f"Inclusive amount: {inclusive_amount}")
         # else:
         # inclusive_amount = round(
         #     abs(
@@ -458,10 +455,10 @@ def tax_data(invoice, sales_invoice_doc):
         #     + abs(tax_amount_without_retention),
         #     2,
         # )
-
-        cbc_payableamount.text = str(
-            round(float(cbc_prepaidamount.text) - inclusive_amount, 2)
-        )
+        cbc_payableamount.text = "1000.00"
+        # cbc_payableamount.text = str(
+        #     round(float(cbc_prepaidamount.text) - inclusive_amount, 2)
+        # )
         # frappe.throw(f"Payable amount: {cbc_payableamount.text}")
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         #     cbc_payableamount.text = str(
