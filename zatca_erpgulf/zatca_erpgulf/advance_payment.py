@@ -423,6 +423,7 @@ def tax_data(invoice, sales_invoice_doc):
         #         2,
         #     )
         # )
+
         cbc_allowancetotalamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
@@ -444,7 +445,8 @@ def tax_data(invoice, sales_invoice_doc):
             "currencyID", sales_invoice_doc.paid_from_account_currency
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-        inclusive_amount = "1000"
+        # inclusive_amount = "1000"
+
         # frappe.throw(f"Inclusive amount: {inclusive_amount}")
         # else:
         # inclusive_amount = round(
