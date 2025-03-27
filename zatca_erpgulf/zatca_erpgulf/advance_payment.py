@@ -1153,7 +1153,7 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )
 
-            if sales_invoice_doc.currency == "SAR":
+            if sales_invoice_doc.paid_from_account_currency == "SAR":
                 # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 # Tax is not included in print rate
                 cbc_lineextensionamount_1.text = str(abs(single_item.base_amount))
