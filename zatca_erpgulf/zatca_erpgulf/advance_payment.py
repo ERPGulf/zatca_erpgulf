@@ -448,7 +448,7 @@ def tax_data(invoice, sales_invoice_doc):
             abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
             2,
         )
-        # frappe.throw(f"Inclusive amount: {inclusive_amount}")
+        frappe.throw(f"Inclusive amount: {inclusive_amount}")
         # else:
         # inclusive_amount = round(
         #     abs(
@@ -462,7 +462,7 @@ def tax_data(invoice, sales_invoice_doc):
         cbc_payableamount.text = str(
             round(float(cbc_prepaidamount.text) - inclusive_amount, 2)
         )
-        frappe.throw(f"Payable amount: {cbc_payableamount.text}")
+        # frappe.throw(f"Payable amount: {cbc_payableamount.text}")
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         #     cbc_payableamount.text = str(
         #         round(
