@@ -222,7 +222,7 @@ def tax_data(invoice, sales_invoice_doc):
             cbc_taxamount_sar.text = str(
                 tax_amount_without_retention_sar
             )  # Tax amount in SAR
-            frappe.msgprint(f"Tax amount in SAR: {cbc_taxamount_sar.text}")
+
             taxable_amount = sales_invoice_doc.base_total
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
@@ -238,7 +238,7 @@ def tax_data(invoice, sales_invoice_doc):
                     Decimal("0.01"), rounding=ROUND_HALF_UP
                 )
             )
-            # frappe.throw(f"Tax amount in SAR: {tax_amount_without_retention}")
+
             cbc_taxamount.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
             # Tax Subtotal
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")
@@ -249,7 +249,7 @@ def tax_data(invoice, sales_invoice_doc):
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             taxable_amount = sales_invoice_doc.base_total
-            # frappe.throw(f"Taxable amount in SAR: {taxable_amount}")
+
             # else:
             # taxable_amount = sales_invoice_doc.base_net_total - sales_invoice_doc.get(
             #     "base_discount_amount", 0.0
@@ -261,7 +261,7 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )
             cbc_taxamount_2.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-            # frappe.throw(f"Tax amount 22in SAR: {cbc_taxamount_2.text}")
+
         # Handle USD-specific logic
         else:
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
@@ -336,7 +336,7 @@ def tax_data(invoice, sales_invoice_doc):
 
         cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
         cbc_percent_1.text = f"{float(sales_invoice_doc.taxes[0].rate):.2f}"
-        # frappe.throw(f"Tax rate: {cbc_percent_1.text}")
+
         # Exemption Reason (if applicable)
         exemption_reason_map = get_exemption_reason_map()
         if sales_invoice_doc.custom_zatca_tax_category != "Standard":
@@ -368,7 +368,7 @@ def tax_data(invoice, sales_invoice_doc):
         )
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
-        # frappe.throw(f"Line extension amount: {cbc_lineextensionamount.text}")
+
         # else:
 
         # cbc_lineextensionamount.text = str(
@@ -387,7 +387,7 @@ def tax_data(invoice, sales_invoice_doc):
                 2,
             )
         )
-        # frappe.f(f"Tax exclusive amount: {cbc_taxexclusiveamount.text}")
+
         # else:
         # cbc_taxexclusiveamount.text = str(
         #     round(
@@ -1498,51 +1498,51 @@ def xml_structuring_advance(invoice, sales_invoice_doc):
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxmladavance1.xml"
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
-        try:
-            if frappe.db.exists(
-                "File",
-                {
-                    "attached_to_name": sales_invoice_doc.name,
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                },
-            ):
-                frappe.db.delete(
-                    "File",
-                    {
-                        "attached_to_name": sales_invoice_doc.name,
-                        "attached_to_doctype": sales_invoice_doc.doctype,
-                    },
-                )
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
+        # try:
+        #     if frappe.db.exists(
+        #         "File",
+        #         {
+        #             "attached_to_name": sales_invoice_doc.name,
+        #             "attached_to_doctype": sales_invoice_doc.doctype,
+        #         },
+        #     ):
+        #         frappe.db.delete(
+        #             "File",
+        #             {
+        #                 "attached_to_name": sales_invoice_doc.name,
+        #                 "attached_to_doctype": sales_invoice_doc.doctype,
+        #             },
+        #         )
+        # except Exception as e:
+        #     frappe.throw(frappe.get_traceback())
 
-        try:
-            fileX = frappe.get_doc(
-                {
-                    "doctype": "File",
-                    "file_type": "xml",
-                    "file_name": "E-invoice-" + sales_invoice_doc.name + ".xml",
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                    "attached_to_name": sales_invoice_doc.name,
-                    "content": pretty_xml_string,
-                    "is_private": 1,
-                }
-            )
-            fileX.save()
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
+        # try:
+        #     fileX = frappe.get_doc(
+        #         {
+        #             "doctype": "File",
+        #             "file_type": "xml",
+        #             "file_name": "E-invoice-" + sales_invoice_doc.name + ".xml",
+        #             "attached_to_doctype": sales_invoice_doc.doctype,
+        #             "attached_to_name": sales_invoice_doc.name,
+        #             "content": pretty_xml_string,
+        #             "is_private": 1,
+        #         }
+        #     )
+        #     fileX.save()
+        # except Exception as e:
+        #     frappe.throw(frappe.get_traceback())
 
-        try:
-            frappe.db.get_value(
-                "File",
-                {
-                    "attached_to_name": sales_invoice_doc.name,
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                },
-                ["file_name"],
-            )
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
+        # try:
+        #     frappe.db.get_value(
+        #         "File",
+        #         {
+        #             "attached_to_name": sales_invoice_doc.name,
+        #             "attached_to_doctype": sales_invoice_doc.doctype,
+        #         },
+        #         ["file_name"],
+        #     )
+        # except Exception as e:
+        #     frappe.throw(frappe.get_traceback())
 
     except (FileNotFoundError, IOError):
         frappe.throw(
@@ -1749,7 +1749,7 @@ def clearance_api(
                     + sales_invoice_doc.name
                     + ".xml",
                     "attached_to_doctype": sales_invoice_doc.doctype,
-                    "is_private": 1,
+                    "is_private": 0,
                     "attached_to_name": sales_invoice_doc.name,
                     "content": xml_cleared,
                 }
