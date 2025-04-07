@@ -1290,7 +1290,7 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
             )
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            cbc_priceamount.text = str(abs(single_item.rate))
+            cbc_priceamount.text = "0.00"
             # Case 4: No Discount Submission to ZATCA, Tax Included in Print Rate
             # elif sales_invoice_doc.taxes[0].included_in_print_rate == 1:
             #     cbc_priceamount.text = str(
