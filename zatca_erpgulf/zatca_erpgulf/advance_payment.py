@@ -1741,7 +1741,20 @@ def clearance_api(
 
             data = response.json()
             base64_xml = data.get("clearedInvoice")
-            advance_sales_invoice
+            xml_cleared = base64.b64decode(base64_xml).decode("utf-8")
+            file = frappe.get_doc(
+                {
+                    "doctype": "File",
+                    "file_name": "Cleared Advance xml file "
+                    + sales_invoice_doc.name
+                    + ".xml",
+                    "attached_to_doctype": sales_invoice_doc.doctype,
+                    "is_private": 0,
+                    "attached_to_name": sales_invoice_doc.name,
+                    "content": xml_cleared,
+                }
+            )
+            file.save(ignore_permissions=True)
             sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
@@ -1887,12 +1900,12 @@ def zatca_call(
             invoice = tax_data_with_template(invoice, sales_invoice_doc)
             # frappe.msgprint(invoice)
 
-        if not any_item_has_tax_template:
-            invoice = item_data_advance(invoice, sales_invoice_doc, invoice_number)
-            # frappe.msgprint(invoice)
-        else:
-            invoice = item_data_with_template_adavance(invoice, sales_invoice_doc)
-            # frappe.msgprint(invoice)
+        # if not any_item_has_tax_template:
+        #     invoice = item_data_advance(invoice, sales_invoice_doc, invoice_number)
+        #     # frappe.msgprint(invoice)
+        # else:
+        #     invoice = item_data_with_template_adavance(invoice, sales_invoice_doc)
+        # frappe.msgprint(invoice)
         xml_structuring_advance(invoice, sales_invoice_doc)
 
         with open(

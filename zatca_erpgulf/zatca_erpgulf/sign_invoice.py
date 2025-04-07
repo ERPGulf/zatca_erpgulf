@@ -1002,7 +1002,16 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     "Please ensure the discount is applied correctly."
                 )
             )
-
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        if (
+            sales_invoice_doc.advances
+            and sales_invoice_doc.advances[0].reference_name
+            and customer_doc.custom_b2c == 1
+        ):
+            frappe.throw(
+                "Advance allocation is supported for non B2C customers ."
+                " Please change the Customer type to B2B"
+            )
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
             and sales_invoice_doc.get("additional_discount_percentage", 0.0) != 100
@@ -1212,6 +1221,16 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             frappe.throw(
                 "only the document level discount is possible for ZATCA nominal invoices."
                 " Please ensure the discount is applied correctly."
+            )
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        if (
+            sales_invoice_doc.advances
+            and sales_invoice_doc.advances[0].reference_name
+            and customer_doc.custom_b2c == 1
+        ):
+            frappe.throw(
+                "Advance allocation is supported for non B2C customers ."
+                "Please change the Customer type to B2B"
             )
 
         if (

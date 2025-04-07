@@ -328,31 +328,68 @@ def tax_data(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             abs(sales_invoice_doc.get("discount_amount", 0.0))
         )
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            total_amount = round(
+                abs(
+                    sales_invoice_doc.total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+        else:
+            total_amount = round(
+                abs(
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+        advance_amount = sum(
+            advance.advance_amount for advance in sales_invoice_doc.advances
+        )
+        if sales_invoice_doc.advances[0].reference_name:
+            cbc_prepaidamount = ET.SubElement(
+                cac_legalmonetarytotal, "cbc:PrepaidAmount"
+            )
+            cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_prepaidamount.text = str(advance_amount)
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
-        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            cbc_payableamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
-                    )
-                    + abs(tax_amount_without_retention),
-                    2,
-                )
+
+        # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        # else:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.base_net_total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        if sales_invoice_doc.advances[0].refrence_name:
+            advance_amount = sum(
+                advance.advance_amount for advance in sales_invoice_doc.advances
             )
+            payable_amount = round(total_amount - advance_amount, 2)
         else:
-            cbc_payableamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.base_net_total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
-                    )
-                    + abs(tax_amount_without_retention),
-                    2,
-                )
-            )
+            payable_amount = total_amount
+
+        cbc_payableamount.text = str(payable_amount)
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
@@ -679,7 +716,15 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
         )
-
+        advance_amount = sum(
+            advance.advance_amount for advance in sales_invoice_doc.advances
+        )
+        if sales_invoice_doc.advances[0].reference_name:
+            cbc_prepaidamount = ET.SubElement(
+                cac_legalmonetarytotal, "cbc:PrepaidAmount"
+            )
+            cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_prepaidamount.text = str(advance_amount)
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
         # cbc_payableamount.text = str(
@@ -692,9 +737,12 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         #         2,
         #     )
         # )
-        payable_amount = (abs(total_amount - discount_amount) + tax_amount).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
+        if sales_invoice_doc.advances[0].reference_name:
+            payable_amount = round(tax_inclusive_amount - advance_amount, 2)
+        else:
+            payable_amount = (
+                abs(total_amount - discount_amount) + tax_amount
+            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         cbc_payableamount.text = str(payable_amount)
 
         return invoice

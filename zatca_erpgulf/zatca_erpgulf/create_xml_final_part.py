@@ -755,8 +755,77 @@ def item_data(invoice, sales_invoice_doc):
                         add_line_item_discount(
                             cac_price, single_item, sales_invoice_doc
                         )
+        # for single_item in sales_invoice_doc.items:
+        #     adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
+        #     ET.SubElement(adv_line, "cbc:ID").text = str(single_item.idx + 1)
+        #     ET.SubElement(
+        #         adv_line, "cbc:InvoicedQuantity", unitCode=str(single_item.uom)
+        #     ).text = "0.000000"
+        #     ET.SubElement(
+        #         adv_line,
+        #         "cbc:LineExtensionAmount",
+        #         currencyID=sales_invoice_doc.currency,
+        #     ).text = "0.00"
 
-        return invoice
+        #     docref = ET.SubElement(adv_line, "cac:DocumentReference")
+        #     ET.SubElement(docref, "cbc:ID").text = str(
+        #         sales_invoice_doc.advances[0].reference_name
+        #     )
+        #     ET.SubElement(docref, "cbc:IssueDate").text = datetime.now().strftime(
+        #         "%Y-%m-%d"
+        #     )
+        #     ET.SubElement(docref, "cbc:IssueTime").text = datetime.now().strftime(
+        #         "%H:%M:%S"
+        #     )
+        #     ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
+
+        #     tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
+        #     ET.SubElement(
+        #         tax_total_adv, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+        #     ).text = "0"
+        #     ET.SubElement(
+        #         tax_total_adv,
+        #         "cbc:RoundingAmount",
+        #         currencyID=sales_invoice_doc.currency,
+        #     ).text = "0"
+
+        #     subtotal = ET.SubElement(tax_total_adv, "cac:TaxSubtotal")
+        #     ET.SubElement(
+        #         subtotal, "cbc:TaxableAmount", currencyID=sales_invoice_doc.currency
+        #     ).text = str(abs(item.amount))
+        #     ET.SubElement(
+        #         subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+        #     ).text = str(abs(round(item.amount * item_tax_percentage / 100, 2)))
+
+        #     tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
+        #     ET.SubElement(tax_cat, "cbc:ID").text = tax_code
+        #     ET.SubElement(tax_cat, "cbc:Percent").text = (
+        #         f"{float(item_tax_percentage):.2f}"
+        #     )
+        #     ET.SubElement(ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID").text = (
+        #         "VAT"
+        #     )
+
+        #     item_tag_adv = ET.SubElement(adv_line, "cac:Item")
+        #     ET.SubElement(item_tag_adv, "cbc:Name").text = (
+        #         f"{item.item_code}:{item.item_name}"
+        #     )
+        #     tax_cat_adv = ET.SubElement(item_tag_adv, "cac:ClassifiedTaxCategory")
+        #     ET.SubElement(tax_cat_adv, "cbc:ID").text = tax_code
+        #     ET.SubElement(tax_cat_adv, "cbc:Percent").text = (
+        #         f"{float(item_tax_percentage):.2f}"
+        #     )
+        #     ET.SubElement(
+        #         ET.SubElement(tax_cat_adv, "cac:TaxScheme"), "cbc:ID"
+        #     ).text = "VAT"
+
+        #     ET.SubElement(
+        #         ET.SubElement(adv_line, "cac:Price"),
+        #         "cbc:PriceAmount",
+        #         currencyID=sales_invoice_doc.currency,
+        #     ).text = "0.00"
+
+        # return invoice
     except (ValueError, KeyError, TypeError) as e:
         frappe.throw(f"Error occurred in item data processing: {str(e)}")
         return None
@@ -841,7 +910,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             )
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
 
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
