@@ -780,7 +780,7 @@ def item_data(invoice, sales_invoice_doc):
             dt = datetime.fromisoformat(datetime_str)
             time_str = dt.strftime("%H:%M:%S")
 
-            ET.SubElement(docref, "cbc:IssueTime").text = time_str
+            ET.SubElement(docref, "cbc:IssueTime").text = str(time_str)
             ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
 
             tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
@@ -965,6 +965,87 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     )
                     cbc_basequantity.text = "1"
                     add_line_item_discount(cac_price, single_item, sales_invoice_doc)
+        for single_item in sales_invoice_doc.items:
+            adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
+            ET.SubElement(adv_line, "cbc:ID").text = str(single_item.idx + 1)
+            ET.SubElement(
+                adv_line, "cbc:InvoicedQuantity", unitCode=str(single_item.uom)
+            ).text = "0.000000"
+            ET.SubElement(
+                adv_line,
+                "cbc:LineExtensionAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = "0.00"
+
+            docref = ET.SubElement(adv_line, "cac:DocumentReference")
+            ET.SubElement(docref, "cbc:ID").text = str(
+                sales_invoice_doc.advances[0].reference_name
+            )
+            ET.SubElement(docref, "cbc:IssueDate").text = str(
+                sales_invoice_doc.advances[0].difference_posting_date
+            )
+
+            datetime_str = sales_invoice_doc.advances[0].creation
+            dt = datetime.fromisoformat(datetime_str)
+            time_str = dt.strftime("%H:%M:%S")
+
+            ET.SubElement(docref, "cbc:IssueTime").text = str(time_str)
+            ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
+
+            tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
+            ET.SubElement(
+                tax_total_adv, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+            ).text = "0"
+            ET.SubElement(
+                tax_total_adv,
+                "cbc:RoundingAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = "0"
+
+            subtotal = ET.SubElement(tax_total_adv, "cac:TaxSubtotal")
+            ET.SubElement(
+                subtotal, "cbc:TaxableAmount", currencyID=sales_invoice_doc.currency
+            ).text = str(abs(single_item.amount))
+            ET.SubElement(
+                subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+            ).text = str(abs(round(single_item.amount * item_tax_percentage / 100, 2)))
+
+            tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
+            zatca_tax_category = item_tax_template.custom_zatca_tax_category
+            if zatca_tax_category == "Standard":
+                cbc_id_12.text = "S"
+            elif zatca_tax_category == ZERO_RATED:
+                cbc_id_12.text = "Z"
+            elif zatca_tax_category == "Exempted":
+                cbc_id_12.text = "E"
+            elif zatca_tax_category == OUTSIDE_SCOPE:
+                cbc_id_12.text = "O"
+            ET.SubElement(tax_cat, "cbc:ID").text = cbc_id_12.text
+            ET.SubElement(tax_cat, "cbc:Percent").text = (
+                f"{float(item_tax_percentage):.2f}"
+            )
+            ET.SubElement(ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID").text = (
+                "VAT"
+            )
+
+            item_tag_adv = ET.SubElement(adv_line, "cac:Item")
+            ET.SubElement(item_tag_adv, "cbc:Name").text = (
+                f"{single_item.item_code}:{single_item.item_name}"
+            )
+            tax_cat_adv = ET.SubElement(item_tag_adv, "cac:ClassifiedTaxCategory")
+            ET.SubElement(tax_cat_adv, "cbc:ID").text = cbc_id_12.text
+            ET.SubElement(tax_cat_adv, "cbc:Percent").text = (
+                f"{float(item_tax_percentage):.2f}"
+            )
+            ET.SubElement(
+                ET.SubElement(tax_cat_adv, "cac:TaxScheme"), "cbc:ID"
+            ).text = "VAT"
+
+            ET.SubElement(
+                ET.SubElement(adv_line, "cac:Price"),
+                "cbc:PriceAmount",
+                currencyID=sales_invoice_doc.currency,
+            ).text = "0.00"
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
