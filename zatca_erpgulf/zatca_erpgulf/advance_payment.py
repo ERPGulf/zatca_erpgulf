@@ -136,42 +136,6 @@ def get_tax_total_from_items(sales_invoice_doc):
         return None
 
 
-# def billing_reference_adavancepayment(invoice, invoice_number):
-#     """Populate basic invoice data and include billing reference and prepaid amount."""
-#     try:
-#         sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-
-#         # Adding BillingReference
-#         billing_reference = ET.SubElement(invoice, "cac:BillingReference")
-#         invoice_document_reference = ET.SubElement(
-#             billing_reference, "cac:InvoiceDocumentReference"
-#         )
-
-#         invoice_ref_id = ET.SubElement(invoice_document_reference, "cbc:ID")
-#         invoice_ref_id.text = "Advance-INV-00123"
-
-#         invoice_ref_uuid = ET.SubElement(invoice_document_reference, "cbc:UUID")
-#         invoice_ref_uuid = "f77abe9a-fa43-11ef-8a33-020017019f27"
-#         invoice_ref_uuid = invoice_ref_id
-#         invoice_ref_uuid.text = invoice_ref_id
-
-#         cbc_issue_date = ET.SubElement(invoice, "cbc:IssueDate")
-#         cbc_issue_date.text = str(sales_invoice_doc.posting_date)
-
-#         cbc_issue_time = ET.SubElement(invoice, "cbc:IssueTime")
-#         cbc_issue_time.text = get_issue_time(invoice_number)
-
-#         # Prepaid Amount Adjustment
-#         prepaid_amount = ET.SubElement(invoice, "cbc:PrepaidAmount", currencyID="SAR")
-#         prepaid_amount.text = "115000.00"
-
-#         return invoice, invoice_ref_id, sales_invoice_doc
-#     except (AttributeError, ValueError, frappe.ValidationError) as e:
-#         frappe.throw(
-#             ("Error occurred in billing_reference_adavancepayment data: {}".format(e))
-#         )
-
-
 def salesinvoice_data_advance(invoice, invoice_number):
     """
     Populates the Sales Invoice XML with key elements and metadata.
@@ -261,8 +225,6 @@ def tax_data(invoice, sales_invoice_doc):
                 "currencyID", sales_invoice_doc.paid_from_account_currency
             )
             cbc_taxamount_2.text = f"{abs(round(tax_amount_without_retention, 2)):.2f}"
-
-        # Handle USD-specific logic
         else:
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount_usd_1 = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
@@ -464,11 +426,7 @@ def tax_data(invoice, sales_invoice_doc):
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         cbc_payableamount.text = str(
             round(
-                abs(
-                    sales_invoice_doc.total
-                    - sales_invoice_doc.get("discount_amount", 0.0)
-                )
-                + abs(tax_amount_without_retention),
+                abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
                 2,
             )
         )
