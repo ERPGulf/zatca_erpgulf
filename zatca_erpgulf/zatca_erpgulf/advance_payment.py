@@ -965,13 +965,14 @@ def clearance_api(
                     + sales_invoice_doc.name
                     + ".xml",
                     "attached_to_doctype": sales_invoice_doc.doctype,
-                    "is_private": 0,
+                    "is_private": 1,
                     "attached_to_name": sales_invoice_doc.name,
                     "content": xml_cleared,
                 }
             )
             file.save(ignore_permissions=True)
             sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
+            frappe.db.commit()
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
         else:
