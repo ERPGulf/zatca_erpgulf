@@ -1524,7 +1524,7 @@ def clearance_api(
                     + sales_invoice_doc.name
                     + ".xml",
                     "attached_to_doctype": sales_invoice_doc.doctype,
-                    "is_private": 1,
+                    "is_private": 0,
                     "attached_to_name": sales_invoice_doc.name,
                     "content": xml_cleared,
                 }
