@@ -381,7 +381,7 @@ def tax_data(invoice, sales_invoice_doc):
         #             2,
         #         )
         #     )
-        if sales_invoice_doc.advances[0].refrence_name:
+        if sales_invoice_doc.advances[0].reference_name:
             advance_amount = sum(
                 advance.advance_amount for advance in sales_invoice_doc.advances
             )
