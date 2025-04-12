@@ -756,9 +756,11 @@ def item_data(invoice, sales_invoice_doc):
                         add_line_item_discount(
                             cac_price, single_item, sales_invoice_doc
                         )
-        for single_item in sales_invoice_doc.items:
+        advance_line_id = len(sales_invoice_doc.items) + 1
+
+        for i, single_item in enumerate(sales_invoice_doc.items):
             adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
-            ET.SubElement(adv_line, "cbc:ID").text = str(single_item.idx + 1)
+            ET.SubElement(adv_line, "cbc:ID").text = str(advance_line_id + i)
             ET.SubElement(
                 adv_line, "cbc:InvoicedQuantity", unitCode=str(single_item.uom)
             ).text = "0.000000"
@@ -772,15 +774,14 @@ def item_data(invoice, sales_invoice_doc):
             ET.SubElement(docref, "cbc:ID").text = str(
                 sales_invoice_doc.advances[0].reference_name
             )
-            ET.SubElement(docref, "cbc:IssueDate").text = str(
-                sales_invoice_doc.advances[0].difference_posting_date
+            ref_doc = frappe.get_doc(
+                "Sales Invoice", sales_invoice_doc.advances[0].reference_name
             )
 
-            datetime_str = sales_invoice_doc.advances[0].creation
-            dt = datetime.fromisoformat(datetime_str)
-            time_str = dt.strftime("%H:%M:%S")
+            ET.SubElement(docref, "cbc:UUID").text = ref_doc.custom_uuid
+            ET.SubElement(docref, "cbc:IssueDate").text = str(ref_doc.posting_date)
 
-            ET.SubElement(docref, "cbc:IssueTime").text = str(time_str)
+            ET.SubElement(docref, "cbc:IssueTime").text = str(ref_doc.posting_time)
             ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
 
             tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
@@ -965,9 +966,12 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     )
                     cbc_basequantity.text = "1"
                     add_line_item_discount(cac_price, single_item, sales_invoice_doc)
-        for single_item in sales_invoice_doc.items:
+
+        advance_line_id = len(sales_invoice_doc.items) + 1
+
+        for i, single_item in enumerate(sales_invoice_doc.items):
             adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
-            ET.SubElement(adv_line, "cbc:ID").text = str(single_item.idx + 1)
+            ET.SubElement(adv_line, "cbc:ID").text = str(advance_line_id + i)
             ET.SubElement(
                 adv_line, "cbc:InvoicedQuantity", unitCode=str(single_item.uom)
             ).text = "0.000000"
@@ -981,15 +985,14 @@ def item_data_with_template(invoice, sales_invoice_doc):
             ET.SubElement(docref, "cbc:ID").text = str(
                 sales_invoice_doc.advances[0].reference_name
             )
-            ET.SubElement(docref, "cbc:IssueDate").text = str(
-                sales_invoice_doc.advances[0].difference_posting_date
+            ref_doc = frappe.get_doc(
+                "Sales Invoice", sales_invoice_doc.advances[0].reference_name
             )
 
-            datetime_str = sales_invoice_doc.advances[0].creation
-            dt = datetime.fromisoformat(datetime_str)
-            time_str = dt.strftime("%H:%M:%S")
+            ET.SubElement(docref, "cbc:UUID").text = ref_doc.custom_uuid
+            ET.SubElement(docref, "cbc:IssueDate").text = str(ref_doc.posting_date)
 
-            ET.SubElement(docref, "cbc:IssueTime").text = str(time_str)
+            ET.SubElement(docref, "cbc:IssueTime").text = str(ref_doc.posting_time)
             ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
 
             tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")

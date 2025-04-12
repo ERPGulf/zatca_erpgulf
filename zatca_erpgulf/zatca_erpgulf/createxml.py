@@ -708,9 +708,9 @@ def customer_data(invoice, sales_invoice_doc):
             else:
                 cbc_identificationcode_1.text = "SA"
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
-
-        cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
-        cbc_company_id.text = customer_doc.tax_id
+        if address.country == "Saudi Arabia":
+            cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
+            cbc_company_id.text = customer_doc.tax_id
 
         cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
         cbc_id_5 = ET.SubElement(cac_taxscheme_1, "cbc:ID")
