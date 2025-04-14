@@ -1317,20 +1317,16 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background(doc, _method=None, bypass_background_check=False):
-    """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
+def zatca_background(invoice_number, source_doc, bypass_background_check=False):
+    """defines the zatca bacground"""
     try:
-        source_doc = doc
-        sales_invoice_doc = doc
-        invoice_number = sales_invoice_doc.name
-        sales_invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
-        company_abbr = frappe.db.get_value(
-            "Company", {"name": sales_invoice_doc.company}, "abbr"
-        )
-        if not company_abbr:
-            frappe.throw(
-                f"Company abbreviation for {sales_invoice_doc.company} not found."
-            )
+        if source_doc:
+            source_doc = frappe.get_doc(json.loads(source_doc))
+        sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        company_name = sales_invoice_doc.company
+        settings = frappe.get_doc("Company", company_name)
+        company_abbr = settings.abbr
+
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
