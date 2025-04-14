@@ -1322,7 +1322,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
     try:
         if source_doc:
             source_doc = frappe.get_doc(json.loads(source_doc))
-        sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+        sales_invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
