@@ -957,23 +957,31 @@ def clearance_api(
                 "custom_zatca_status", "CLEARED", commit=True, update_modified=True
             )
 
+            import base64
+            from io import BytesIO
+
             data = response.json()
             base64_xml = data.get("clearedInvoice")
             xml_cleared = base64.b64decode(base64_xml).decode("utf-8")
-            file = frappe.get_doc(
-                {
-                    "doctype": "File",
-                    "file_name": "Cleared_Advance_xml_file "
-                    + sales_invoice_doc.name
-                    + ".xml",
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                    "is_private": 1,
-                    "attached_to_name": sales_invoice_doc.name,
-                    "content": xml_cleared,
-                }
+
+            # Create a fake file object
+            filename = f"Cleared_Advance_xml_file_{sales_invoice_doc.name}.xml"
+            xml_file = BytesIO(xml_cleared.encode("utf-8"))
+            xml_file.filename = filename
+            xml_file.stream = xml_file  # simulate file-like object
+
+            # Mock required form_dict values
+            frappe.form_dict.doctype = sales_invoice_doc.doctype
+            frappe.form_dict.docname = sales_invoice_doc.name
+            frappe.form_dict.fieldname = None
+            frappe.form_dict.folder = "Home"
+            frappe.form_dict.fileurl = None
+            frappe.form_dict.optimize = False
+
+            # Upload file as private, but URL will be consistently /files/...
+            file_url = process_file_upload(
+                xml_file, ignore_permissions=True, is_private=True
             )
-            file.save(ignore_permissions=True)
-            sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
             frappe.db.commit()
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
@@ -1077,6 +1085,81 @@ def doc_reference_advance(invoice, sales_invoice_doc, invoice_number):
     except (ET.ParseError, AttributeError, ValueError) as e:
         frappe.throw(f"Error occurred in reference doc: {e}")
         return None
+
+
+from mimetypes import guess_type
+from frappe.utils.file_manager import save_file
+from frappe.utils import cint
+
+
+def attach_field_to_doc(doc):
+    if (
+        frappe.form_dict.doctype
+        and frappe.form_dict.docname
+        and frappe.form_dict.fieldname
+    ):
+        frappe.db.set_value(
+            frappe.form_dict.doctype,
+            frappe.form_dict.docname,
+            frappe.form_dict.fieldname,
+            doc.file_url,
+        )
+
+
+from PIL import Image
+import io
+
+
+def optimize_image_content(content, content_type):
+    # Load image from bytes
+    image = Image.open(io.BytesIO(content))
+
+    # Resize image if it's large (e.g., max width: 1200px)
+    max_width = 1200
+    if image.width > max_width:
+        ratio = max_width / float(image.width)
+        new_height = int(float(image.height) * float(ratio))
+        image = image.resize((max_width, new_height), Image.ANTIALIAS)
+
+    # Convert image back to bytes
+    optimized_image = io.BytesIO()
+    format = content_type.split("/")[-1].upper()  # 'jpeg' -> 'JPEG'
+    if format == "JPG":
+        format = "JPEG"
+    image.save(optimized_image, format=format, optimize=True, quality=85)
+
+    return optimized_image.getvalue()
+
+
+def process_file_upload(file, ignore_permissions=False, is_private=False):
+    """Handle the file upload process."""
+    content = file.stream.read()
+    filename = file.filename
+    content_type = guess_type(filename)[0]
+    if (
+        frappe.form_dict.get("optimize")
+        and content_type
+        and content_type.startswith("image/")
+    ):
+        content = optimize_image_content(content, content_type)
+    frappe.local.uploaded_file = content
+    frappe.local.uploaded_filename = filename
+    doc = frappe.get_doc(
+        {
+            "doctype": "File",
+            "attached_to_doctype": frappe.form_dict.get("doctype"),
+            "attached_to_name": frappe.form_dict.get("docname"),
+            "attached_to_field": frappe.form_dict.get("fieldname"),
+            "folder": frappe.form_dict.get("folder") or "Home",
+            "file_name": filename,
+            "file_url": frappe.form_dict.get("fileurl"),
+            "is_private": cint(is_private),
+            "content": content,
+        }
+    ).save(ignore_permissions=ignore_permissions)
+    if frappe.form_dict.get("fieldname"):
+        attach_field_to_doc(doc)
+    return doc.file_url
 
 
 def attach_qr_image_advance(qrcodeb64, sales_invoice_doc):
