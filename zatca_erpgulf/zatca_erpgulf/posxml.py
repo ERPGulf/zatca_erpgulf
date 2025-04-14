@@ -1,11 +1,11 @@
 """
-This module contains functions to generate, structure, and 
+This module contains functions to generate, structure, and
 manage ZATCA-compliant UBL XML invoices . functions to handle company,
-customer, tax, line items, discounts, delivery, and payment information. 
+customer, tax, line items, discounts, delivery, and payment information.
 The XML is generated according to ZATCA (Zakat, Tax, and Customs Authority)
 requirements for VAT compliance in Saudi Arabia.
 The primary goal of this module is to produce a UBL-compliant
- XML file for invoices, debit notes, and credit notes. 
+ XML file for invoices, debit notes, and credit notes.
 The file also handles compliance with e-invoicing and clearance rules
 for ZATCA and provides support for multiple currencies (SAR and USD).
 """
@@ -671,6 +671,10 @@ def customer_data(invoice, pos_invoice_doc):
             cac_country_1, "cbc:IdentificationCode"
         )
         cbc_identificationcode_1.text = "SA"
+        # cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
+        # if address.country == "Saudi Arabia":
+        #     cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
+        #     cbc_company_id.text = customer_doc.tax_id
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
         cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
         cbc_id_5 = ET.SubElement(cac_taxscheme_1, "cbc:ID")
