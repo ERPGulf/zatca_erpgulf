@@ -974,7 +974,6 @@ def clearance_api(
             )
             file.save(ignore_permissions=True)
             sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
-            frappe.throw(f"File URL: {file.file_url}")
             frappe.db.commit()
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
@@ -1232,6 +1231,93 @@ def zatca_call(
 
 @frappe.whitelist(allow_guest=False)
 def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
+    """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
+    try:
+        source_doc = doc
+        sales_invoice_doc = doc
+        invoice_number = sales_invoice_doc.name
+        sales_invoice_doc = frappe.get_doc("Advance Sales Invoice", invoice_number)
+        company_abbr = frappe.db.get_value(
+            "Company", {"name": sales_invoice_doc.company}, "abbr"
+        )
+        if not company_abbr:
+            frappe.throw(
+                f"Company abbreviation for {sales_invoice_doc.company} not found."
+            )
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+        if company_doc.custom_zatca_invoice_enabled != 1:
+            # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
+            return  # Exit the function without further checks
+
+        any_item_has_tax_template = False
+        tax_categories = set()
+        for item in sales_invoice_doc.custom_item:
+            if item.item_tax_template:
+                item_tax_template = frappe.get_doc(
+                    "Item Tax Template", item.item_tax_template
+                )
+                zatca_tax_category = item_tax_template.custom_zatca_tax_category
+                tax_categories.add(zatca_tax_category)
+                for tax in item_tax_template.taxes:
+                    tax_rate = float(tax.tax_rate)
+
+                    if f"{tax_rate:.2f}" not in [
+                        "5.00",
+                        "15.00",
+                    ] and zatca_tax_category not in [
+                        "Zero Rated",
+                        "Exempted",
+                        "Services outside scope of tax / Not subject to VAT",
+                    ]:
+                        frappe.throw(
+                            "Zatca tax category should be 'Zero Rated', 'Exempted', or "
+                            "'Services outside scope of tax / Not subject to VAT' "
+                            "for items with tax rate not equal to 5.00 or 15.00."
+                        )
+
+                    if (
+                        f"{tax_rate:.2f}" == "15.00"
+                        and zatca_tax_category != "Standard"
+                    ):
+                        frappe.throw(
+                            "Check the Zatca category code and enable it as Standard."
+                        )
+
+        if not frappe.db.exists("Advance Sales Invoice", invoice_number):
+            frappe.throw(
+                f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+            )
+
+        if sales_invoice_doc.docstatus in [0, 2]:
+            frappe.throw(
+                f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+            )
+        if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
+            frappe.throw(
+                "This invoice has already been submitted to Zakat and Tax Authority."
+            )
+        company_name = sales_invoice_doc.company
+        settings = frappe.get_doc("Company", company_name)
+        # if settings.custom_phase_1_or_2 == "Phase-2":
+
+        if settings.custom_phase_1_or_2 == "Phase-2":
+            zatca_call(
+                invoice_number,
+                "0",
+                any_item_has_tax_template,
+                company_abbr,
+                source_doc,
+            )
+
+        else:
+            create_qr_code(sales_invoice_doc, method=None)
+        doc.reload()
+    except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+        frappe.throw(f"Error in background call: {str(e)}")
+
+
+@frappe.whitelist(allow_guest=False)
+def zatca_background(doc, _method=None, bypass_background_check=False):
     """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
     try:
         source_doc = doc
