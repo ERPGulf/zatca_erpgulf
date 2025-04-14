@@ -21,6 +21,8 @@ from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_exemption_reason_map,
 )
 from decimal import Decimal, ROUND_HALF_UP
+from pyqrcode import create as qr_create
+from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
@@ -961,7 +963,7 @@ def clearance_api(
             file = frappe.get_doc(
                 {
                     "doctype": "File",
-                    "file_name": "Cleared Advance xml file "
+                    "file_name": "Cleared_Advance_xml_file "
                     + sales_invoice_doc.name
                     + ".xml",
                     "attached_to_doctype": sales_invoice_doc.doctype,
@@ -972,6 +974,7 @@ def clearance_api(
             )
             file.save(ignore_permissions=True)
             sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
+            frappe.throw(f"File URL: {file.file_url}")
             frappe.db.commit()
             success_log(response.text, uuid1, invoice_number)
             return xml_cleared
@@ -1077,6 +1080,53 @@ def doc_reference_advance(invoice, sales_invoice_doc, invoice_number):
         return None
 
 
+def attach_qr_image_advance(qrcodeb64, sales_invoice_doc):
+    """attach the qr image"""
+    try:
+        if not hasattr(sales_invoice_doc, "ksa_einv_qr"):
+            create_custom_fields(
+                {
+                    sales_invoice_doc.doctype: [
+                        {
+                            "fieldname": "ksa_einv_qr",
+                            "label": "KSA E-Invoicing QR",
+                            "fieldtype": "Attach Image",
+                            "read_only": 1,
+                            "no_copy": 1,
+                            "hidden": 0,  # Set hidden to 0 for testing
+                        }
+                    ]
+                }
+            )
+            frappe.log("Custom field 'ksa_einv_qr' created.")
+        qr_code = sales_invoice_doc.get("ksa_einv_qr")
+        if qr_code and frappe.db.exists({"doctype": "File", "file_url": qr_code}):
+            return
+        qr_image = io.BytesIO()
+        qr = qr_create(qrcodeb64, error="L")
+        qr.png(qr_image, scale=8, quiet_zone=1)
+
+        file_doc = frappe.get_doc(
+            {
+                "doctype": "File",
+                "file_name": f"QR_Phase2_{sales_invoice_doc.name}.png".replace(
+                    os.path.sep, "__"
+                ),
+                "attached_to_doctype": sales_invoice_doc.doctype,
+                "attached_to_name": sales_invoice_doc.name,
+                "is_private": 1,
+                "content": qr_image.getvalue(),
+                "attached_to_field": "ksa_einv_qr",
+            }
+        )
+        file_doc.save(ignore_permissions=True)
+        sales_invoice_doc.db_set("ksa_einv_qr", file_doc.file_url)
+        sales_invoice_doc.notify_update()
+
+    except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+        frappe.throw(("attach qr images" f"error: {str(e)}"))
+
+
 @frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
@@ -1162,7 +1212,7 @@ def zatca_call(
                 invoice_number,
                 sales_invoice_doc,
             )
-            attach_qr_image(qrcodeb64, sales_invoice_doc)
+            attach_qr_image_advance(qrcodeb64, sales_invoice_doc)
         else:
             compliance_api_call(
                 uuid1,
