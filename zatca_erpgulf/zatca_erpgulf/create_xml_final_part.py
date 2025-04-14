@@ -757,7 +757,7 @@ def item_data(invoice, sales_invoice_doc):
                             cac_price, single_item, sales_invoice_doc
                         )
 
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             advance_line_id = len(sales_invoice_doc.items) + 1
             for i, single_item in enumerate(sales_invoice_doc.items):
                 adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
@@ -973,7 +973,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                     add_line_item_discount(cac_price, single_item, sales_invoice_doc)
 
         advance_line_id = len(sales_invoice_doc.items) + 1
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             for i, single_item in enumerate(sales_invoice_doc.items):
                 adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
                 ET.SubElement(adv_line, "cbc:ID").text = str(advance_line_id + i)

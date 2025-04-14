@@ -349,7 +349,7 @@ def tax_data(invoice, sales_invoice_doc):
         advance_amount = sum(
             advance.advance_amount for advance in sales_invoice_doc.advances
         )
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             cbc_prepaidamount = ET.SubElement(
                 cac_legalmonetarytotal, "cbc:PrepaidAmount"
             )
@@ -381,7 +381,7 @@ def tax_data(invoice, sales_invoice_doc):
         #             2,
         #         )
         #     )
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             advance_amount = sum(
                 advance.advance_amount for advance in sales_invoice_doc.advances
             )
@@ -719,7 +719,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         advance_amount = sum(
             advance.advance_amount for advance in sales_invoice_doc.advances
         )
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             cbc_prepaidamount = ET.SubElement(
                 cac_legalmonetarytotal, "cbc:PrepaidAmount"
             )
@@ -737,7 +737,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         #         2,
         #     )
         # )
-        if sales_invoice_doc.advances[0].reference_name:
+        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
             payable_amount = round(tax_inclusive_amount - advance_amount, 2)
         else:
             payable_amount = (
