@@ -1394,6 +1394,6 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
 
         else:
             create_qr_code(sales_invoice_doc, method=None)
-        doc.reload()
+
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(f"Error in background call: {str(e)}")
