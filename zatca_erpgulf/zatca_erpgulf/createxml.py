@@ -530,7 +530,10 @@ def get_address(sales_invoice_doc, company_doc):
             "state",
             "country",
         ],
-        filters={"is_your_company_address": 1},
+        filters=[
+            ["is_your_company_address", "=", "1"],
+            ["Dynamic Link", "link_name", "=", company_doc.name],
+        ],
     )
 
     if not address_list:
