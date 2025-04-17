@@ -12,13 +12,23 @@ def validate_sales_invoice_taxes(doc, event=None):
     :param sales_invoice_doc: The sales invoice document object
     :return: None
     """
+    is_gpos_installed = "gpos" in frappe.get_installed_apps()
+    field_exists = frappe.get_meta(doc.doctype).has_field("custom_unique_id")
+
+    if is_gpos_installed and field_exists:
+        if doc.custom_unique_id and not doc.custom_zatca_pos_name:
+            frappe.throw(
+                "ZATCA POS Machine name is missing for invoice, Add Zatca POS machine name"
+            )
     customer_doc = frappe.get_doc("Customer", doc.customer)
     # if customer_doc.custom_b2c != 1:
     #     frappe.throw("This customer should be B2C for Background")
     company_doc = frappe.get_doc("Company", doc.company)
-    if customer_doc.custom_b2c != 1 and company_doc.custom_send_invoice_to_zatca == "Background" :
+    if (
+        customer_doc.custom_b2c != 1
+        and company_doc.custom_send_invoice_to_zatca == "Background"
+    ):
         frappe.throw("This customer should be B2C for Background")
-    
 
     # If the company requires cost centers, ensure the invoice has one
     if company_doc.custom_costcenter == 1:

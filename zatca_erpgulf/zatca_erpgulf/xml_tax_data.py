@@ -346,15 +346,22 @@ def tax_data(invoice, sales_invoice_doc):
                 + abs(tax_amount_without_retention),
                 2,
             )
-        advance_amount = sum(
-            advance.advance_amount for advance in sales_invoice_doc.advances
-        )
-        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
-            cbc_prepaidamount = ET.SubElement(
-                cac_legalmonetarytotal, "cbc:PrepaidAmount"
-            )
-            cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
-            cbc_prepaidamount.text = str(advance_amount)
+
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
+                )
+                cbc_prepaidamount = ET.SubElement(
+                    cac_legalmonetarytotal, "cbc:PrepaidAmount"
+                )
+                cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+                cbc_prepaidamount.text = str(advance_amount)
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -381,14 +388,24 @@ def tax_data(invoice, sales_invoice_doc):
         #             2,
         #         )
         #     )
-        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
-            advance_amount = sum(
-                advance.advance_amount for advance in sales_invoice_doc.advances
-            )
-            payable_amount = round(total_amount - advance_amount, 2)
-        else:
-            payable_amount = total_amount
+        payable_amount = total_amount
 
+        # Check if 'claudion4saudi' app is installed and custom_advances_copy exists
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            # Check if reference_name exists in custom_advances_copy
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                # Calculate advance amount and subtract from total amount
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
+                )
+                payable_amount = round(total_amount - advance_amount, 2)
+
+        # Set the final payable amount in the XML
         cbc_payableamount.text = str(payable_amount)
         return invoice
 
@@ -716,10 +733,16 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
         )
-        advance_amount = sum(
-            advance.advance_amount for advance in sales_invoice_doc.advances
-        )
-        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
+
+        if (
+            sales_invoice_doc.custom_advances_copy
+            and sales_invoice_doc.custom_advances_copy[0].reference_name
+            and "claudion4saudi" in frappe.get_installed_apps()
+        ):
+            advance_amount = sum(
+                advance.advance_amount
+                for advance in sales_invoice_doc.custom_advances_copy
+            )
             cbc_prepaidamount = ET.SubElement(
                 cac_legalmonetarytotal, "cbc:PrepaidAmount"
             )
@@ -737,7 +760,18 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         #         2,
         #     )
         # )
-        if sales_invoice_doc.advances and sales_invoice_doc.advances[0].reference_name:
+        payable_amount = (abs(total_amount - discount_amount) + tax_amount).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+        if (
+            sales_invoice_doc.custom_advances_copy
+            and sales_invoice_doc.custom_advances_copy[0].reference_name
+            and "claudion4saudi" in frappe.get_installed_apps()
+        ):
+            advance_amount = sum(
+                advance.advance_amount
+                for advance in sales_invoice_doc.custom_advances_copy
+            )
             payable_amount = round(tax_inclusive_amount - advance_amount, 2)
         else:
             payable_amount = (
