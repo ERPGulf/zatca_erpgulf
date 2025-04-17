@@ -1143,7 +1143,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
         return None
 
 
-def xml_structuring(invoice, sales_invoice_doc):
+def xml_structuring(invoice):
     """
     Xml structuring and final saving of the xml into private files
     """
@@ -1168,46 +1168,7 @@ def xml_structuring(invoice, sales_invoice_doc):
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
-        try:
-            if frappe.db.exists(
-                "File", {"file_name": "E-invoice-" + sales_invoice_doc.name + ".xml"}
-            ):
-                frappe.db.delete(
-                    "File",
-                    {"file_name": "E-invoice-" + sales_invoice_doc.name + ".xml"},
-                )
-            # if frappe.db.exists("File",{ "attached_to_name": sales_invoice_doc.name, "attached_to_doctype": sales_invoice_doc.doctype }):
-            #     frappe.db.delete("File",{ "attached_to_name":sales_invoice_doc.name, "attached_to_doctype": sales_invoice_doc.doctype })
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
 
-        try:
-            fileX = frappe.get_doc(
-                {
-                    "doctype": "File",
-                    "file_type": "xml",
-                    "file_name": "E-invoice-" + sales_invoice_doc.name + ".xml",
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                    "attached_to_name": sales_invoice_doc.name,
-                    "content": pretty_xml_string,
-                    "is_private": 1,
-                }
-            )
-            fileX.save()
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
-
-        try:
-            frappe.db.get_value(
-                "File",
-                {
-                    "attached_to_name": sales_invoice_doc.name,
-                    "attached_to_doctype": sales_invoice_doc.doctype,
-                },
-                ["file_name"],
-            )
-        except Exception as e:
-            frappe.throw(frappe.get_traceback())
     except (FileNotFoundError, IOError):
         frappe.throw(
             "File operation error occurred while structuring the XML. "
