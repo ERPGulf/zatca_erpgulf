@@ -586,6 +586,9 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
         return None
 
 
+from frappe.utils.data import get_time
+
+
 def item_data(invoice, sales_invoice_doc):
     """
     The function defines the xml creating without item tax template
@@ -798,19 +801,12 @@ def item_data(invoice, sales_invoice_doc):
                             0
                         ].posting_time
 
-                        # Extract hours, minutes, and seconds from the timedelta
-                        seconds = posting_time.total_seconds()
-                        hours = int(seconds // 3600)
-                        minutes = int((seconds % 3600) // 60)
-                        seconds = int(seconds % 60)
-
+                        time = get_time(posting_time)
+                        issue_time = time.strftime("%H:%M:%S")
                         # Format time as HH:MM:SS
-                        formatted_posting_time = f"{hours:02}:{minutes:02}:{seconds:02}"
 
                         # Create the XML element for IssueTime
-                        ET.SubElement(docref, "cbc:IssueTime").text = str(
-                            formatted_posting_time
-                        )
+                        ET.SubElement(docref, "cbc:IssueTime").text = str(issue_time)
                     else:
                         # Handle the case where posting_time is not available
                         ET.SubElement(docref, "cbc:IssueTime").text = "00:00:00"
@@ -1048,19 +1044,12 @@ def item_data_with_template(invoice, sales_invoice_doc):
                             0
                         ].posting_time
 
-                        # Extract hours, minutes, and seconds from the timedelta
-                        seconds = posting_time.total_seconds()
-                        hours = int(seconds // 3600)
-                        minutes = int((seconds % 3600) // 60)
-                        seconds = int(seconds % 60)
-
+                        time = get_time(posting_time)
+                        issue_time = time.strftime("%H:%M:%S")
                         # Format time as HH:MM:SS
-                        formatted_posting_time = f"{hours:02}:{minutes:02}:{seconds:02}"
 
                         # Create the XML element for IssueTime
-                        ET.SubElement(docref, "cbc:IssueTime").text = str(
-                            formatted_posting_time
-                        )
+                        ET.SubElement(docref, "cbc:IssueTime").text = str(issue_time)
                     else:
                         # Handle the case where posting_time is not available
                         ET.SubElement(docref, "cbc:IssueTime").text = "00:00:00"
