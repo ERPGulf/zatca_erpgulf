@@ -693,8 +693,8 @@ def item_data(invoice, sales_invoice_doc):
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
-            cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
-            cbc_id_12.text = "VAT"
+            cbc_id_13 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
+            cbc_id_13.text = "VAT"
             cac_price = ET.SubElement(cac_invoiceline, "cac:Price")
             cbc_priceamount = ET.SubElement(cac_price, "cbc:PriceAmount")
             cbc_priceamount.set("currencyID", sales_invoice_doc.currency)
