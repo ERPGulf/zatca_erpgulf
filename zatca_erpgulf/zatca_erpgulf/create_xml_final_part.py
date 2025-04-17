@@ -1139,7 +1139,7 @@ def xml_structuring(invoice, sales_invoice_doc):
                     "attached_to_doctype": sales_invoice_doc.doctype,
                     "attached_to_name": sales_invoice_doc.name,
                     "content": pretty_xml_string,
-                    "is_private": 1,
+                    "is_private": 0,
                 }
             )
             fileX.save()
