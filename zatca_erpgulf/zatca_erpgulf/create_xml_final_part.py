@@ -789,9 +789,31 @@ def item_data(invoice, sales_invoice_doc):
                         ].difference_posting_date
                     )
 
-                    ET.SubElement(docref, "cbc:IssueTime").text = str(
-                        sales_invoice_doc.custom_advances_copy[0].posting_time
-                    )
+                    if (
+                        sales_invoice_doc.custom_advances_copy
+                        and sales_invoice_doc.custom_advances_copy[0].posting_time
+                    ):
+                        # Extract the first advance posting time
+                        posting_time = sales_invoice_doc.custom_advances_copy[
+                            0
+                        ].posting_time
+
+                        # Extract hours, minutes, and seconds from the timedelta
+                        seconds = posting_time.total_seconds()
+                        hours = int(seconds // 3600)
+                        minutes = int((seconds % 3600) // 60)
+                        seconds = int(seconds % 60)
+
+                        # Format time as HH:MM:SS
+                        formatted_posting_time = f"{hours:02}:{minutes:02}:{seconds:02}"
+
+                        # Create the XML element for IssueTime
+                        ET.SubElement(docref, "cbc:IssueTime").text = str(
+                            formatted_posting_time
+                        )
+                    else:
+                        # Handle the case where posting_time is not available
+                        ET.SubElement(docref, "cbc:IssueTime").text = "00:00:00"
                     ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
 
                     tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
@@ -1017,10 +1039,31 @@ def item_data_with_template(invoice, sales_invoice_doc):
                             0
                         ].difference_posting_date
                     )
+                    if (
+                        sales_invoice_doc.custom_advances_copy
+                        and sales_invoice_doc.custom_advances_copy[0].posting_time
+                    ):
+                        # Extract the first advance posting time
+                        posting_time = sales_invoice_doc.custom_advances_copy[
+                            0
+                        ].posting_time
 
-                    ET.SubElement(docref, "cbc:IssueTime").text = str(
-                        sales_invoice_doc.custom_advances_copy[0].posting_time
-                    )
+                        # Extract hours, minutes, and seconds from the timedelta
+                        seconds = posting_time.total_seconds()
+                        hours = int(seconds // 3600)
+                        minutes = int((seconds % 3600) // 60)
+                        seconds = int(seconds % 60)
+
+                        # Format time as HH:MM:SS
+                        formatted_posting_time = f"{hours:02}:{minutes:02}:{seconds:02}"
+
+                        # Create the XML element for IssueTime
+                        ET.SubElement(docref, "cbc:IssueTime").text = str(
+                            formatted_posting_time
+                        )
+                    else:
+                        # Handle the case where posting_time is not available
+                        ET.SubElement(docref, "cbc:IssueTime").text = "00:00:00"
                     ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
 
                     tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
