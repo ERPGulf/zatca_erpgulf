@@ -709,7 +709,7 @@ def zatca_call(
             invoice = item_data(invoice, sales_invoice_doc)
         else:
             invoice = item_data_with_template(invoice, sales_invoice_doc)
-        xml_structuring(invoice,sales_invoice_doc)
+        xml_structuring(invoice)
         try:
             with open(
                 frappe.local.site + "/private/files/finalzatcaxml.xml",
