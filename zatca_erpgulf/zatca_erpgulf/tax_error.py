@@ -73,3 +73,13 @@ def validate_sales_invoice_taxes(doc, event=None):
                 " Either add an Item Tax Template for all items "
                 "or include taxes in the invoice."
             )
+
+    if doc.doctype == "Sales Invoice":
+        if "claudion4saudi" in frappe.get_installed_apps():
+            if hasattr(doc, "custom_advances_copy") and doc.custom_advances_copy:
+                for advance_row in doc.custom_advances_copy:
+                    if advance_row.posting_date and not advance_row.reference_name:
+                        frappe.throw(
+                            "⚠️ Missing Advance Sales Invoice referncename in feting details ."
+                            "If there is no advance sales invoice,then remove the row from the table"
+                        )
