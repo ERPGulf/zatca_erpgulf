@@ -716,8 +716,10 @@ def zatca_call(
             if not any_item_has_tax_template:
                 invoice = item_data_advance_invoice(invoice, sales_invoice_doc)
             else:
-                item_data_with_template_advance_invoice(invoice, sales_invoice_doc)
-        elif not is_claudion_installed:
+                invoice = item_data_with_template_advance_invoice(
+                    invoice, sales_invoice_doc
+                )
+        else:  # This covers both: not installed OR no advance copy
             if not any_item_has_tax_template:
                 invoice = item_data(invoice, sales_invoice_doc)
             else:
