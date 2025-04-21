@@ -719,7 +719,7 @@ def zatca_call(
                 invoice = item_data_with_template_advance_invoice(
                     invoice, sales_invoice_doc
                 )
-        else:  # This covers both: not installed OR no advance copy
+        else:  
             if not any_item_has_tax_template:
                 invoice = item_data(invoice, sales_invoice_doc)
             else:
