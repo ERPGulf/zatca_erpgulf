@@ -1429,7 +1429,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
         return None
 
 
-def xml_structuring(invoice):
+def xml_structuring(invoice,sales_invoice_doc):
     """
     Xml structuring and final saving of the xml into private files
     """
