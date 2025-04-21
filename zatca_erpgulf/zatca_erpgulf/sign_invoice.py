@@ -37,6 +37,8 @@ from zatca_erpgulf.zatca_erpgulf.create_xml_final_part import (
     tax_data_nominal,
     tax_data_with_template_nominal,
     item_data,
+    item_data_advance_invoice,
+    item_data_with_template_advance_invoice,
     item_data_with_template,
     xml_structuring,
 )
@@ -704,11 +706,23 @@ def zatca_call(
                 invoice = tax_data(invoice, sales_invoice_doc)
             else:
                 invoice = tax_data_with_template(invoice, sales_invoice_doc)
+        is_claudion_installed = "claudion4saudi" in frappe.get_installed_apps()
+        has_advance_copy = (
+            hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        )
 
-        if not any_item_has_tax_template:
-            invoice = item_data(invoice, sales_invoice_doc)
-        else:
-            invoice = item_data_with_template(invoice, sales_invoice_doc)
+        if is_claudion_installed and has_advance_copy:
+            if not any_item_has_tax_template:
+                invoice = item_data_advance_invoice(invoice, sales_invoice_doc)
+            else:
+                item_data_with_template_advance_invoice(invoice, sales_invoice_doc)
+        elif not is_claudion_installed:
+            if not any_item_has_tax_template:
+                invoice = item_data(invoice, sales_invoice_doc)
+            else:
+                invoice = item_data_with_template(invoice, sales_invoice_doc)
+
         xml_structuring(invoice)
         try:
             with open(
