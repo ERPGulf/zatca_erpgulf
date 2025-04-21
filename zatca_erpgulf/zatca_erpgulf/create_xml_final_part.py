@@ -943,8 +943,13 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
             if sales_invoice_doc.custom_advances_copy[0].reference_name:
                 if sales_invoice_doc.custom_advances_copy[0].reference_name:
                     advance_line_id = len(sales_invoice_doc.items) + 1
-
-                    for i, single_item in enumerate(sales_invoice_doc.items):
+                    reference_name = sales_invoice_doc.custom_advances_copy[
+                        0
+                    ].reference_name
+                    advance_invoice = frappe.get_doc(
+                        "Advance Sales Invoice", reference_name
+                    )
+                    for i, single_item in enumerate(advance_invoice.custom_item):
                         adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
                         ET.SubElement(adv_line, "cbc:ID").text = str(
                             advance_line_id + i
@@ -1207,7 +1212,9 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
     """The defining of xml item data according to the item tax template datas and feilds"""
     try:
         qty = "cbc:BaseQuantity"
-        for single_item in sales_invoice_doc.items:
+        reference_name = sales_invoice_doc.custom_advances_copy[0].reference_name
+        advance_invoice = frappe.get_doc("Advance Sales Invoice", reference_name)
+        for single_item in advance_invoice.custom_item:
             item_tax_template = frappe.get_doc(
                 ITEM_TAX_TEMPLATE, single_item.item_tax_template
             )
@@ -1430,7 +1437,6 @@ def xml_structuring(invoice):
 
         tree = ET.ElementTree(invoice)
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
-
         # Save the XML tree to a file
         with open(xml_file_path, "wb") as file:
             tree.write(file, encoding="utf-8", xml_declaration=True)
@@ -1445,6 +1451,7 @@ def xml_structuring(invoice):
 
         # Write the formatted XML to the final file
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
+
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
 
