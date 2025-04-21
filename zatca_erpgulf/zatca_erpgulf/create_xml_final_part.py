@@ -1452,6 +1452,7 @@ def xml_structuring(invoice):
 
         # Write the formatted XML to the final file
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
+
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
 
