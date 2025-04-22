@@ -957,12 +957,14 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
 
 # --- Helper Function ---
 def get_tax_code(category):
+    """get tax code"""
     return {"Standard": "S", "Exempted": "E", ZERO_RATED: "Z", OUTSIDE_SCOPE: "O"}.get(
         category, "S"
     )
 
 
 def get_time_string(posting_time):
+    """get time string"""
     try:
         return get_time(posting_time).strftime("%H:%M:%S")
     except:
@@ -1320,7 +1322,9 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item template data processing: {str(e)}")
+        frappe.throw(
+            f"Error occurred in item template advance data processing: {str(e)}"
+        )
         return None
 
 
