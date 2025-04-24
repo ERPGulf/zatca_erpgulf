@@ -43,6 +43,7 @@ def submit_posinvoices_to_zatca_background_process():
             ],
         )
         # print(f"companies: {companies}", "ZATCA Background Job")
+        any_company_in_range = False
         for company in companies:
             start_time = None
             end_time = None
