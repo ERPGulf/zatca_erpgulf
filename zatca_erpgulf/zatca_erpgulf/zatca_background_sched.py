@@ -273,6 +273,7 @@ def reporting_api_sales_withoutxml(
             }
         )
         file.save(ignore_permissions=True)
+        sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
 
         if sales_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(

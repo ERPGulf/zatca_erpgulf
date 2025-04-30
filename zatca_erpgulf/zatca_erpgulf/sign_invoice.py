@@ -231,6 +231,7 @@ def reporting_api(
             }
         )
         file.save(ignore_permissions=True)
+        sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
         if sales_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
                 "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name

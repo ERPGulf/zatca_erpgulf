@@ -230,6 +230,7 @@ def reporting_api_pos_without_xml(
         )
 
         file.save(ignore_permissions=True)
+        pos_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
         if not production_csid:
             frappe.throw(
                 f"Production CSID is missing in ZATCA settings for {company_abbr}."

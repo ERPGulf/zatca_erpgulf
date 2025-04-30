@@ -219,6 +219,7 @@ def reporting_api_pos_without_xml(
         )
         file.is_private = 1
         file.save(ignore_permissions=True)
+        pos_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
         if file.is_private == 0:
             frappe.db.set_value("File", file.name, "is_private", 1)
             frappe.db.commit()

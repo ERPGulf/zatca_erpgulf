@@ -273,6 +273,7 @@ def reporting_api_sales_withoutxml(
             }
         )
         file.save(ignore_permissions=True)
+        sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
         if not sales_invoice_doc.custom_zatca_pos_name:
             frappe.throw(
                 f"ZATCA POS name is missing for invoice without xml {invoice_number}."
