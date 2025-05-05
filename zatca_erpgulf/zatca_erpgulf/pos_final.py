@@ -1,17 +1,18 @@
 """
-This module contains functions to generate, structure, and 
+This module contains functions to generate, structure, and
 manage ZATCA-compliant UBL XML invoices . functions to handle company,
-customer, tax, line items, discounts, delivery, and payment information. 
+customer, tax, line items, discounts, delivery, and payment information.
 The XML is generated according to ZATCA (Zakat, Tax, and Customs Authority)
 requirements for VAT compliance in Saudi Arabia.
 The primary goal of this module is to produce a UBL-compliant
- XML file for invoices, debit notes, and credit notes. 
+ XML file for invoices, debit notes, and credit notes.
 The file also handles compliance with e-invoicing and clearance rules
 for ZATCA and provides support for multiple currencies (SAR and USD).
 """
 
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from frappe import _
 import frappe
 from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_exemption_reason_map,
@@ -267,7 +268,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data with template: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data with template: {str(e)}"))
 
 
 def item_data(invoice, pos_invoice_doc):
@@ -338,7 +339,7 @@ def item_data(invoice, pos_invoice_doc):
             cbc_roundingamount.text = str(round(lineextensionamount + taxamount, 2))
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
             )
@@ -411,7 +412,7 @@ def item_data(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in item data: {str(e)}")
+        frappe.throw(_(f"Data processing error in item data: {str(e)}"))
 
 
 def item_data_with_template(invoice, pos_invoice_doc):
@@ -459,7 +460,7 @@ def item_data_with_template(invoice, pos_invoice_doc):
 
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
 
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
@@ -501,7 +502,9 @@ def item_data_with_template(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in item tax with template data: {str(e)}")
+        frappe.throw(
+            _(f"Data processing error in item tax with template data: {str(e)}")
+        )
 
 
 def xml_structuring(invoice):
@@ -523,21 +526,27 @@ def xml_structuring(invoice):
             file.write(pretty_xml_string)
     except (FileNotFoundError, IOError):
         frappe.throw(
-            "File operation error occurred while structuring the XML. "
-            "Please contact your system administrator."
+            _(
+                "File operation error occurred while structuring the XML. "
+                "Please contact your system administrator."
+            )
         )
         return None
 
     except ET.ParseError:
         frappe.throw(
-            "Error occurred in XML parsing or formatting. "
-            "Please check the XML structure for errors. "
-            "If the problem persists, contact your system administrator."
+            _(
+                "Error occurred in XML parsing or formatting. "
+                "Please check the XML structure for errors. "
+                "If the problem persists, contact your system administrator."
+            )
         )
         return None
     except UnicodeDecodeError:
         frappe.throw(
-            "Encoding error occurred while processing the XML file. "
-            "Please contact your system administrator."
+            _(
+                "Encoding error occurred while processing the XML file. "
+                "Please contact your system administrator."
+            )
         )
         return None

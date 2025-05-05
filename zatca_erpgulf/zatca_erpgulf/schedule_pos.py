@@ -101,20 +101,20 @@ def submit_posinvoices_to_zatca_background_process():
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
                 )
-                frappe.log_error(
-                    f"Processed {pos_invoice_doc.name}: Sent to ZATCA.",
-                    "ZATCA Background Job",
-                )
+                # frappe.log_error(
+                #     f"Processed {pos_invoice_doc.name}: Sent to ZATCA.",
+                #     "ZATCA Background Job",
+                # )
             elif company_doc.custom_submit_or_not == 1:
                 pos_invoice_doc.submit()
 
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
                 )
-                frappe.log_error(
-                    f"Submitted {pos_invoice_doc.name} before sending to ZATCA.",
-                    "ZATCA Background Job",
-                )
+                # frappe.log_error(
+                #     f"Submitted {pos_invoice_doc.name} before sending to ZATCA.",
+                #     "ZATCA Background Job",
+                # )
 
         # frappe.log_error(
         #     f"Processed {len(not_submitted_invoices)} invoices for ZATCA submission.",

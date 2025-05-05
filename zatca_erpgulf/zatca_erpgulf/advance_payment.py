@@ -1,36 +1,25 @@
 """this module is used to populate the Advance Payment data in the XML file."""
 
-import re
 import os
 import io
 import base64
 import json
-import frappe
-import requests
 import uuid
 import xml.etree.ElementTree as ET
-import frappe
-from frappe.utils.data import get_time
-from decimal import Decimal, ROUND_DOWN
-import xml.etree.ElementTree as ET
-from datetime import datetime
 from xml.dom import minidom
+from decimal import Decimal, ROUND_DOWN
+from datetime import datetime
+import xml.etree.ElementTree as ET
+from frappe.utils.data import get_time
 import frappe
-from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
-    get_tax_for_item,
-    get_exemption_reason_map,
-)
+import requests
 from decimal import Decimal, ROUND_HALF_UP
+from frappe import _
 from pyqrcode import create as qr_create
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
-
-ITEM_TAX_TEMPLATE = "Item Tax Template"
-CAC_TAX_TOTAL = "cac:TaxTotal"
-CBC_TAX_AMOUNT = "cbc:TaxAmount"
-CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
-CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
-ZERO_RATED = "Zero Rated"
-OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
+from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
+    get_exemption_reason_map,
+)
 from zatca_erpgulf.zatca_erpgulf.createxml import (
     xml_tags,
     get_icv_code,
@@ -39,7 +28,6 @@ from zatca_erpgulf.zatca_erpgulf.createxml import (
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_exemption_reason_map,
 )
-
 
 from zatca_erpgulf.zatca_erpgulf.createxml_advance import (
     removetags,
@@ -58,14 +46,19 @@ from zatca_erpgulf.zatca_erpgulf.createxml_advance import (
     compliance_api_call,
 )
 
-CBC_ID = "cbc:ID"
-DS_TRANSFORM = "ds:Transform"
-
 from zatca_erpgulf.zatca_erpgulf.sign_invoice import get_api_url, attach_qr_image
 
 from zatca_erpgulf.zatca_erpgulf.create_qr import create_qr_code
 
-
+ITEM_TAX_TEMPLATE = "Item Tax Template"
+CAC_TAX_TOTAL = "cac:TaxTotal"
+CBC_TAX_AMOUNT = "cbc:TaxAmount"
+CAC_TAX_SUBTOTAL = "cac:TaxSubtotal"
+CBC_TAXABLE_AMOUNT = "cbc:TaxableAmount"
+ZERO_RATED = "Zero Rated"
+OUTSIDE_SCOPE = "Services outside scope of tax / Not subject to VAT"
+CBC_ID = "cbc:ID"
+DS_TRANSFORM = "ds:Transform"
 TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 
@@ -92,13 +85,13 @@ def get_tax_for_item(full_string, item):
         tax_amount = data.get(item, [0, 0])[1]
         return tax_amount, tax_percentage
     except json.JSONDecodeError as e:
-        frappe.throw("JSON decoding error occurred in tax for item: " + str(e))
+        frappe.throw(_("JSON decoding error occurred in tax for item: " + str(e)))
         return None
     except KeyError as e:
-        frappe.throw(f"Key error occurred while accessing item '{item}': " + str(e))
+        frappe.throw(_(f"Key error occurred while accessing item '{item}': " + str(e)))
         return None
     except TypeError as e:
-        frappe.throw("Type error occurred in tax for item: " + str(e))
+        frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
 
 
@@ -114,19 +107,21 @@ def get_tax_total_from_items(sales_invoice_doc):
         return total_tax
     except AttributeError as e:
         frappe.throw(
-            f"AttributeError in get_tax_total_from_items: {str(e)}",
-            TAX_CALCULATION_ERROR,
+            _(
+                f"AttributeError in get_tax_total_from_items: {str(e)}",
+                TAX_CALCULATION_ERROR,
+            )
         )
         return None
     except KeyError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
     except TypeError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
@@ -157,7 +152,7 @@ def salesinvoice_data_advance(invoice, invoice_number):
 
         return invoice, uuid1, sales_invoice_doc
     except (AttributeError, ValueError, frappe.ValidationError) as e:
-        frappe.throw(("Error occurred in SalesInvoice data: " f"{str(e)}"))
+        frappe.throw(_(("Error occurred in SalesInvoice data: " f"{str(e)}")))
         return None
 
 
@@ -355,7 +350,7 @@ def tax_data(invoice, sales_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data: {str(e)}"))
         return None
 
 
@@ -407,7 +402,7 @@ def additional_reference_advanve(invoice, company_abbr, sales_invoice_doc):
         return invoice
 
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in additional references: {e}")
+        frappe.throw(_(f"Error occurred in additional references: {e}"))
         return None
 
 
@@ -473,7 +468,7 @@ def company_data_advance(invoice, sales_invoice_doc):
 
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in company data: {e}")
+        frappe.throw(_(f"Error occurred in company data: {e}"))
         return None
 
 
@@ -564,7 +559,7 @@ def customer_data_advance(invoice, sales_invoice_doc):
 
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in customer data: {e}")
+        frappe.throw(_(f"Error occurred in customer data: {e}"))
         return None
 
 
@@ -587,7 +582,7 @@ def delivery_and_payment_means_adavance(invoice, sales_invoice_doc):
         return invoice
 
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Delivery and payment means failed: {e}")
+        frappe.throw(_(f"Delivery and payment means failed: {e}"))
         return None  # Ensures all return paths explicitly return a value
 
 
@@ -618,7 +613,7 @@ def delivery_and_payment_means_for_compliance_advance(
         return invoice
 
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Delivery and payment means failed: {e}")
+        frappe.throw(_(f"Delivery and payment means failed: {e}"))
         return None
 
 
@@ -705,7 +700,7 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
             cbc_priceamount.text = str(abs(single_item.rate))
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item data processing: {str(e)}")
+        frappe.throw(_(f"Error occurred in item data processing: {str(e)}"))
 
 
 #         return None
@@ -764,20 +759,26 @@ def xml_structuring_advance(invoice, sales_invoice_doc):
 
     except (FileNotFoundError, IOError):
         frappe.throw(
-            "File operation error occurred while structuring the XML. "
-            "Please contact your system administrator."
+            _(
+                "File operation error occurred while structuring the XML. "
+                "Please contact your system administrator."
+            )
         )
 
     except ET.ParseError:
         frappe.throw(
-            "Error occurred in XML parsing or formatting. "
-            "Please check the XML structure for errors. "
-            "If the problem persists, contact your system administrator."
+            _(
+                "Error occurred in XML parsing or formatting. "
+                "Please check the XML structure for errors. "
+                "If the problem persists, contact your system administrator."
+            )
         )
     except UnicodeDecodeError:
         frappe.throw(
-            "Encoding error occurred while processing the XML file. "
-            "Please contact your system administrator."
+            _(
+                "Encoding error occurred while processing the XML file. "
+                "Please contact your system administrator."
+            )
         )
 
 
@@ -790,7 +791,7 @@ def xml_base64_decode(signed_xmlfile_name):
             base64_decoded = base64_encoded.decode("utf-8")
             return base64_decoded
     except (ValueError, TypeError, KeyError) as e:
-        frappe.throw(("xml decode base64" f"error: {str(e)}"))
+        frappe.throw(_(("xml decode base64" f"error: {str(e)}")))
         return None
 
 
@@ -810,7 +811,7 @@ def success_log(response, uuid1, invoice_number):
             }
         ).insert(ignore_permissions=True)
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("error in success log" f"error: {str(e)}"))
+        frappe.throw(_(("error in success log" f"error: {str(e)}")))
         return None
 
 
@@ -822,7 +823,7 @@ def error_log():
             message=frappe.get_traceback(),
         )
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("error in error log" f"error: {str(e)}"))
+        frappe.throw(_(("error in error log" f"error: {str(e)}")))
         return None
 
 
@@ -835,9 +836,9 @@ def clearance_api(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
         if not company_abbr:
-            frappe.throw(
+            frappe.throw(_(
                 f" problem with company name in {sales_invoice_doc.company} not found."
-            )
+            ))
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         production_csid = company_doc.custom_basic_auth_from_production or ""
         payload = {
@@ -886,10 +887,12 @@ def clearance_api(
             )
             invoice_doc.db_set("custom_zatca_full_response", "Not Submitted")
             frappe.throw(
-                (
-                    "Error: The request you are sending to Zatca is in incorrect format. "
-                    f"Status code: {response.status_code}<br><br>"
-                    f"{response.text}"
+                _(
+                    (
+                        "Error: The request you are sending to Zatca is in incorrect format. "
+                        f"Status code: {response.status_code}<br><br>"
+                        f"{response.text}"
+                    )
                 )
             )
         if response.status_code in (401, 403, 407, 451):
@@ -905,10 +908,12 @@ def clearance_api(
             )
             invoice_doc.db_set("custom_zatca_full_response", "Not Submitted")
             frappe.throw(
-                (
-                    "Error: Zatca Authentication failed. "
-                    f"Status code: {response.status_code}<br><br>"
-                    f"{response.text}"
+                _(
+                    (
+                        "Error: Zatca Authentication failed. "
+                        f"Status code: {response.status_code}<br><br>"
+                        f"{response.text}"
+                    )
                 )
             )
         if response.status_code not in (200, 202):
@@ -924,7 +929,9 @@ def clearance_api(
             )
             invoice_doc.db_set("custom_zatca_full_response", "Not Submitted")
             frappe.throw(
-                f"Error: Zatca server busy or not responding. Status code: {response.status_code}"
+                _(
+                    f"Error: Zatca server busy or not responding. Status code: {response.status_code}"
+                )
             )
 
         if response.status_code in (200, 202):
@@ -994,7 +1001,7 @@ def clearance_api(
             commit=True,
             update_modified=True,
         )
-        frappe.throw(f"Error in clearance API: {str(e)}")
+        frappe.throw(_(f"Error in clearance API: {str(e)}"))
 
 
 def invoice_typecode_standard_advance(invoice, sales_invoice_doc):
@@ -1008,7 +1015,7 @@ def invoice_typecode_standard_advance(invoice, sales_invoice_doc):
         cbc_invoicetypecode.text = "386"
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error in standard invoice type code: {e}")
+        frappe.throw(_(f"Error in standard invoice type code: {e}"))
         return None
 
 
@@ -1051,7 +1058,7 @@ def invoice_typecode_compliance_advance(invoice, compliance_type):
         return invoice
 
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in compliance typecode: {e}")
+        frappe.throw(_(f"Error occurred in compliance typecode: {e}"))
         return None
 
 
@@ -1075,7 +1082,7 @@ def doc_reference_advance(invoice, sales_invoice_doc, invoice_number):
         cbc_uuid_1.text = str(get_icv_code(invoice_number))
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in reference doc: {e}")
+        frappe.throw(_(f"Error occurred in reference doc: {e}"))
         return None
 
 
@@ -1097,7 +1104,7 @@ def attach_qr_image_advance(qrcodeb64, sales_invoice_doc):
                     ]
                 }
             )
-            frappe.log("Custom field 'ksa_einv_qr' created.")
+            # frappe.log("Custom field 'ksa_einv_qr' created.")
         qr_code = sales_invoice_doc.get("ksa_einv_qr")
         if qr_code and frappe.db.exists({"doctype": "File", "file_url": qr_code}):
             return
@@ -1123,7 +1130,7 @@ def attach_qr_image_advance(qrcodeb64, sales_invoice_doc):
         sales_invoice_doc.notify_update()
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("attach qr images" f"error: {str(e)}"))
+        frappe.throw(_(("attach qr images" f"error: {str(e)}")))
 
 
 @frappe.whitelist(allow_guest=False)
@@ -1242,7 +1249,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         )
         if not company_abbr:
             frappe.throw(
-                f"Company abbreviation for {sales_invoice_doc.company} not found."
+                _(f"Company abbreviation for {sales_invoice_doc.company} not found.")
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if company_doc.custom_zatca_invoice_enabled != 1:
@@ -1270,9 +1277,11 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         "Services outside scope of tax / Not subject to VAT",
                     ]:
                         frappe.throw(
-                            "Zatca tax category should be 'Zero Rated', 'Exempted', or "
-                            "'Services outside scope of tax / Not subject to VAT' "
-                            "for items with tax rate not equal to 5.00 or 15.00."
+                            _(
+                                "Zatca tax category should be 'Zero Rated', 'Exempted', or "
+                                "'Services outside scope of tax / Not subject to VAT' "
+                                "for items with tax rate not equal to 5.00 or 15.00."
+                            )
                         )
 
                     if (
@@ -1285,16 +1294,20 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
 
         if not frappe.db.exists("Advance Sales Invoice", invoice_number):
             frappe.throw(
-                f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+                _(
+                    f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+                )
             )
 
         if sales_invoice_doc.docstatus in [0, 2]:
             frappe.throw(
-                f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+                _(
+                    f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+                )
             )
         if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw(
-                "This invoice has already been submitted to Zakat and Tax Authority."
+                _("This invoice has already been submitted to Zakat and Tax Authority.")
             )
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
@@ -1313,7 +1326,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             create_qr_code(sales_invoice_doc, method=None)
         doc.reload()
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(f"Error in background call: {str(e)}")
+        frappe.throw(_(f"Error in background call: {str(e)}"))
 
 
 @frappe.whitelist(allow_guest=False)
@@ -1353,9 +1366,11 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         "Services outside scope of tax / Not subject to VAT",
                     ]:
                         frappe.throw(
-                            "Zatca tax category should be 'Zero Rated', 'Exempted', or "
-                            "'Services outside scope of tax / Not subject to VAT' "
-                            "for items with tax rate not equal to 5.00 or 15.00."
+                            _(
+                                "Zatca tax category should be 'Zero Rated', 'Exempted', or "
+                                "'Services outside scope of tax / Not subject to VAT' "
+                                "for items with tax rate not equal to 5.00 or 15.00."
+                            )
                         )
 
                     if (
@@ -1363,21 +1378,27 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         and zatca_tax_category != "Standard"
                     ):
                         frappe.throw(
-                            "Check the Zatca category code and enable it as Standard."
+                            _(
+                                "Check the Zatca category code and enable it as Standard."
+                            )
                         )
 
         if not frappe.db.exists("Advance Sales Invoice", invoice_number):
             frappe.throw(
-                f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+                _(
+                    f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+                )
             )
 
         if sales_invoice_doc.docstatus in [0, 2]:
             frappe.throw(
-                f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+                _(
+                    f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+                )
             )
         if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw(
-                "This invoice has already been submitted to Zakat and Tax Authority."
+                _("This invoice has already been submitted to Zakat and Tax Authority.")
             )
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
@@ -1396,4 +1417,4 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
             create_qr_code(sales_invoice_doc, method=None)
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(f"Error in background call: {str(e)}")
+        frappe.throw(_(f"Error in background call: {str(e)}"))

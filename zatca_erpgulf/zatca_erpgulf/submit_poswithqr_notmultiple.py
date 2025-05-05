@@ -2,6 +2,7 @@
 
 import base64
 import os
+from frappe import _
 import frappe
 import requests
 from lxml import etree
@@ -20,7 +21,7 @@ def xml_base64_decode(signed_xmlfile_name):
             base64_decoded = base64_encoded.decode("utf-8")
             return base64_decoded
     except (ValueError, TypeError, KeyError) as e:
-        frappe.throw(("xml decode base64in simplifed" f"error: {str(e)}"))
+        frappe.throw(_(("xml decode base64in simplifed" f"error: {str(e)}")))
         return None
 
 
@@ -38,7 +39,7 @@ def get_api_url(company_abbr, base_url):
         return url
 
     except (ValueError, TypeError, KeyError) as e:
-        frappe.throw(("get api url in simplifed" f"error: {str(e)}"))
+        frappe.throw(_(("get api url in simplifed" f"error: {str(e)}")))
         return None
 
 
@@ -58,7 +59,7 @@ def success_log(response, uuid1, invoice_number):
             }
         ).insert(ignore_permissions=True)
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("error in success log in simplifed" f"error: {str(e)}"))
+        frappe.throw(_(("error in success log in simplifed" f"error: {str(e)}")))
         return None
 
 
@@ -70,7 +71,7 @@ def error_log():
             message=frappe.get_traceback(),
         )
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("error in error login simplifed" f"error: {str(e)}"))
+        frappe.throw(_(("error in error login simplifed" f"error: {str(e)}")))
         return None
 
 
@@ -126,7 +127,7 @@ def reporting_api_xml_sales_invoice_simplified(
         )
         if not company_abbr:
             frappe.throw(
-                f"Company with abbreviation {pos_invoice_doc.company} not found."
+                _(f"Company with abbreviation {pos_invoice_doc.company} not found.")
             )
 
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
@@ -290,7 +291,7 @@ def handle_api_error(invoice_number, error):
     """handle_api_error"""
     update_invoice_status(invoice_number, NOT_SUBMITTED, msg=f"Error: {str(error)}")
     frappe.throw(
-        f"Error in reporting API-1 posinvoice with XML simplified: {str(error)}"
+        _(f"Error in reporting API-1 posinvoice with XML simplified: {str(error)}")
     )
 
 
@@ -308,4 +309,4 @@ def submit_pos_invoice_simplifeid(pos_invoice_doc, file_path, invoice_number):
         )
 
     except Exception as e:
-        frappe.throw(f"Error in submitting pos in simplifed: {str(e)}")
+        frappe.throw(_(f"Error in submitting pos in simplifed: {str(e)}"))

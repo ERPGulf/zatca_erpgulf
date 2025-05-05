@@ -3,6 +3,7 @@
 import base64
 import os
 import io
+from frappe import _
 import frappe
 import requests
 
@@ -74,7 +75,7 @@ def attach_qr_image(qrcodeb64, sales_invoice_doc):
                     ]
                 }
             )
-            frappe.log("Custom field 'ksa_einv_qr' created.")
+            # frappe.log("Custom field 'ksa_einv_qr' created.")
         qr_code = sales_invoice_doc.get("ksa_einv_qr")
         if qr_code and frappe.db.exists({"doctype": "File", "file_url": qr_code}):
             return
@@ -100,7 +101,7 @@ def attach_qr_image(qrcodeb64, sales_invoice_doc):
         sales_invoice_doc.notify_update()
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(("attach qr images" f"error: {str(e)}"))
+        frappe.throw(_(("attach qr images" f"error: {str(e)}")))
 
 
 def zatca_call_withoutxml(
@@ -114,7 +115,7 @@ def zatca_call_withoutxml(
     based on this the zATCA output and message is getting"""
     try:
         if not frappe.db.exists(SALES_INVOICE, invoice_number):
-            frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
+            frappe.throw(_("Invoice Number is NOT Valid: " + str(invoice_number)))
         invoice = xml_tags()
         invoice, uuid1, sales_invoice_doc = salesinvoice_data(invoice, invoice_number)
         # Get the company abbreviation
@@ -129,7 +130,7 @@ def zatca_call_withoutxml(
                 invoice = invoice_typecode_simplified(invoice, sales_invoice_doc)
             else:
                 frappe.throw(
-                    "customer should be B2C sales invoice with xml during create xml"
+                    _("customer should be B2C sales invoice with xml during create xml")
                 )
         else:
             invoice = invoice_typecode_compliance(invoice, compliance_type)
@@ -221,7 +222,7 @@ def zatca_call_withoutxml(
                 )
             else:
                 frappe.throw(
-                    "customer should be B2C type required for simplified invoice"
+                    _("customer should be B2C type required for simplified invoice")
                 )
         else:
             compliance_api_call(
@@ -251,7 +252,7 @@ def reporting_api_sales_withoutxml(
 
         if not company_abbr:
             frappe.throw(
-                f"Company with abbreviation {sales_invoice_doc.company} not found."
+                _(f"Company with abbreviation {sales_invoice_doc.company} not found.")
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         payload = {
@@ -276,7 +277,9 @@ def reporting_api_sales_withoutxml(
         sales_invoice_doc.db_set("custom_ksa_einvoicing_xml", file.file_url)
         if not sales_invoice_doc.custom_zatca_pos_name:
             frappe.throw(
-                f"ZATCA POS name is missing for invoice without xml {invoice_number}."
+                _(
+                    f"ZATCA POS name is missing for invoice without xml {invoice_number}."
+                )
             )
 
         zatca_settings = frappe.get_doc(
@@ -286,7 +289,7 @@ def reporting_api_sales_withoutxml(
 
         if not production_csid:
             frappe.throw(
-                f"Production CSID is missing in ZATCA settings for {company_abbr}."
+                _(f"Production CSID is missing in ZATCA settings for {company_abbr}.")
             )
         headers = {
             "accept": "application/json",
@@ -332,11 +335,13 @@ def reporting_api_sales_withoutxml(
                         update_modified=True,
                     )
                     frappe.throw(
-                        (
-                            "Error: The request you are sending to Zatca is in incorrect format. "
-                            "Please report to system administrator. "
-                            f"Status code: {response.status_code}<br><br>"
-                            f"{response.text}"
+                        _(
+                            (
+                                "Error: The request you are sending to Zatca is in incorrect format. "
+                                "Please report to system administrator. "
+                                f"Status code: {response.status_code}<br><br>"
+                                f"{response.text}"
+                            )
                         )
                     )
 
@@ -361,12 +366,14 @@ def reporting_api_sales_withoutxml(
                         update_modified=True,
                     )
                     frappe.throw(
-                        (
-                            "Error: Zatca Authentication failed. "
-                            "Your access token may be expired or not valid. "
-                            "Please contact your system administrator. "
-                            f"Status code: {response.status_code}<br><br>"
-                            f"{response.text}"
+                        _(
+                            (
+                                "Error: Zatca Authentication failed. "
+                                "Your access token may be expired or not valid. "
+                                "Please contact your system administrator. "
+                                f"Status code: {response.status_code}<br><br>"
+                                f"{response.text}"
+                            )
                         )
                     )
 
@@ -391,11 +398,13 @@ def reporting_api_sales_withoutxml(
                         update_modified=True,
                     )
                     frappe.throw(
-                        (
-                            "Error: Zatca server busy or not responding."
-                            " Try after sometime or contact your system administrator. "
-                            f"Status code: {response.status_code}<br><br>"
-                            f"{response.text}"
+                        _(
+                            (
+                                "Error: Zatca server busy or not responding."
+                                " Try after sometime or contact your system administrator. "
+                                f"Status code: {response.status_code}<br><br>"
+                                f"{response.text}"
+                            )
                         )
                     )
 
@@ -447,7 +456,7 @@ def reporting_api_sales_withoutxml(
                     error_log()
             except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
                 frappe.throw(
-                    f"Error in reporting API-2 sales invoice with xml: {str(e)}"
+                    _(f"Error in reporting API-2 sales invoice with xml: {str(e)}")
                 )
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
@@ -458,4 +467,4 @@ def reporting_api_sales_withoutxml(
             commit=True,
             update_modified=True,
         )
-        frappe.throw(f"Error in reporting API-1 sales invoice with xml: {str(e)}")
+        frappe.throw(_(f"Error in reporting API-1 sales invoice with xml: {str(e)}"))

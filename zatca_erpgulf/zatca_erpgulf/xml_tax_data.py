@@ -5,6 +5,7 @@ Includes functions for XML parsing, API interactions, and custom handling.
 
 import json
 import xml.etree.ElementTree as ET
+from frappe import _
 import frappe
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -59,13 +60,13 @@ def get_tax_for_item(full_string, item):
         tax_amount = data.get(item, [0, 0])[1]
         return tax_amount, tax_percentage
     except json.JSONDecodeError as e:
-        frappe.throw("JSON decoding error occurred in tax for item: " + str(e))
+        frappe.throw(_("JSON decoding error occurred in tax for item: " + str(e)))
         return None
     except KeyError as e:
-        frappe.throw(f"Key error occurred while accessing item '{item}': " + str(e))
+        frappe.throw(_(f"Key error occurred while accessing item '{item}': " + str(e)))
         return None
     except TypeError as e:
-        frappe.throw("Type error occurred in tax for item: " + str(e))
+        frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
 
 
@@ -81,19 +82,21 @@ def get_tax_total_from_items(sales_invoice_doc):
         return total_tax
     except AttributeError as e:
         frappe.throw(
-            f"AttributeError in get_tax_total_from_items: {str(e)}",
-            TAX_CALCULATION_ERROR,
+            _(
+                f"AttributeError in get_tax_total_from_items: {str(e)}",
+                TAX_CALCULATION_ERROR,
+            )
         )
         return None
     except KeyError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
     except TypeError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
@@ -410,7 +413,7 @@ def tax_data(invoice, sales_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data: {str(e)}"))
         return None
 
 
@@ -784,5 +787,5 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data template: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data template: {str(e)}"))
         return None

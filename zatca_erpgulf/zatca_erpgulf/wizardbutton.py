@@ -3,6 +3,7 @@
 import json
 import base64
 import requests
+from frappe import _
 import frappe
 import lxml.etree as ET
 
@@ -21,7 +22,7 @@ def get_api_url(company_abbr, base_url):
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            "unexpected error occurred api for company {company_abbr} " + str(e)
+            _("unexpected error occurred api for company {company_abbr} " + str(e))
         )
         return None
 
@@ -49,7 +50,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
         # Validate and fetch company name
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         # Parse XML and extract encoded hash a nd UUI D
         namespaces = {
@@ -70,7 +71,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
             namespaces,
         )
         if digest_value_element is None or not digest_value_element.text:
-            frappe.throw("DigestValue not found in the XML file.")
+            frappe.throw(_("DigestValue not found in the XML file."))
         encoded_hash = digest_value_element.text.strip()
 
         # Extract UUID
@@ -110,7 +111,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
 
         csid = doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw(f"CSID not found in {doc_type} for {doc_name}.")
+            frappe.throw(_(f"CSID not found in {doc_type} for {doc_name}."))
 
         # Define headers
         headers = {
@@ -132,9 +133,9 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
 
         # Handle response
         if response.status_code != 200:
-            frappe.throw(f"Error from ZATCA API: {response.text}")
+            frappe.throw(_(f"Error from ZATCA API: {response.text}"))
 
         return response.json()
 
     except Exception as e:
-        frappe.throw(f"Error in wizard_button: {str(e)}")
+        frappe.throw(_(f"Error in wizard_button: {str(e)}"))

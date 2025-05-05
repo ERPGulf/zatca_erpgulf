@@ -8,12 +8,14 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import datetime
 from frappe.utils.data import get_time
+from decimal import Decimal, ROUND_HALF_UP
 import frappe
+from frappe import _
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
-from decimal import Decimal, ROUND_HALF_UP
+
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
@@ -241,16 +243,20 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
     except (ValueError, AttributeError, KeyError) as error:
         frappe.throw(
-            f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            _(
+                _(
+                    f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+                )
+            )
         )
         return None
 
     except ET.ParseError as error:
-        frappe.throw(f"XML Parse Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"XML Parse Error in nominal tax data: {str(error)}"))
         return None
 
     except TypeError as error:
-        frappe.throw(f"Type Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"Type Error in nominal tax data: {str(error)}"))
         return None
 
 
@@ -527,16 +533,18 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
     except (ValueError, AttributeError, KeyError) as error:
         frappe.throw(
-            f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            _(
+                f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            )
         )
         return None
 
     except ET.ParseError as error:
-        frappe.throw(f"XML Parse Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"XML Parse Error in nominal tax data: {str(error)}"))
         return None
 
     except TypeError as error:
-        frappe.throw(f"Type Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"Type Error in nominal tax data: {str(error)}"))
         return None
 
 
@@ -583,7 +591,7 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
         return cac_price
 
     except (ValueError, KeyError, AttributeError) as error:
-        frappe.throw(f"Error occurred while adding line item discount: {str(error)}")
+        frappe.throw(_(f"Error occurred while adding line item discount: {str(error)}"))
         return None
 
 
@@ -760,7 +768,7 @@ def item_data(invoice, sales_invoice_doc):
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item data processing: {str(e)}")
+        frappe.throw(_(f"Error occurred in item data processing: {str(e)}"))
         return None
 
 
@@ -951,7 +959,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
         return invoice
 
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"❌ Error in item_data_advance_invoice: {str(e)}")
+        frappe.throw(_(f"❌ Error in item_data_advance_invoice: {str(e)}"))
         return None
 
 
@@ -1096,7 +1104,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item template data processing: {str(e)}")
+        frappe.throw(_(f"Error occurred in item template data processing: {str(e)}"))
         return None
 
 
@@ -1323,7 +1331,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
         return invoice
     except (ValueError, KeyError, TypeError) as e:
         frappe.throw(
-            f"Error occurred in item template advance data processing: {str(e)}"
+            _(f"Error occurred in item template advance data processing: {str(e)}")
         )
         return None
 
@@ -1356,18 +1364,24 @@ def xml_structuring(invoice):
 
     except (FileNotFoundError, IOError):
         frappe.throw(
-            "File operation error occurred while structuring the XML. "
-            "Please contact your system administrator."
+            _(
+                "File operation error occurred while structuring the XML. "
+                "Please contact your system administrator."
+            )
         )
 
     except ET.ParseError:
         frappe.throw(
-            "Error occurred in XML parsing or formatting. "
-            "Please check the XML structure for errors. "
-            "If the problem persists, contact your system administrator."
+            _(
+                "Error occurred in XML parsing or formatting. "
+                "Please check the XML structure for errors. "
+                "If the problem persists, contact your system administrator."
+            )
         )
     except UnicodeDecodeError:
         frappe.throw(
-            "Encoding error occurred while processing the XML file. "
-            "Please contact your system administrator."
+            _(
+                "Encoding error occurred while processing the XML file. "
+                "Please contact your system administrator."
+            )
         )
