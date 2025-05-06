@@ -59,7 +59,7 @@ def submit_invoices_to_zatca_background():
             ]
         )
 
-        frappe.log_error(title="ZATCA Companies Debug", message=company_summary)
+        # frappe.log_error(title="ZATCA Companies Debug", message=company_summary)
 
         any_company_in_range = False
 

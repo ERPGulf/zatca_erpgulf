@@ -11,6 +11,7 @@ import binascii
 from datetime import datetime
 from lxml import etree
 import lxml.etree as MyTree
+from frappe import _
 import frappe
 from cryptography import x509
 from cryptography.hazmat._oid import NameOID
@@ -49,7 +50,7 @@ def get_csr_data_multiple(zatca_doc):
         csr_config_string = zatca_doc.custom_csr_config
 
         if not csr_config_string:
-            frappe.throw("No CSR config found in company settings")
+            frappe.throw(_("No CSR config found in company settings"))
 
         csr_config = parse_csr_config(csr_config_string)
 
@@ -72,7 +73,7 @@ def get_csr_data_multiple(zatca_doc):
         return csr_values
 
     except (frappe.ValidationError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error in fetching CSR data multipe: {e}")
+        frappe.throw(_(f"Error in fetching CSR data multipe: {e}"))
         return None
 
 
@@ -81,13 +82,13 @@ def get_csr_data(company_abbr):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         csr_config_string = company_doc.custom_csr_config
 
         if not csr_config_string:
-            frappe.throw("No CSR config found in company settings")
+            frappe.throw(_("No CSR config found in company settings"))
 
         csr_config = parse_csr_config(csr_config_string)
 
@@ -110,7 +111,7 @@ def get_csr_data(company_abbr):
         return csr_values
 
     except (frappe.ValidationError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error in fetching CSR data: {e}")
+        frappe.throw(_(f"Error in fetching CSR data: {e}"))
         return None
 
 
@@ -127,7 +128,7 @@ def create_private_keys(company_abbr, zatca_doc):
             or "name" not in zatca_doc
         ):
             frappe.throw(
-                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+                _("Invalid 'zatca_doc' format. Must include 'doctype' and 'name'.")
             )
 
         # Fetch the document based on doctype and name
@@ -155,7 +156,10 @@ def create_private_keys(company_abbr, zatca_doc):
         return private_key_pem
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            "error while creating the private key for company {company_abbr} " + str(e)
+            _(
+                "error while creating the private key for company {company_abbr} "
+                + str(e)
+            )
         )
         return None
 
@@ -178,7 +182,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
             or "name" not in zatca_doc
         ):
             frappe.throw(
-                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+                _("Invalid 'zatca_doc' format. Must include 'doctype' and 'name'.")
             )
 
         # Fetch the document based on doctype and name
@@ -191,7 +195,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
             csr_values = get_csr_data(company_abbr)
             # frappe.msgprint(f"Using OTP (Company): {csr_values}")
         else:
-            frappe.throw("Unsupported document type for CSR creation.")
+            frappe.throw(_("Unsupported document type for CSR creation."))
 
         company_csr_data = csr_values
 
@@ -287,7 +291,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
         return encoded_string
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            "error occurred while creating csr for company {company_abbr} " + str(e)
+            _("error occurred while creating csr for company {company_abbr} " + str(e))
         )
         return None
 
@@ -306,7 +310,7 @@ def get_api_url(company_abbr, base_url):
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            "unexpected error occurred api for company {company_abbr} " + str(e)
+            _("unexpected error occurred api for company {company_abbr} " + str(e))
         )
         return None
 
@@ -325,7 +329,7 @@ def create_csid(zatca_doc, company_abbr):
             or "name" not in zatca_doc
         ):
             frappe.throw(
-                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+                _("Invalid 'zatca_doc' format. Must include 'doctype' and 'name'.")
             )
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
@@ -342,12 +346,12 @@ def create_csid(zatca_doc, company_abbr):
 
             # frappe.msgprint(f"Using OTP (Company): {csr_values}")
         else:
-            frappe.throw("Unsupported document type for CSR creation.")
+            frappe.throw(_("Unsupported document type for CSR creation."))
 
         csr_contents = csr_data_str.strip()
 
         if not csr_contents:
-            frappe.throw(f"No valid CSR data found for company {company_name}")
+            frappe.throw(_(f"No valid CSR data found for company {company_name}"))
 
         payload = json.dumps({"csr": csr_contents})
         # frappe.msgprint(f"Using OTP: {company_doc.custom_otp}")
@@ -359,7 +363,7 @@ def create_csid(zatca_doc, company_abbr):
 
             # frappe.msgprint(f"Using OTP (Company): {csr_values}")
         else:
-            frappe.throw("no otp.")
+            frappe.throw(_("no otp."))
         headers = {
             "accept": "application/json",
             "OTP": otp,
@@ -383,10 +387,10 @@ def create_csid(zatca_doc, company_abbr):
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
         if response.status_code == 400:
-            frappe.throw("Error: OTP is not valid. " + response.text)
+            frappe.throw(_("Error: OTP is not valid. " + response.text))
         if response.status_code != 200:
-            frappe.throw("Error: Issue with Certificate or OTP. " + response.text)
-        frappe.msgprint(str(response.text))
+            frappe.throw(_("Error: Issue with Certificate or OTP. " + response.text))
+        frappe.msgprint(_(str(response.text)))
         data = json.loads(response.text)
 
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
@@ -408,7 +412,7 @@ def create_csid(zatca_doc, company_abbr):
         return response.text
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in creating CSID: " + str(e))
+        frappe.throw(_("Error in creating CSID: " + str(e)))
         return None
 
 
@@ -418,7 +422,7 @@ def create_public_key(company_abbr, source_doc):
         # Get the company name using the provided abbreviation
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         # Fetch the company document
         company_doc = frappe.get_doc("Company", company_name)
@@ -441,10 +445,10 @@ def create_public_key(company_abbr, source_doc):
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate", "")
             else:
-                frappe.throw(f"Unsupported document type: {source_doc.doctype}")
+                frappe.throw(_(f"Unsupported document type: {source_doc.doctype}"))
 
         if not certificate_data_str:
-            frappe.throw("No certificate data found.")
+            frappe.throw(_("No certificate data found."))
 
         # Build the PEM certificate
         cert_base64 = f"""
@@ -467,7 +471,9 @@ def create_public_key(company_abbr, source_doc):
 
                 if not hasattr(zatca_settings, "custom_public_key"):
                     frappe.throw(
-                        "Field `custom_public_key` not found in Zatca Multiple Setting Doctype."
+                        _(
+                            "Field `custom_public_key` not found in Zatca Multiple Setting Doctype."
+                        )
                     )
 
                 zatca_settings.custom_public_key = public_key_pem
@@ -476,14 +482,16 @@ def create_public_key(company_abbr, source_doc):
             else:
                 if not hasattr(company_doc, "custom_public_key"):
                     frappe.throw(
-                        "Field `custom_public_key` not found in Company Doctype."
+                        _("Field `custom_public_key` not found in Company Doctype.")
                     )
 
                 company_doc.custom_public_key = public_key_pem
                 company_doc.save(ignore_permissions=True)
         elif source_doc.doctype == "Company":
             if not hasattr(company_doc, "custom_public_key"):
-                frappe.throw("Field `custom_public_key` not found in Company Doctype.")
+                frappe.throw(
+                    _("Field `custom_public_key` not found in Company Doctype.")
+                )
 
             company_doc.custom_public_key = public_key_pem
             company_doc.save(ignore_permissions=True)
@@ -492,7 +500,7 @@ def create_public_key(company_abbr, source_doc):
         frappe.db.commit()
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error occurred while creating public key: " + str(e))
+        frappe.throw(_("Error occurred while creating public key: " + str(e)))
 
 
 def removetags(finalzatcaxml):
@@ -524,7 +532,7 @@ def removetags(finalzatcaxml):
         transformed_xml = transform(xml_file.getroottree())
         return transformed_xml
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("error occurred win removing tags " + str(e))
+        frappe.throw(_("error occurred win removing tags " + str(e)))
         return None
 
 
@@ -534,7 +542,7 @@ def canonicalize_xml(tag_removed_xml):
         canonical_xml = etree.tostring(tag_removed_xml, method="c14n").decode()
         return canonical_xml
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("error occurred in canonicalise xml " + str(e))
+        frappe.throw(_("error occurred in canonicalise xml " + str(e)))
         return None
 
 
@@ -557,7 +565,7 @@ def digital_signature(hash1, company_abbr, source_doc):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         # frappe.throw(f"Source doc type: {type(source_doc)}, value: {source_doc}")
@@ -575,7 +583,7 @@ def digital_signature(hash1, company_abbr, source_doc):
                 private_key_data_str = company_doc.get("custom_private_key")
 
         if not private_key_data_str:
-            frappe.throw("No private key data found for the company.")
+            frappe.throw(_("No private key data found for the company."))
         private_key_bytes = private_key_data_str.encode("utf-8")
         private_key = serialization.load_pem_private_key(
             private_key_bytes, password=None, backend=default_backend()
@@ -587,7 +595,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         return encoded_signature
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("eError in digital signature:" + str(e))
+        frappe.throw(_)("eError in digital signature:" + str(e))
         return None
 
 
@@ -596,7 +604,7 @@ def extract_certificate_details(company_abbr, source_doc):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
 
@@ -615,13 +623,13 @@ def extract_certificate_details(company_abbr, source_doc):
                 certificate_data_str = company_doc.get("custom_certificate")
 
         if not certificate_data_str:
-            frappe.throw(f"No certificate data found for company {company_name}")
+            frappe.throw(_(f"No certificate data found for company {company_name}"))
 
         certificate_content = certificate_data_str.strip()
 
         if not certificate_content:
             frappe.throw(
-                f"No valid certificate content found for company {company_name}"
+                _(f"No valid certificate content found for company {company_name}")
             )
         # Format the certificate string to PEM format if not already in correct PEM format
         formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
@@ -639,7 +647,7 @@ def extract_certificate_details(company_abbr, source_doc):
         return issuer_name, serial_number
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error inextracting certificate details" + str(e))
+        frappe.throw(_("Error inextracting certificate details" + str(e)))
         return None
 
 
@@ -648,7 +656,7 @@ def certificate_hash(company_abbr, source_doc):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         if source_doc:
@@ -665,10 +673,12 @@ def certificate_hash(company_abbr, source_doc):
                 certificate_data_str = company_doc.get("custom_certificate", "")
 
         if not certificate_data_str:
-            frappe.throw(f"No certificate data found for company {company_name}")
+            frappe.throw(_(f"No certificate data found for company {company_name}"))
         certificate_data = certificate_data_str.strip()
         if not certificate_data:
-            frappe.throw(f"No valid certificate data found for company {company_name}")
+            frappe.throw(
+                _(f"No valid certificate data found for company {company_name}")
+            )
 
         # Calculate the SHA-256 hash of the certificate data
         certificate_data_bytes = certificate_data.encode("utf-8")
@@ -680,7 +690,9 @@ def certificate_hash(company_abbr, source_doc):
         return base64_encoded_hash
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in obtaining certificate hash chcek cert data: " + str(e))
+        frappe.throw(
+            _("Error in obtaining certificate hash chcek cert data: " + str(e))
+        )
         return None
 
 
@@ -693,7 +705,7 @@ def xml_base64_decode(signed_xmlfile_name):
             base64_decoded = base64_encoded.decode("utf-8")
             return base64_decoded
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.msgprint("Error in xml base64:  " + str(e))
+        frappe.msgprint(_("Error in xml base64:  " + str(e)))
         return None
 
 
@@ -737,7 +749,7 @@ def signxml_modify(company_abbr, source_doc):
             )
         return namespaces, signing_time
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(" error in modification of xml sign part: " + str(e))
+        frappe.throw(_(" error in modification of xml sign part: " + str(e)))
         return None
 
 
@@ -778,7 +790,7 @@ def generate_signed_properties_hash(
         )
         return signed_properties_base64
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(" error in generating signed properties hash: " + str(e))
+        frappe.throw(_(" error in generating signed properties hash: " + str(e)))
         return None
 
 
@@ -798,7 +810,7 @@ def populate_the_ubl_extensions_output(
         root3 = updated_invoice_xml.getroot()
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
 
@@ -817,12 +829,12 @@ def populate_the_ubl_extensions_output(
                 certificate_data_str = company_doc.get("custom_certificate")
 
         if not certificate_data_str:
-            frappe.throw(f"No certificate data found for company {company_name}")
+            frappe.throw(_(f"No certificate data found for company {company_name}"))
         content = certificate_data_str.strip()
 
         if not content:
             frappe.throw(
-                f"No valid certificate content found for company {company_name}"
+                _(f"No valid certificate content found for company {company_name}")
             )
 
         xpath_signvalue = "ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignatureValue"
@@ -846,7 +858,7 @@ def populate_the_ubl_extensions_output(
             updated_invoice_xml.write(file, encoding="utf-8", xml_declaration=True)
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in populating UBL extension output: " + str(e))
+        frappe.throw(_("Error in populating UBL extension output: " + str(e)))
         return
 
 
@@ -855,7 +867,7 @@ def extract_public_key_data(company_abbr, source_doc):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
 
@@ -873,7 +885,7 @@ def extract_public_key_data(company_abbr, source_doc):
             elif source_doc.doctype == "Company":
                 public_key_pem = company_doc.get("custom_public_key", "")
         if not public_key_pem:
-            frappe.throw(f"No public key found for company {company_name}")
+            frappe.throw(_(f"No public key found for company {company_name}"))
 
         lines = public_key_pem.splitlines()
         key_data = "".join(lines[1:-1])
@@ -885,7 +897,7 @@ def extract_public_key_data(company_abbr, source_doc):
         return key_data
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in extracting public key data: " + str(e))
+        frappe.throw(_("Error in extracting public key data: " + str(e)))
         return None
 
 
@@ -907,7 +919,7 @@ def get_tlv_for_value(tag_num, tag_value):
             tag_value_len_buf = bytes([len(tag_value)])
         return tag_num_buf + tag_value_len_buf + tag_value
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(" error in getting the tlv data value: " + str(e))
+        frappe.throw(_(" error in getting the tlv data value: " + str(e)))
         return None
 
 
@@ -923,7 +935,7 @@ def tag8_publickey(company_abbr, source_doc):
         binary_data = bytes.fromhex(value)
         return binary_data
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in tag 8 from public key: " + str(e))
+        frappe.throw(_("Error in tag 8 from public key: " + str(e)))
         return None
 
 
@@ -932,7 +944,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
 
@@ -951,7 +963,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
                 certificate_content = company_doc.custom_certificate or ""
 
         if not certificate_content:
-            frappe.throw(f"No certificate found for company in tag9 {company_abbr}")
+            frappe.throw(_(f"No certificate found for company in tag9 {company_abbr}"))
 
         formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
         formatted_certificate += "\n".join(
@@ -969,7 +981,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
         return signature_bytes
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in tag 9 (signaturetag): " + str(e))
+        frappe.throw(_("Error in tag 9 (signaturetag): " + str(e)))
         return None
 
 
@@ -1048,7 +1060,7 @@ def generate_tlv_xml(company_abbr, source_doc):
         )  # Handling Arabic company name in QR Code
         return result_dict
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in getting the entire TLV data: " + str(e))
+        frappe.throw(_("Error in getting the entire TLV data: " + str(e)))
         return None
 
 
@@ -1069,12 +1081,12 @@ def update_qr_toxml(qrcodeb64, company_abbr):
             qr_code_element.text = qrcodeb64
         else:
             frappe.msgprint(
-                f"QR code element not found in the XML for company {company_abbr}"
+                _(f"QR code element not found in the XML for company {company_abbr}")
             )
         xml_tree.write(xml_file_path, encoding="UTF-8", xml_declaration=True)
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            f"Error in saving TLV data to XML for company {company_abbr}: " + str(e)
+            _(f"Error in saving TLV data to XML for company {company_abbr}: " + str(e))
         )
 
 
@@ -1139,7 +1151,7 @@ def structuring_signedxml():
         )
         return signed_xmlfile_name
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(" error in structuring signed xml: " + str(e))
+        frappe.throw(_(" error in structuring signed xml: " + str(e)))
         return None
 
 
@@ -1151,7 +1163,7 @@ def compliance_api_call(
 
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         payload = json.dumps(
@@ -1174,7 +1186,7 @@ def compliance_api_call(
         else:
             csid = company_doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw((f"CSID for company {company_abbr} not found"))
+            frappe.throw(_((f"CSID for company {company_abbr} not found")))
 
         headers = {
             "accept": "application/json",
@@ -1192,19 +1204,19 @@ def compliance_api_call(
             timeout=300,
         )
         # frappe.throw(response.status_code)
-        frappe.throw(response.text)
+        frappe.throw(_(response.text))
         if response.status_code != 200:
-            frappe.throw(f"Error in compliance: {response.text}")
+            frappe.throw(_(f"Error in compliance: {response.text}"))
         if response.status_code != 202:
-            frappe.throw(f"Warning from zatca in compliance: {response.text}")
+            frappe.throw(_(f"Warning from zatca in compliance: {response.text}"))
 
         return response.text
     except requests.exceptions.RequestException as e:
-        frappe.msgprint(f"Request exception occurred: {str(e)}")
+        frappe.msgprint(_(f"Request exception occurred: {str(e)}"))
         return "error in compliance", "NOT ACCEPTED"
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(f"ERROR in clearance invoice, ZATCA validation: {str(e)}")
+        frappe.throw(_(f"ERROR in clearance invoice, ZATCA validation: {str(e)}"))
         return None
 
 
@@ -1222,7 +1234,7 @@ def production_csid(zatca_doc, company_abbr):
             or "name" not in zatca_doc
         ):
             frappe.throw(
-                "Invalid 'zatca_doc' format. Must include 'doctype' and 'name'."
+                _("Invalid 'zatca_doc' format. Must include 'doctype' and 'name'.")
             )
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
@@ -1240,10 +1252,10 @@ def production_csid(zatca_doc, company_abbr):
             request_id = company_doc.custom_compliance_request_id_
 
         if not csid:
-            frappe.throw(("CSID for company not found"))
+            frappe.throw(_(("CSID for company not found")))
 
         if not request_id:
-            frappe.throw("Compliance request ID for company  not found")
+            frappe.throw(_("Compliance request ID for company  not found"))
         payload = {"compliance_request_id": request_id}
 
         headers = {
@@ -1291,5 +1303,5 @@ def production_csid(zatca_doc, company_abbr):
         return response.text
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw("Error in production CSID formation: " + str(e))
+        frappe.throw(_("Error in production CSID formation: " + str(e)))
         return None

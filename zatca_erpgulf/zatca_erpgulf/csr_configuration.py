@@ -2,6 +2,7 @@
 
 import random
 import frappe
+from frappe import _
 
 
 @frappe.whitelist()
@@ -23,13 +24,13 @@ def get_csr_config(company_abbr):
         )
         company_name = company_doc.company_name
         if not tax_id:
-            frappe.throw("Tax ID (VAT number) is required.")
+            frappe.throw(_("Tax ID (VAT number) is required."))
         if not location:
-            frappe.throw("Location for CSR configuration is required.")
+            frappe.throw(_("Location for CSR configuration is required."))
         if not business_category:
-            frappe.throw("Company category for CSR configuration is required.")
+            frappe.throw(_("Company category for CSR configuration is required."))
         if not company_name:
-            frappe.throw("Company name is required.")
+            frappe.throw(_("Company name is required."))
         vat_number = tax_id
         city = location.upper()
 
@@ -62,4 +63,4 @@ def get_csr_config(company_abbr):
         )
         return config
     except Exception as e:
-        frappe.throw(str(e))
+        frappe.throw(_(str(e)))

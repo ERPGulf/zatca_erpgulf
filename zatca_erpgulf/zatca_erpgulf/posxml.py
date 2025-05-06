@@ -1,11 +1,11 @@
 """
-This module contains functions to generate, structure, and 
+This module contains functions to generate, structure, and
 manage ZATCA-compliant UBL XML invoices . functions to handle company,
-customer, tax, line items, discounts, delivery, and payment information. 
+customer, tax, line items, discounts, delivery, and payment information.
 The XML is generated according to ZATCA (Zakat, Tax, and Customs Authority)
 requirements for VAT compliance in Saudi Arabia.
 The primary goal of this module is to produce a UBL-compliant
- XML file for invoices, debit notes, and credit notes. 
+ XML file for invoices, debit notes, and credit notes.
 The file also handles compliance with e-invoicing and clearance rules
 for ZATCA and provides support for multiple currencies (SAR and USD).
 """
@@ -15,6 +15,7 @@ import uuid
 import re
 import json
 from frappe.utils.data import get_time
+from frappe import _
 import frappe
 
 
@@ -26,13 +27,13 @@ def get_tax_for_item(full_string, item):
         tax_amount = data.get(item, [0, 0])[1]
         return tax_amount, tax_percentage
     except json.JSONDecodeError as e:
-        frappe.throw("JSON decoding error occurred in tax for item: " + str(e))
+        frappe.throw(_("JSON decoding error occurred in tax for item: " + str(e)))
         return None
     except KeyError as e:
-        frappe.throw(f"Key error occurred while accessing item '{item}': " + str(e))
+        frappe.throw(_(f"Key error occurred while accessing item '{item}': " + str(e)))
         return None
     except TypeError as e:
-        frappe.throw("Type error occurred in tax for item: " + str(e))
+        frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
 
 
@@ -44,10 +45,10 @@ def get_icv_code(invoice_number):
         )  # taking the numb er part onl y from doc name
         return icv_code
     except TypeError as e:
-        frappe.throw("Type error in getting ICV number: " + str(e))
+        frappe.throw(_("Type error in getting ICV number: " + str(e)))
         return None
     except re.error as e:
-        frappe.throw("Regex error in getting ICV number: " + str(e))
+        frappe.throw(_("Regex error in getting ICV number: " + str(e)))
         return None
 
 
@@ -186,7 +187,7 @@ def xml_tags():
         x509serialnumber.text = "2475382886904809774818644480820936050208702411"
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error in XML tags formation: {e}")
+        frappe.throw(_(f"Error in XML tags formation: {e}"))
         return None
 
 
@@ -207,7 +208,7 @@ def salesinvoice_data(invoice, invoice_number):
         cbc_issuetime.text = get_issue_time(invoice_number)
         return invoice, uuid1, pos_invoice_doc
     except (AttributeError, ValueError, frappe.ValidationError) as e:
-        frappe.throw(("Error occurred in SalesInvoice data: " f"{str(e)}"))
+        frappe.throw(_(("Error occurred in SalesInvoice data: " f"{str(e)}")))
         return None
 
 
@@ -254,7 +255,7 @@ def invoice_typecode_compliance(invoice, compliance_type):
             cbc_invoicetypecode.text = "383"
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in compliance typecode: {e}")
+        frappe.throw(_(f"Error occurred in compliance typecode: {e}"))
         return None
 
 
@@ -270,7 +271,7 @@ def invoice_typecode_simplified(invoice, pos_invoice_doc):
             cbc_invoicetypecode.text = "381"  # Credit note
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in simplified invoice typecode: {e}")
+        frappe.throw(_(f"Error occurred in simplified invoice typecode: {e}"))
         return None
 
 
@@ -285,7 +286,7 @@ def invoice_typecode_standard(invoice, pos_invoice_doc):
             cbc_invoicetypecode.text = "381"  # Credit note
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error in standard invoice type code: {e}")
+        frappe.throw(_(f"Error in standard invoice type code: {e}"))
         return None
 
 
@@ -309,7 +310,7 @@ def doc_reference(invoice, pos_invoice_doc, invoice_number):
         cbc_uuid_1.text = str(get_icv_code(invoice_number))
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in reference doc: {e}")
+        frappe.throw(_(f"Error occurred in reference doc: {e}"))
         return None
 
 
@@ -339,7 +340,7 @@ def doc_reference_compliance(invoice, pos_invoice_doc, invoice_number, complianc
         cbc_uuid_1.text = str(get_icv_code(invoice_number))
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Error occurred in reference doc: {e}")
+        frappe.throw(_(f"Error occurred in reference doc: {e}"))
         return None
 
 
@@ -349,10 +350,10 @@ def get_pih_for_company(pih_data, company_name):
         for entry in pih_data.get("data", []):
             if entry.get("company") == company_name:
                 return entry.get("pih")
-        frappe.throw("Error while retrieving  PIH of company for production:  ")
+        frappe.throw(_("Error while retrieving  PIH of company for production:  "))
     except (KeyError, AttributeError, ValueError) as e:
         frappe.throw(
-            f"Error in getting PIH of company '{company_name}' for production: {e}"
+            _(f"Error in getting PIH of company '{company_name}' for production: {e}")
         )
         return None  # Ensures consistent return
 
@@ -418,7 +419,7 @@ def additional_reference(invoice, company_abbr, pos_invoice_doc):
 
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in additional references: {e}")
+        frappe.throw(_(f"Error occurred in additional references: {e}"))
         return None
 
 
@@ -500,7 +501,7 @@ def get_address(pos_invoice_doc, company_doc):
     """
     if company_doc.custom_costcenter == 1:
         if not pos_invoice_doc.cost_center:
-            frappe.throw("No Cost Center is set in the POS invoice.")
+            frappe.throw(_("No Cost Center is set in the POS invoice."))
 
         cost_center_doc = frappe.get_doc("Cost Center", pos_invoice_doc.cost_center)
         if cost_center_doc.custom_zatca_branch_address:
@@ -539,7 +540,7 @@ def get_address(pos_invoice_doc, company_doc):
     )
 
     if not address_list:
-        frappe.throw("require address of company")
+        frappe.throw(_("require address of company"))
 
     # Return the first valid address from Company
     for address in address_list:
@@ -553,7 +554,7 @@ def company_data(invoice, pos_invoice_doc):
 
         # If Company requires Cost Center but it's missing, throw an error
         if company_doc.custom_costcenter == 1 and not pos_invoice_doc.cost_center:
-            frappe.throw(" No Cost Center is set in the POS invoice.Give the feild")
+            frappe.throw(_(" No Cost Center is set in the POS invoice.Give the feild"))
 
         # Determine whether to fetch data from Cost Center or Company
         if company_doc.custom_costcenter == 1:
@@ -618,7 +619,7 @@ def company_data(invoice, pos_invoice_doc):
 
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in company data: {e}")
+        frappe.throw(_(f"Error occurred in company data: {e}"))
         return None
 
 
@@ -671,6 +672,10 @@ def customer_data(invoice, pos_invoice_doc):
             cac_country_1, "cbc:IdentificationCode"
         )
         cbc_identificationcode_1.text = "SA"
+        # cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
+        # if address.country == "Saudi Arabia":
+        #     cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
+        #     cbc_company_id.text = customer_doc.tax_id
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
         cac_taxscheme_1 = ET.SubElement(cac_partytaxscheme_1, "cac:TaxScheme")
         cbc_id_5 = ET.SubElement(cac_taxscheme_1, "cbc:ID")
@@ -682,7 +687,7 @@ def customer_data(invoice, pos_invoice_doc):
         cbc_registrationname_1.text = customer_doc.customer_name
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred in company data: {e}")
+        frappe.throw(_(f"Error occurred in company data: {e}"))
         return None
 
 
@@ -701,7 +706,7 @@ def delivery_and_paymentmeans(invoice, pos_invoice_doc, is_return):
             cbc_instructionnote.text = "Cancellation"
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Delivery and payment means failed: {e}")
+        frappe.throw(_(f"Delivery and payment means failed: {e}"))
         return None  # Ensures all return paths explicitly return a value
 
 
@@ -720,7 +725,7 @@ def delivery_and_paymentmeans_for_compliance(invoice, pos_invoice_doc, complianc
             cbc_instructionnote.text = "Cancellation"
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(f"Delivery and payment means failed: {e}")
+        frappe.throw(_(f"Delivery and payment means failed: {e}"))
         return None  # Ensures all return paths explicitly return a value
 
 
@@ -774,7 +779,9 @@ def add_document_level_discount_with_tax(invoice, pos_invoice_doc):
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
         frappe.throw(
-            f"Error occurred while processing allowance charge data without template: {e}"
+            _(
+                f"Error occurred while processing allowance charge data without template: {e}"
+            )
         )
         return None
 
@@ -835,7 +842,7 @@ def add_document_level_discount_with_tax_template(invoice, pos_invoice_doc):
         cbc_taxschemeid.text = "VAT"
         return invoice
     except (ET.ParseError, AttributeError, ValueError, frappe.DoesNotExistError) as e:
-        frappe.throw(f"Error occurred while processing allowance charge data: {e}")
+        frappe.throw(_(f"Error occurred while processing allowance charge data: {e}"))
         return None
 
 
@@ -880,7 +887,9 @@ def billing_reference_for_credit_and_debit_note(invoice, pos_invoice_doc):
         return invoice
     except (ValueError, KeyError, AttributeError) as error:
         frappe.throw(
-            f"Error occurred while adding billing reference for credit/debit note: {str(error)}"
+            _(
+                f"Error occurred while adding billing reference for credit/debit note: {str(error)}"
+            )
         )
         return None
 
@@ -934,7 +943,7 @@ def get_tax_total_from_items(pos_invoice_doc):
             total_tax = total_tax + (single_item.net_amount * (tax_percent / 100))
         return total_tax
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data: {str(e)}"))
 
 
 def tax_data(invoice, pos_invoice_doc):
@@ -942,7 +951,7 @@ def tax_data(invoice, pos_invoice_doc):
     try:
         pos_profile = pos_invoice_doc.pos_profile
         if not pos_profile:
-            frappe.throw("POS Profile is not set in the POS Invoice.")
+            frappe.throw(_("POS Profile is not set in the POS Invoice."))
         pos_profile_doc = frappe.get_doc("POS Profile", pos_profile)
         taxes_and_charges = pos_profile_doc.taxes_and_charges
 
@@ -1201,4 +1210,4 @@ def tax_data(invoice, pos_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data: {str(e)}"))

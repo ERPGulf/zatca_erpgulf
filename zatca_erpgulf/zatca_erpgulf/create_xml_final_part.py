@@ -6,12 +6,16 @@ Includes functions for XML parsing, API interactions, and custom handling.
 from decimal import Decimal, ROUND_DOWN
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from datetime import datetime
+from frappe.utils.data import get_time
+from decimal import Decimal, ROUND_HALF_UP
 import frappe
+from frappe import _
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
-from decimal import Decimal, ROUND_HALF_UP
+
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
 CAC_TAX_TOTAL = "cac:TaxTotal"
@@ -239,16 +243,20 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
 
     except (ValueError, AttributeError, KeyError) as error:
         frappe.throw(
-            f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            _(
+                _(
+                    f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+                )
+            )
         )
         return None
 
     except ET.ParseError as error:
-        frappe.throw(f"XML Parse Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"XML Parse Error in nominal tax data: {str(error)}"))
         return None
 
     except TypeError as error:
-        frappe.throw(f"Type Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"Type Error in nominal tax data: {str(error)}"))
         return None
 
 
@@ -525,16 +533,18 @@ def tax_data_nominal(invoice, sales_invoice_doc):
 
     except (ValueError, AttributeError, KeyError) as error:
         frappe.throw(
-            f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            _(
+                f"Error in nominal tax data due to invalid value or missing data: {str(error)}"
+            )
         )
         return None
 
     except ET.ParseError as error:
-        frappe.throw(f"XML Parse Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"XML Parse Error in nominal tax data: {str(error)}"))
         return None
 
     except TypeError as error:
-        frappe.throw(f"Type Error in nominal tax data: {str(error)}")
+        frappe.throw(_(f"Type Error in nominal tax data: {str(error)}"))
         return None
 
 
@@ -581,7 +591,7 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
         return cac_price
 
     except (ValueError, KeyError, AttributeError) as error:
-        frappe.throw(f"Error occurred while adding line item discount: {str(error)}")
+        frappe.throw(_(f"Error occurred while adding line item discount: {str(error)}"))
         return None
 
 
@@ -758,8 +768,215 @@ def item_data(invoice, sales_invoice_doc):
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item data processing: {str(e)}")
+        frappe.throw(_(f"Error occurred in item data processing: {str(e)}"))
         return None
+
+
+def item_data_advance_invoice(invoice, sales_invoice_doc):
+    """
+    Generate <cac:InvoiceLine> XML nodes for standard and advance invoice items.
+    """
+    try:
+        qty = "cbc:BaseQuantity"
+
+        # Add regular item lines
+        for single_item in sales_invoice_doc.items:
+            _item_tax_amount, item_tax_percentage = get_tax_for_item(
+                sales_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
+            )
+
+            # === Invoice Line ===
+            line = ET.SubElement(invoice, "cac:InvoiceLine")
+            ET.SubElement(line, "cbc:ID").text = str(single_item.idx)
+            ET.SubElement(
+                line, "cbc:InvoicedQuantity", unitCode=single_item.uom
+            ).text = str(abs(single_item.qty))
+
+            # === Line Extension Amount ===
+            line_ext_amount = ET.SubElement(
+                line, "cbc:LineExtensionAmount", currencyID=sales_invoice_doc.currency
+            )
+
+            if sales_invoice_doc.currency == "SAR":
+                base_amt = single_item.base_amount
+            else:
+                base_amt = single_item.amount
+
+            if sales_invoice_doc.taxes[0].included_in_print_rate:
+                base_amt = round(
+                    base_amt / (1 + sales_invoice_doc.taxes[0].rate / 100), 2
+                )
+
+            line_ext_amount.text = str(abs(base_amt))
+
+            # === Tax Total ===
+            tax_total = ET.SubElement(line, "cac:TaxTotal")
+            tax_amt = ET.SubElement(
+                tax_total, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+            )
+
+            if sales_invoice_doc.taxes[0].included_in_print_rate:
+                tax_amt.text = str(
+                    abs(round(base_amt * sales_invoice_doc.taxes[0].rate / 100, 2))
+                )
+            else:
+                tax_amt.text = str(
+                    Decimal(
+                        str(abs(item_tax_percentage * single_item.amount / 100))
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                )
+
+            ET.SubElement(
+                tax_total, "cbc:RoundingAmount", currencyID=sales_invoice_doc.currency
+            ).text = str(round(float(line_ext_amount.text) + float(tax_amt.text), 2))
+
+            # === Item Info ===
+            item_node = ET.SubElement(line, "cac:Item")
+            ET.SubElement(item_node, "cbc:Name").text = (
+                f"{single_item.item_code}:{single_item.item_name}"
+            )
+
+            tax_category = ET.SubElement(item_node, "cac:ClassifiedTaxCategory")
+            ET.SubElement(tax_category, "cbc:ID").text = get_tax_code(
+                sales_invoice_doc.custom_zatca_tax_category
+            )
+            ET.SubElement(tax_category, "cbc:Percent").text = (
+                f"{float(item_tax_percentage):.2f}"
+            )
+            ET.SubElement(
+                ET.SubElement(tax_category, "cac:TaxScheme"), "cbc:ID"
+            ).text = "VAT"
+
+            # === Price Section ===
+            price = ET.SubElement(line, "cac:Price")
+            price_amount = ET.SubElement(
+                price, "cbc:PriceAmount", currencyID=sales_invoice_doc.currency
+            )
+
+            rate = single_item.rate
+            if sales_invoice_doc.taxes[0].included_in_print_rate:
+                rate = round(rate / (1 + sales_invoice_doc.taxes[0].rate / 100), 2)
+
+            price_amount.text = str(abs(rate))
+
+            if sales_invoice_doc.custom_submit_line_item_discount_to_zatca == 1:
+                ET.SubElement(price, qty, unitCode=single_item.uom).text = "1"
+                add_line_item_discount(price, single_item, sales_invoice_doc)
+
+        # === Advance Invoices if Claudion is Installed ===
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+            and sales_invoice_doc.custom_advances_copy[0].reference_name
+        ):
+            reference_name = sales_invoice_doc.custom_advances_copy[0].reference_name
+            advance_invoice = frappe.get_doc("Advance Sales Invoice", reference_name)
+
+            for i, single_item in enumerate(advance_invoice.custom_item):
+                line = ET.SubElement(invoice, "cac:InvoiceLine")
+                ET.SubElement(line, "cbc:ID").text = str(
+                    len(sales_invoice_doc.items) + i + 1
+                )
+                ET.SubElement(
+                    line, "cbc:InvoicedQuantity", unitCode=single_item.uom
+                ).text = "0.000000"
+                ET.SubElement(
+                    line,
+                    "cbc:LineExtensionAmount",
+                    currencyID=sales_invoice_doc.currency,
+                ).text = "0.00"
+
+                docref = ET.SubElement(line, "cac:DocumentReference")
+                ET.SubElement(docref, "cbc:ID").text = reference_name
+                ET.SubElement(docref, "cbc:UUID").text = (
+                    sales_invoice_doc.custom_advances_copy[0].uuid
+                )
+                ET.SubElement(docref, "cbc:IssueDate").text = str(
+                    sales_invoice_doc.custom_advances_copy[0].difference_posting_date
+                )
+                ET.SubElement(docref, "cbc:IssueTime").text = get_time_string(
+                    sales_invoice_doc.custom_advances_copy[0].posting_time
+                )
+                ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
+
+                tax_total = ET.SubElement(line, "cac:TaxTotal")
+                ET.SubElement(
+                    tax_total, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+                ).text = "0"
+                ET.SubElement(
+                    tax_total,
+                    "cbc:RoundingAmount",
+                    currencyID=sales_invoice_doc.currency,
+                ).text = "0"
+
+                subtotal = ET.SubElement(tax_total, "cac:TaxSubtotal")
+                ET.SubElement(
+                    subtotal, "cbc:TaxableAmount", currencyID=sales_invoice_doc.currency
+                ).text = str(abs(single_item.amount))
+                ET.SubElement(
+                    subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+                ).text = str(
+                    abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                )
+
+                tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
+                ET.SubElement(tax_cat, "cbc:ID").text = get_tax_code(
+                    sales_invoice_doc.custom_zatca_tax_category
+                )
+                ET.SubElement(tax_cat, "cbc:Percent").text = (
+                    f"{float(item_tax_percentage):.2f}"
+                )
+                ET.SubElement(
+                    ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID"
+                ).text = "VAT"
+
+                item_tag = ET.SubElement(line, "cac:Item")
+                ET.SubElement(item_tag, "cbc:Name").text = (
+                    f"{single_item.item_code}:{single_item.item_name}"
+                )
+
+                tax_cat_item = ET.SubElement(item_tag, "cac:ClassifiedTaxCategory")
+                ET.SubElement(tax_cat_item, "cbc:ID").text = get_tax_code(
+                    sales_invoice_doc.custom_zatca_tax_category
+                )
+                ET.SubElement(tax_cat_item, "cbc:Percent").text = (
+                    f"{float(item_tax_percentage):.2f}"
+                )
+                ET.SubElement(
+                    ET.SubElement(tax_cat_item, "cac:TaxScheme"), "cbc:ID"
+                ).text = "VAT"
+
+                ET.SubElement(
+                    ET.SubElement(line, "cac:Price"),
+                    "cbc:PriceAmount",
+                    currencyID=sales_invoice_doc.currency,
+                ).text = "0.00"
+
+        # Final Debug
+        total_lines = len(invoice.findall("cac:InvoiceLine"))
+
+        return invoice
+
+    except (ValueError, KeyError, TypeError) as e:
+        frappe.throw(_(f"❌ Error in item_data_advance_invoice: {str(e)}"))
+        return None
+
+
+# --- Helper Function ---
+def get_tax_code(category):
+    """get tax code"""
+    return {"Standard": "S", "Exempted": "E", ZERO_RATED: "Z", OUTSIDE_SCOPE: "O"}.get(
+        category, "S"
+    )
+
+
+def get_time_string(posting_time):
+    """get time string"""
+    try:
+        return get_time(posting_time).strftime("%H:%M:%S")
+    except:
+        return "00:00:00"
 
 
 def custom_round(value):
@@ -841,7 +1058,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
             )
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
 
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
@@ -887,7 +1104,235 @@ def item_data_with_template(invoice, sales_invoice_doc):
 
         return invoice
     except (ValueError, KeyError, TypeError) as e:
-        frappe.throw(f"Error occurred in item template data processing: {str(e)}")
+        frappe.throw(_(f"Error occurred in item template data processing: {str(e)}"))
+        return None
+
+
+def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
+    """The defining of xml item data according to the item tax template datas and feilds"""
+    try:
+        qty = "cbc:BaseQuantity"
+
+        for single_item in sales_invoice_doc.items:
+            item_tax_template = frappe.get_doc(
+                ITEM_TAX_TEMPLATE, single_item.item_tax_template
+            )
+            item_tax_percentage = (
+                item_tax_template.taxes[0].tax_rate if item_tax_template.taxes else 15
+            )
+
+            cac_invoiceline = ET.SubElement(invoice, "cac:InvoiceLine")
+            cbc_id_10 = ET.SubElement(cac_invoiceline, "cbc:ID")
+            cbc_id_10.text = str(single_item.idx)
+            cbc_invoicedquantity = ET.SubElement(
+                cac_invoiceline, "cbc:InvoicedQuantity"
+            )
+            cbc_invoicedquantity.set("unitCode", str(single_item.uom))
+            cbc_invoicedquantity.text = str(abs(single_item.qty))
+            cbc_lineextensionamount_1 = ET.SubElement(
+                cac_invoiceline, "cbc:LineExtensionAmount"
+            )
+            cbc_lineextensionamount_1.set("currencyID", sales_invoice_doc.currency)
+            cbc_lineextensionamount_1.text = str(abs(single_item.amount))
+
+            cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
+            cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
+            cbc_taxamount_3.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxamount_3.text = str(
+                abs(
+                    (
+                        Decimal(str(item_tax_percentage))
+                        * Decimal(str(single_item.amount))
+                        / Decimal("100")
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                )
+            )
+            cbc_roundingamount = ET.SubElement(cac_taxtotal_2, "cbc:RoundingAmount")
+            cbc_roundingamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_roundingamount.text = str(
+                abs(
+                    (
+                        Decimal(str(single_item.amount))
+                        + (
+                            Decimal(str(item_tax_percentage))
+                            * Decimal(str(single_item.amount))
+                            / Decimal("100")
+                        )
+                    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                )
+            )
+            cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
+            cbc_name = ET.SubElement(cac_item, "cbc:Name")
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
+
+            cac_classifiedtaxcategory = ET.SubElement(
+                cac_item, "cac:ClassifiedTaxCategory"
+            )
+            cbc_id_11 = ET.SubElement(cac_classifiedtaxcategory, "cbc:ID")
+            zatca_tax_category = item_tax_template.custom_zatca_tax_category
+            if zatca_tax_category == "Standard":
+                cbc_id_11.text = "S"
+            elif zatca_tax_category == ZERO_RATED:
+                cbc_id_11.text = "Z"
+            elif zatca_tax_category == "Exempted":
+                cbc_id_11.text = "E"
+            elif zatca_tax_category == OUTSIDE_SCOPE:
+                cbc_id_11.text = "O"
+
+            cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
+            cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
+
+            cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
+            cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
+            cbc_id_12.text = "VAT"
+
+            cac_price = ET.SubElement(cac_invoiceline, "cac:Price")
+            cbc_priceamount = ET.SubElement(cac_price, "cbc:PriceAmount")
+            cbc_priceamount.set("currencyID", sales_invoice_doc.currency)
+
+            if sales_invoice_doc.custom_zatca_nominal_invoice == 1:
+                # If nominal invoice, only set cbc_PriceAmount
+                cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
+            else:
+                # Check for line item discount submission to ZATCA
+                if sales_invoice_doc.custom_submit_line_item_discount_to_zatca != 1:
+                    # No discount submission to ZATCA
+                    cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
+                elif sales_invoice_doc.custom_submit_line_item_discount_to_zatca == 1:
+                    # Discount submission to ZATCA
+                    cbc_priceamount.text = f"{abs(single_item.rate):.6f}"
+                    cbc_basequantity = ET.SubElement(
+                        cac_price, qty, unitCode=str(single_item.uom)
+                    )
+                    cbc_basequantity.text = "1"
+                    add_line_item_discount(cac_price, single_item, sales_invoice_doc)
+
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                advance_line_id = len(sales_invoice_doc.items) + 1
+                reference_name = sales_invoice_doc.custom_advances_copy[
+                    0
+                ].reference_name
+                advance_invoice = frappe.get_doc(
+                    "Advance Sales Invoice", reference_name
+                )
+                for i, single_item in enumerate(advance_invoice.custom_item):
+                    adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
+                    ET.SubElement(adv_line, "cbc:ID").text = str(advance_line_id + i)
+                    ET.SubElement(
+                        adv_line, "cbc:InvoicedQuantity", unitCode=str(single_item.uom)
+                    ).text = "0.000000"
+                    ET.SubElement(
+                        adv_line,
+                        "cbc:LineExtensionAmount",
+                        currencyID=sales_invoice_doc.currency,
+                    ).text = "0.00"
+
+                    docref = ET.SubElement(adv_line, "cac:DocumentReference")
+                    ET.SubElement(docref, "cbc:ID").text = str(
+                        sales_invoice_doc.custom_advances_copy[0].reference_name
+                    )
+
+                    ET.SubElement(docref, "cbc:UUID").text = str(
+                        sales_invoice_doc.custom_advances_copy[0].uuid
+                    )
+                    ET.SubElement(docref, "cbc:IssueDate").text = str(
+                        sales_invoice_doc.custom_advances_copy[
+                            0
+                        ].difference_posting_date
+                    )
+                    if (
+                        sales_invoice_doc.custom_advances_copy
+                        and sales_invoice_doc.custom_advances_copy[0].posting_time
+                    ):
+                        # Extract the first advance posting time
+                        posting_time = sales_invoice_doc.custom_advances_copy[
+                            0
+                        ].posting_time
+
+                        time = get_time(posting_time)
+                        issue_time = time.strftime("%H:%M:%S")
+                        # Format time as HH:MM:SS
+
+                        # Create the XML element for IssueTime
+                        ET.SubElement(docref, "cbc:IssueTime").text = str(issue_time)
+                    else:
+                        # Handle the case where posting_time is not available
+                        ET.SubElement(docref, "cbc:IssueTime").text = "00:00:00"
+                    ET.SubElement(docref, "cbc:DocumentTypeCode").text = "386"
+
+                    tax_total_adv = ET.SubElement(adv_line, "cac:TaxTotal")
+                    ET.SubElement(
+                        tax_total_adv,
+                        "cbc:TaxAmount",
+                        currencyID=sales_invoice_doc.currency,
+                    ).text = "0"
+                    ET.SubElement(
+                        tax_total_adv,
+                        "cbc:RoundingAmount",
+                        currencyID=sales_invoice_doc.currency,
+                    ).text = "0"
+
+                    subtotal = ET.SubElement(tax_total_adv, "cac:TaxSubtotal")
+                    ET.SubElement(
+                        subtotal,
+                        "cbc:TaxableAmount",
+                        currencyID=sales_invoice_doc.currency,
+                    ).text = str(abs(single_item.amount))
+                    ET.SubElement(
+                        subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+                    ).text = str(
+                        abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                    )
+
+                    tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
+                    zatca_tax_category = item_tax_template.custom_zatca_tax_category
+                    if zatca_tax_category == "Standard":
+                        cbc_id_12.text = "S"
+                    elif zatca_tax_category == ZERO_RATED:
+                        cbc_id_12.text = "Z"
+                    elif zatca_tax_category == "Exempted":
+                        cbc_id_12.text = "E"
+                    elif zatca_tax_category == OUTSIDE_SCOPE:
+                        cbc_id_12.text = "O"
+                    ET.SubElement(tax_cat, "cbc:ID").text = cbc_id_12.text
+                    ET.SubElement(tax_cat, "cbc:Percent").text = (
+                        f"{float(item_tax_percentage):.2f}"
+                    )
+                    ET.SubElement(
+                        ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID"
+                    ).text = "VAT"
+
+                    item_tag_adv = ET.SubElement(adv_line, "cac:Item")
+                    ET.SubElement(item_tag_adv, "cbc:Name").text = (
+                        f"{single_item.item_code}:{single_item.item_name}"
+                    )
+                    tax_cat_adv = ET.SubElement(
+                        item_tag_adv, "cac:ClassifiedTaxCategory"
+                    )
+                    ET.SubElement(tax_cat_adv, "cbc:ID").text = cbc_id_12.text
+                    ET.SubElement(tax_cat_adv, "cbc:Percent").text = (
+                        f"{float(item_tax_percentage):.2f}"
+                    )
+                    ET.SubElement(
+                        ET.SubElement(tax_cat_adv, "cac:TaxScheme"), "cbc:ID"
+                    ).text = "VAT"
+
+                    ET.SubElement(
+                        ET.SubElement(adv_line, "cac:Price"),
+                        "cbc:PriceAmount",
+                        currencyID=sales_invoice_doc.currency,
+                    ).text = "0.00"
+
+        return invoice
+    except (ValueError, KeyError, TypeError) as e:
+        frappe.throw(
+            _(f"Error occurred in item template advance data processing: {str(e)}")
+        )
         return None
 
 
@@ -899,7 +1344,6 @@ def xml_structuring(invoice):
 
         tree = ET.ElementTree(invoice)
         xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
-
         # Save the XML tree to a file
         with open(xml_file_path, "wb") as file:
             tree.write(file, encoding="utf-8", xml_declaration=True)
@@ -914,23 +1358,30 @@ def xml_structuring(invoice):
 
         # Write the formatted XML to the final file
         final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
+
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)
 
     except (FileNotFoundError, IOError):
         frappe.throw(
-            "File operation error occurred while structuring the XML. "
-            "Please contact your system administrator."
+            _(
+                "File operation error occurred while structuring the XML. "
+                "Please contact your system administrator."
+            )
         )
 
     except ET.ParseError:
         frappe.throw(
-            "Error occurred in XML parsing or formatting. "
-            "Please check the XML structure for errors. "
-            "If the problem persists, contact your system administrator."
+            _(
+                "Error occurred in XML parsing or formatting. "
+                "Please check the XML structure for errors. "
+                "If the problem persists, contact your system administrator."
+            )
         )
     except UnicodeDecodeError:
         frappe.throw(
-            "Encoding error occurred while processing the XML file. "
-            "Please contact your system administrator."
+            _(
+                "Encoding error occurred while processing the XML file. "
+                "Please contact your system administrator."
+            )
         )

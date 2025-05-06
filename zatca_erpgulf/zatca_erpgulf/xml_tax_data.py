@@ -5,6 +5,7 @@ Includes functions for XML parsing, API interactions, and custom handling.
 
 import json
 import xml.etree.ElementTree as ET
+from frappe import _
 import frappe
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -59,13 +60,13 @@ def get_tax_for_item(full_string, item):
         tax_amount = data.get(item, [0, 0])[1]
         return tax_amount, tax_percentage
     except json.JSONDecodeError as e:
-        frappe.throw("JSON decoding error occurred in tax for item: " + str(e))
+        frappe.throw(_("JSON decoding error occurred in tax for item: " + str(e)))
         return None
     except KeyError as e:
-        frappe.throw(f"Key error occurred while accessing item '{item}': " + str(e))
+        frappe.throw(_(f"Key error occurred while accessing item '{item}': " + str(e)))
         return None
     except TypeError as e:
-        frappe.throw("Type error occurred in tax for item: " + str(e))
+        frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
 
 
@@ -81,19 +82,21 @@ def get_tax_total_from_items(sales_invoice_doc):
         return total_tax
     except AttributeError as e:
         frappe.throw(
-            f"AttributeError in get_tax_total_from_items: {str(e)}",
-            TAX_CALCULATION_ERROR,
+            _(
+                f"AttributeError in get_tax_total_from_items: {str(e)}",
+                TAX_CALCULATION_ERROR,
+            )
         )
         return None
     except KeyError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
     except TypeError as e:
         frappe.throw(
-            f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR
+            _(f"KeyError in get_tax_total_from_items: {str(e)}", TAX_CALCULATION_ERROR)
         )
 
         return None
@@ -328,35 +331,89 @@ def tax_data(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             abs(sales_invoice_doc.get("discount_amount", 0.0))
         )
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            total_amount = round(
+                abs(
+                    sales_invoice_doc.total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+        else:
+            total_amount = round(
+                abs(
+                    sales_invoice_doc.base_net_total
+                    - sales_invoice_doc.get("discount_amount", 0.0)
+                )
+                + abs(tax_amount_without_retention),
+                2,
+            )
+
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
+                )
+                cbc_prepaidamount = ET.SubElement(
+                    cac_legalmonetarytotal, "cbc:PrepaidAmount"
+                )
+                cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+                cbc_prepaidamount.text = str(advance_amount)
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
-        if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            cbc_payableamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
-                    )
-                    + abs(tax_amount_without_retention),
-                    2,
+
+        # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        # else:
+        #     cbc_payableamount.text = str(
+        #         round(
+        #             abs(
+        #                 sales_invoice_doc.base_net_total
+        #                 - sales_invoice_doc.get("discount_amount", 0.0)
+        #             )
+        #             + abs(tax_amount_without_retention),
+        #             2,
+        #         )
+        #     )
+        payable_amount = total_amount
+
+        # Check if 'claudion4saudi' app is installed and custom_advances_copy exists
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            # Check if reference_name exists in custom_advances_copy
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                # Calculate advance amount and subtract from total amount
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
                 )
-            )
-        else:
-            cbc_payableamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.base_net_total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
-                    )
-                    + abs(tax_amount_without_retention),
-                    2,
-                )
-            )
+                payable_amount = round(total_amount - advance_amount, 2)
+
+        # Set the final payable amount in the XML
+        cbc_payableamount.text = str(payable_amount)
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data: {str(e)}"))
         return None
 
 
@@ -679,7 +736,21 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         cbc_allowancetotalamount.text = str(
             round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
         )
-
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
+                )
+            cbc_prepaidamount = ET.SubElement(
+                cac_legalmonetarytotal, "cbc:PrepaidAmount"
+            )
+            cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_prepaidamount.text = str(advance_amount)
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
         # cbc_payableamount.text = str(
@@ -695,10 +766,26 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         payable_amount = (abs(total_amount - discount_amount) + tax_amount).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
+
+        # Check if 'claudion4saudi' app is installed and custom_advances_copy exists
+        if (
+            "claudion4saudi" in frappe.get_installed_apps()
+            and hasattr(sales_invoice_doc, "custom_advances_copy")
+            and sales_invoice_doc.custom_advances_copy
+        ):
+            # Check if reference_name exists in custom_advances_copy
+            if sales_invoice_doc.custom_advances_copy[0].reference_name:
+                # Calculate advance amount and subtract from total amount
+                advance_amount = sum(
+                    advance.advance_amount
+                    for advance in sales_invoice_doc.custom_advances_copy
+                )
+                payable_amount = round(tax_inclusive_amount - advance_amount, 2)
+
         cbc_payableamount.text = str(payable_amount)
 
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data template: {str(e)}"))
         return None

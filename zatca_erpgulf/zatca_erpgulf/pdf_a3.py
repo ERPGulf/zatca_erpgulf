@@ -6,6 +6,7 @@ import pikepdf
 import frappe
 import frappe.utils
 from frappe.utils.pdf import get_pdf
+from frappe import _
 from frappe.utils import get_site_path, get_url
 from frappe.model.document import Document
 
@@ -235,8 +236,8 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
         return get_url(file_doc.file_url)
 
     except pikepdf.PdfError as e:
-        frappe.msgprint(f"Error processing the PDF: {e}")
+        frappe.msgprint(_(f"Error processing the PDF: {e}"))
     except FileNotFoundError as e:
-        frappe.msgprint(f"File not found: {e}")
+        frappe.msgprint(_(f"File not found: {e}"))
     except IOError as e:
-        frappe.msgprint(f"I/O error: {e}")  # Step 1: Embed the XML into the input
+        frappe.msgprint(_(f"I/O error: {e}"))  # Step 1: Embed the XML into the input
