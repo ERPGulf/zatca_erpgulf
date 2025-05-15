@@ -1047,6 +1047,9 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                 )
             )
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        if customer_doc.custom_b2c == 0:
+            if not customer_doc.custom_buyer_id:
+                frappe.throw("Customer ID number has to be provided for B2B invoices")
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
@@ -1117,19 +1120,23 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
             )
 
         if sales_invoice_doc.docstatus in [0, 2]:
-            frappe.throw(_(
-                "Please submit the invoice before sending to Zatca: "
-                + str(invoice_number)
-            ))
+            frappe.throw(
+                _(
+                    "Please submit the invoice before sending to Zatca: "
+                    + str(invoice_number)
+                )
+            )
 
         if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw(_("Already submitted to Zakat and Tax Authority"))
 
         if settings.custom_zatca_invoice_enabled != 1:
-            frappe.throw(_(
-                "Zatca Invoice is not enabled in Company Settings,"
-                " Please contact your system administrator"
-            ))
+            frappe.throw(
+                _(
+                    "Zatca Invoice is not enabled in Company Settings,"
+                    " Please contact your system administrator"
+                )
+            )
         # if settings.custom_phase_1_or_2 == "Phase-2":
         is_gpos_installed = "gpos" in frappe.get_installed_apps()
 
@@ -1137,10 +1144,12 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         field_exists = frappe.get_meta("Sales Invoice").has_field("custom_unique_id")
         if is_gpos_installed:
             if sales_invoice_doc.custom_xml and not sales_invoice_doc.custom_qr_code:
-                frappe.throw(_(
-                    "Please provide the 'qr_code' data when 'xml' is filled for invoice: "
-                    + str(invoice_number)
-                ))
+                frappe.throw(
+                    _(
+                        "Please provide the 'qr_code' data when 'xml' is filled for invoice: "
+                        + str(invoice_number)
+                    )
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
             if field_exists and sales_invoice_doc.custom_unique_id:
 
@@ -1212,9 +1221,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
         if not company_abbr:
-            frappe.throw(_(
-                f"Company abbreviation for {sales_invoice_doc.company} not found."
-            ))
+            frappe.throw(
+                _(f"Company abbreviation for {sales_invoice_doc.company} not found.")
+            )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
@@ -1237,10 +1246,12 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         if any_item_has_tax_template:
             for item in sales_invoice_doc.items:
                 if not item.item_tax_template:
-                    frappe.throw(_(
-                        "If any one item has an Item Tax Template,"
-                        " all items must have an Item Tax Template."
-                    ))
+                    frappe.throw(
+                        _(
+                            "If any one item has an Item Tax Template,"
+                            " all items must have an Item Tax Template."
+                        )
+                    )
         tax_categories = set()
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
@@ -1260,30 +1271,40 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         "Exempted",
                         "Services outside scope of tax / Not subject to VAT",
                     ]:
-                        frappe.throw(_(
-                            "Zatca tax category should be 'Zero Rated', 'Exempted', or "
-                            "'Services outside scope of tax / Not subject to VAT' "
-                            "for items with tax rate not equal to 5.00 or 15.00."
-                        ))
+                        frappe.throw(
+                            _(
+                                "Zatca tax category should be 'Zero Rated', 'Exempted', or "
+                                "'Services outside scope of tax / Not subject to VAT' "
+                                "for items with tax rate not equal to 5.00 or 15.00."
+                            )
+                        )
 
                     if (
                         f"{tax_rate:.2f}" == "15.00"
                         and zatca_tax_category != "Standard"
                     ):
-                        frappe.throw(_(
-                            "Check the Zatca category code and enable it as Standard."
-                        ))
+                        frappe.throw(
+                            _(
+                                "Check the Zatca category code and enable it as Standard."
+                            )
+                        )
 
         base_discount_amount = sales_invoice_doc.get("base_discount_amount", 0.0)
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
             and sales_invoice_doc.get("base_discount_amount", 0.0) < 0
         ):
-            frappe.throw(_(
-                "only the document level discount is possible for ZATCA nominal invoices."
-                " Please ensure the discount is applied correctly."
-            ))
+            frappe.throw(
+                _(
+                    "only the document level discount is possible for ZATCA nominal invoices."
+                    " Please ensure the discount is applied correctly."
+                )
+            )
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        if customer_doc.custom_b2c == 0:
+            if not customer_doc.custom_buyer_id:
+                frappe.throw("Customer ID number has to be provided for B2B invoices")
+
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
@@ -1293,55 +1314,71 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     sales_invoice_doc.custom_advances_copy[0].reference_name
                     and customer_doc.custom_b2c == 1
                 ):
-                    frappe.throw(_(
-                        "Advance allocation is supported for non B2C customers. Please change the Customer type to B2B."
-                    ))
+                    frappe.throw(
+                        _(
+                            "Advance allocation is supported for non B2C customers. Please change the Customer type to B2B."
+                        )
+                    )
 
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
             and sales_invoice_doc.get("additional_discount_percentage", 0.0) != 100
         ):
-            frappe.throw(_(
-                "Only a 100% discount is allowed for ZATCA nominal invoices."
-                " Please ensure the additional discount percentage is set to 100."
-            ))
+            frappe.throw(
+                _(
+                    "Only a 100% discount is allowed for ZATCA nominal invoices."
+                    " Please ensure the additional discount percentage is set to 100."
+                )
+            )
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
             and sales_invoice_doc.get("custom_submit_line_item_discount_to_zatca")
         ):
-            frappe.throw(_(
-                "For nominal invoices, please disable line item discounts"
-                " by unchecking 'Submit Line Item Discount to ZATCA'."
-            ))
+            frappe.throw(
+                _(
+                    "For nominal invoices, please disable line item discounts"
+                    " by unchecking 'Submit Line Item Discount to ZATCA'."
+                )
+            )
         if len(tax_categories) > 1 and base_discount_amount > 0:
-            frappe.throw(_(
-                "ZATCA does not respond for multiple items with multiple tax categories "
-                "and a document-level discount. Please ensure all items have the same tax category."
-            ))
+            frappe.throw(
+                _(
+                    "ZATCA does not respond for multiple items with multiple tax categories "
+                    "and a document-level discount. Please ensure all items have the same tax category."
+                )
+            )
         if (
             base_discount_amount > 0
             and sales_invoice_doc.apply_discount_on != "Net Total"
         ):
-            frappe.throw(_(
-                "You cannot apply a discount on the Grand Total as the tax is already calculated. "
-                "Please apply your discount on the Net Total."
-            ))
+            frappe.throw(
+                _(
+                    "You cannot apply a discount on the Grand Total as the tax is already calculated. "
+                    "Please apply your discount on the Net Total."
+                )
+            )
         if not frappe.db.exists("Sales Invoice", invoice_number):
-            frappe.throw(_(
-                f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
-            ))
+            frappe.throw(
+                _(
+                    f"Please save and submit the invoice before sending to ZATCA: {invoice_number}"
+                )
+            )
         if base_discount_amount < 0 and not sales_invoice_doc.is_return:
-            frappe.throw(_(
-                "Additional discount cannot be negative. Please enter a positive value."
-            ))
+            frappe.throw(
+                _(
+                    "Additional discount cannot be negative. Please enter a positive value."
+                )
+            )
         if sales_invoice_doc.docstatus in [0, 2]:
-            frappe.throw(_(
-                f"Please submit the invoice before sending to ZATCA: {invoice_number}"
-            ))
+            frappe.throw(
+                _(
+                    f"Please submit the invoice before sending to ZATCA: {invoice_number}"
+                )
+            )
         if sales_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
-            frappe.throw(_(
-                "This invoice has already been submitted to Zakat and Tax Authority."
-            ))
+            frappe.throw(
+                _("This invoice has already been submitted to Zakat and Tax Authority.")
+            )
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
         # if settings.custom_phase_1_or_2 == "Phase-2":
@@ -1349,10 +1386,12 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         field_exists = frappe.get_meta("Sales Invoice").has_field("custom_unique_id")
         if is_gpos_installed:
             if sales_invoice_doc.custom_xml and not sales_invoice_doc.custom_qr_code:
-                frappe.throw(_(
-                    "Please provide the 'qr_code' field data when have'xml' for invoice: "
-                    + str(invoice_number)
-                ))
+                frappe.throw(
+                    _(
+                        "Please provide the 'qr_code' field data when have'xml' for invoice: "
+                        + str(invoice_number)
+                    )
+                )
         if settings.custom_phase_1_or_2 == "Phase-2":
 
             if field_exists and sales_invoice_doc.custom_unique_id:
