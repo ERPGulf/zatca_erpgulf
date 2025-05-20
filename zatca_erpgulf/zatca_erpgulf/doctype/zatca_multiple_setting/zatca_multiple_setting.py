@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ZatcaMultipleSetting(Document):
+class ZATCAMultipleSetting(Document):
 	pass

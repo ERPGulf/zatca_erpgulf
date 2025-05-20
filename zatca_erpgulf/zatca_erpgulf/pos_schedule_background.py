@@ -210,7 +210,7 @@ def reporting_api_pos_without_xml(
 
         if pos_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
             production_csid = zatca_settings.custom_final_auth_csid
         else:

@@ -48,7 +48,7 @@ def success_log(response, uuid1, invoice_number):
         current_time = frappe.utils.now()
         frappe.get_doc(
             {
-                "doctype": "Zatca ERPgulf Success Log",
+                "doctype": "ZATCA ERPgulf Success Log",
                 "title": "ZATCA invoice call done successfully",
                 "message": "This message by ZATCA Compliance",
                 "uuid": uuid1,
@@ -157,7 +157,7 @@ def get_production_csid(sales_invoice_doc, company_doc):
     """get production csid"""
     if sales_invoice_doc.custom_zatca_pos_name:
         zatca_settings = frappe.get_doc(
-            "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+            "ZATCA Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
         )
         return zatca_settings.custom_final_auth_csid
     return company_doc.custom_basic_auth_from_production
@@ -273,7 +273,7 @@ def update_company_or_pos_settings(sales_invoice_doc, encoded_hash, msg):
     """update_company_or_pos_settings"""
     if sales_invoice_doc.custom_zatca_pos_name:
         zatca_settings = frappe.get_doc(
-            "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+            "ZATCA Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
         )
         if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
             frappe.msgprint(msg)

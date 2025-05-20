@@ -101,7 +101,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
         if pos == 1:
             if not machine:
                 frappe.throw("Machine name is required for offline POS.")
-            doc_type = "Zatca Multiple Setting"
+            doc_type = "ZATCA Multiple Setting"
             doc_name = machine
             doc = frappe.get_doc(doc_type, doc_name)
         else:

@@ -385,7 +385,7 @@ def additional_reference(invoice, company_abbr, pos_invoice_doc):
         # pih = company_doc.custom_pih  # Assuming this is already in the correct format
         if pos_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
             pih = zatca_settings.custom_pih
         else:

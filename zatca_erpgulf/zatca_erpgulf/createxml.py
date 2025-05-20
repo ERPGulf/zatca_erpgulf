@@ -448,7 +448,7 @@ def additional_reference(invoice, company_abbr, sales_invoice_doc):
         # pih = company_doc.custom_pih  # Assuming this is already in the correct format
         if sales_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
             )
             pih = zatca_settings.custom_pih
         else:
@@ -496,9 +496,11 @@ def get_address(sales_invoice_doc, company_doc):
 
         # Ensure the Cost Center has a linked address
         if not cost_center_doc.custom_zatca_branch_address:
-            frappe.throw(_(
-                f"No address is set for the selected Cost Center: {cost_center_doc.name}. Please add an address."
-            ))
+            frappe.throw(
+                _(
+                    f"No address is set for the selected Cost Center: {cost_center_doc.name}. Please add an address."
+                )
+            )
 
         address_list = frappe.get_all(
             "Address",
@@ -861,9 +863,11 @@ def add_document_level_discount_with_tax(invoice, sales_invoice_doc):
         return invoice
 
     except (ET.ParseError, AttributeError, ValueError) as e:
-        frappe.throw(_(
-            f"Error occurred while processing allowance charge data without template: {e}"
-        ))
+        frappe.throw(
+            _(
+                f"Error occurred while processing allowance charge data without template: {e}"
+            )
+        )
         return None
 
 

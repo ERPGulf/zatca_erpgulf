@@ -1,12 +1,12 @@
 // // Copyright (c) 2024, ERPGulf and contributors
 // // For license information, please see license.txt
 
-// // frappe.ui.form.on("Zatca Multiple Setting", {
+// // frappe.ui.form.on("ZATCA Multiple Setting", {
 // // 	refresh(frm) {
 
 // // 	},
 // // });
-// frappe.ui.form.on("Zatca Multiple Setting", {
+// frappe.ui.form.on("ZATCA Multiple Setting", {
 //     refresh(frm) {
 //         // Refresh logic if any
 //     },
@@ -72,7 +72,7 @@
         
 //     }
 // });
-frappe.ui.form.on("Zatca Multiple Setting", {
+frappe.ui.form.on("ZATCA Multiple Setting", {
     refresh(frm) {
         // Refresh logic if any
     },

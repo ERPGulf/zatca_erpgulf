@@ -7,14 +7,14 @@
   "doctype": "Workspace",
   "for_user": "",
   "hide_custom": 0,
-  "icon": null,
-  "indicator_color": "green",
+  "icon": "",
+  "indicator_color": "",
   "is_hidden": 0,
-  "label": "Zatca ERPGulf",
+  "label": "ZATCA ERPGulf",
   "links": [],
-  "modified": "2025-05-19 16:58:55.774486",
+  "modified": "2025-05-20 11:05:46.495419",
   "module": "Zatca Erpgulf",
-  "name": "Zatca ERPGulf",
+  "name": "ZATCA ERPGulf",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
@@ -31,7 +31,7 @@
     "kanban_board": null,
     "label": "ZATCA Setup Wizard",
     "link_to": "setup-zatca-phase-2",
-    "parent": "Zatca ERPGulf",
+    "parent": "ZATCA ERPGulf",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
     "restrict_to_domain": null,
@@ -47,7 +47,7 @@
     "kanban_board": null,
     "label": "Dashboard ",
     "link_to": "zatca-dashboard",
-    "parent": "Zatca ERPGulf",
+    "parent": "ZATCA ERPGulf",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
     "restrict_to_domain": null,
@@ -56,6 +56,6 @@
     "url": null
    }
   ],
-  "title": "Zatca ERPGulf"
+  "title": "ZATCA ERPGulf"
  }
 ]

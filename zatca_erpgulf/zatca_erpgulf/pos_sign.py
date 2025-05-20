@@ -126,7 +126,7 @@ def reporting_api(
         # Directly retrieve the production CSID from the company's document field
         if pos_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
             production_csid = zatca_settings.custom_final_auth_csid
         else:
@@ -341,7 +341,7 @@ def clearance_api(
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if pos_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
             production_csid = zatca_settings.custom_final_auth_csid
         else:

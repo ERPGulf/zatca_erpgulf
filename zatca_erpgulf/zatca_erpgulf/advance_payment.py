@@ -801,7 +801,7 @@ def success_log(response, uuid1, invoice_number):
         current_time = frappe.utils.now()
         frappe.get_doc(
             {
-                "doctype": "Zatca ERPgulf Success Log",
+                "doctype": "ZATCA ERPgulf Success Log",
                 "title": "ZATCA invoice call done successfully",
                 "message": "This message by ZATCA Compliance",
                 "uuid": uuid1,

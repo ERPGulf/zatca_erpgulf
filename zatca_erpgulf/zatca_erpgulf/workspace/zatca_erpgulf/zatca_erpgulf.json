@@ -7,15 +7,16 @@
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 0,
- "idx": 0,
- "indicator_color": "green",
+ "icon": "",
+ "idx": 1,
+ "indicator_color": "",
  "is_hidden": 0,
- "label": "Zatca ERPGulf",
+ "label": "ZATCA ERPGulf",
  "links": [],
- "modified": "2025-05-19 16:58:55.774486",
+ "modified": "2025-05-20 11:05:46.495419",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
- "name": "Zatca ERPGulf",
+ "name": "ZATCA ERPGulf",
  "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
@@ -39,5 +40,5 @@
    "type": "Page"
   }
  ],
- "title": "Zatca ERPGulf"
+ "title": "ZATCA ERPGulf"
 }
