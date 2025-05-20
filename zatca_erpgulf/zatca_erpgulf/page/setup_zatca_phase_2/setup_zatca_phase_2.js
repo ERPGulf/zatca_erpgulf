@@ -134,7 +134,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: "Setup Zatca Phase-2",
+		title: "Setup ZATCA Phase-2",
 		single_column: true,
 	});
 
@@ -146,15 +146,15 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 	const slides_settings = [
 		{
 			name: "welcome",
-			title: __("Zatca Phase 2 Wizard (ERPGulf)"),
+			title: __("ZATCA Phase 2 Wizard (ERPGulf)"),
 			fields: [
 				{
 					fieldtype: "HTML",
 					options: `
 			  <div style="text-align: center;">
 				<img src="/assets/zatca_erpgulf/images/ERPGulf.png" alt="ERPGulf" style="max-width: 120px;">
-				<h2>Zatca Phase 2 Wizard</h2>
-				<p>Fill out the form carefully for successful Zatca Phase 2 Integration</p>
+				<h2>ZATCA Phase 2 Wizard</h2>
+				<p>Fill out the form carefully for successful ZATCA Phase 2 Integration</p>
 			  </div>
 			`,
 				},
@@ -289,7 +289,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		},
 		{
 			name: "integration_type",
-			title: __("Zatca Integration Type"),
+			title: __("ZATCA Integration Type"),
 			fields: [
 				{
 					fieldname: "integration_type",
@@ -617,7 +617,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		
 		{
 			name: "zatca_compliance_check",
-			title: __("Zatca Compliance Check"),
+			title: __("ZATCA Compliance Check"),
 			fields: [
 				// {
 				// 	fieldname: "conditions_section",

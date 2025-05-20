@@ -472,7 +472,7 @@ def create_public_key(company_abbr, source_doc):
                 if not hasattr(zatca_settings, "custom_public_key"):
                     frappe.throw(
                         _(
-                            "Field `custom_public_key` not found in Zatca Multiple Setting Doctype."
+                            "Field `custom_public_key` not found in ZATCA Multiple Setting Doctype."
                         )
                     )
 

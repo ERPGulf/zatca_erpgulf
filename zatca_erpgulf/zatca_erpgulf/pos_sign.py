@@ -185,7 +185,7 @@ def reporting_api(
                     frappe.throw(
                         _(
                             (
-                                "Error: The request you are sending to Zatca is in incorrect format. "
+                                "Error: The request you are sending to ZATCA is in incorrect format. "
                                 "Please report to system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
                                 f"{response.text}"
@@ -216,7 +216,7 @@ def reporting_api(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca Authentication failed."
+                                "Error: ZATCA Authentication failed."
                                 "Your access token may be expired or not valid. "
                                 "Please contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
@@ -248,7 +248,7 @@ def reporting_api(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca server busy or not responding."
+                                "Error: ZATCA server busy or not responding."
                                 " Try after sometime or contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
                                 f"{response.text}"
@@ -268,7 +268,7 @@ def reporting_api(
                     )
                     msg += (
                         f"Status Code: {response.status_code}<br><br>"
-                        f"Zatca Response: {response.text}<br><br>"
+                        f"ZATCA Response: {response.text}<br><br>"
                     )
 
                     company_name = pos_invoice_doc.company
@@ -401,7 +401,7 @@ def clearance_api(
             frappe.throw(
                 _(
                     (
-                        "Error: The request you are sending to Zatca is in incorrect format. "
+                        "Error: The request you are sending to ZATCA is in incorrect format. "
                         f"Status code: {response.status_code}<br><br>"
                         f"{response.text}"
                     )
@@ -428,7 +428,7 @@ def clearance_api(
             frappe.throw(
                 _(
                     (
-                        "Error: Zatca Authentication failed. "
+                        "Error: ZATCA Authentication failed. "
                         f"Status code: {response.status_code}<br><br>"
                         f"{response.text}"
                     )
@@ -454,7 +454,7 @@ def clearance_api(
             )
             frappe.throw(
                 _(
-                    f"Error: Zatca server busy or not responding. Status code: {response.status_code}"
+                    f"Error: ZATCA server busy or not responding. Status code: {response.status_code}"
                 )
             )
 
@@ -466,7 +466,7 @@ def clearance_api(
             )
             msg += (
                 f"Status Code: {response.status_code}<br><br>"
-                f"Zatca Response: {response.text}<br><br>"
+                f"ZATCA Response: {response.text}<br><br>"
             )
 
             # frappe.msgprint(msg)
@@ -656,7 +656,7 @@ def zatca_call(
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.log_error(
-            title="Zatca invoice call failed",
+            title="ZATCA invoice call failed",
             message=f"{frappe.get_traceback()} \n Error: {str(e)}",
         )
 
@@ -787,10 +787,10 @@ def zatca_call_compliance(
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.log_error(
-            title="Zatca invoice call failed",
+            title="ZATCA invoice call failed",
             message=f"{frappe.get_traceback()} \n Error: {str(e)}",
         )
-        frappe.throw(_("Error in Zatca invoice call: " + str(e)))
+        frappe.throw(_("Error in ZATCA invoice call: " + str(e)))
 
 
 @frappe.whitelist(allow_guest=False)
@@ -855,7 +855,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                     ]:
                         frappe.throw(
                             _(
-                                "Zatca tax category should be 'Zero Rated', 'Exempted' or "
+                                "ZATCA tax category should be 'Zero Rated', 'Exempted' or "
                                 "'Services outside scope of tax / Not subject to VAT' for items with "
                                 "tax rate not equal to 5.00 or 15.00."
                             )
@@ -867,7 +867,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                     ):
                         frappe.throw(
                             _(
-                                "Check the Zatca category code and enable it as standard."
+                                "Check the ZATCA category code and enable it as standard."
                             )
                         )
         base_discount_amount = pos_invoice_doc.get("base_discount_amount", 0.0)
@@ -881,7 +881,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
         if not frappe.db.exists("POS Invoice", invoice_number):
             frappe.throw(
                 _(
-                    "Please save and submit the invoice before sending to Zatca: "
+                    "Please save and submit the invoice before sending to ZATCA: "
                     + str(invoice_number)
                 )
             )
@@ -895,7 +895,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
         if pos_invoice_doc.docstatus in [0, 2]:
             frappe.throw(
                 _(
-                    "Please submit the invoice before sending to Zatca: "
+                    "Please submit the invoice before sending to ZATCA: "
                     + str(invoice_number)
                 )
             )
@@ -906,7 +906,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
         if settings.custom_zatca_invoice_enabled != 1:
             frappe.throw(
                 _(
-                    "Zatca Invoice is not enabled in Company Settings, "
+                    "ZATCA Invoice is not enabled in Company Settings, "
                     "Please contact your system administrator"
                 )
             )
@@ -1074,7 +1074,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     ]:
                         frappe.throw(
                             _(
-                                "Zatca tax category should be 'Zero Rated', 'Exempted' or "
+                                "ZATCA tax category should be 'Zero Rated', 'Exempted' or "
                                 "'Services outside scope of tax / Not subject to VAT' for items with "
                                 "tax rate not equal to 5.00 or 15.00."
                             )
@@ -1086,7 +1086,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     ):
                         frappe.throw(
                             _(
-                                "Check the Zatca category code and enable it as standard."
+                                "Check the ZATCA category code and enable it as standard."
                             )
                         )
         base_discount_amount = pos_invoice_doc.get("base_discount_amount", 0.0)
@@ -1102,7 +1102,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         if company_doc.custom_zatca_invoice_enabled != 1:
             frappe.throw(
                 _(
-                    "Zatca Invoice is not enabled in the Company settings,"
+                    "ZATCA Invoice is not enabled in the Company settings,"
                     " Please contact your system administrator"
                 )
             )
@@ -1110,7 +1110,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         if not frappe.db.exists("POS Invoice", invoice_number):
             frappe.throw(
                 _(
-                    "Please save and submit the invoice before sending to Zatca:  "
+                    "Please save and submit the invoice before sending to ZATCA:  "
                     + str(invoice_number)
                 )
             )
@@ -1124,7 +1124,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         if pos_invoice_doc.docstatus in [0, 2]:
             frappe.throw(
                 _(
-                    "Please submit the invoice before sending to Zatca:  "
+                    "Please submit the invoice before sending to ZATCA:  "
                     + str(invoice_number)
                 )
             )

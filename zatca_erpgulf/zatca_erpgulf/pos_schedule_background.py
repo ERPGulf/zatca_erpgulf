@@ -179,7 +179,7 @@ def zatca_call_pos_without_xml_background(
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.log_error(
-            title="Zatca invoice call failed",
+            title="ZATCA invoice call failed",
             message=f"{frappe.get_traceback()} \n Error: {str(e)}",
         )
 
@@ -285,7 +285,7 @@ def reporting_api_pos_without_xml(
                     frappe.throw(
                         _(
                             (
-                                "Error: The request you are sending to Zatca is in incorrect format. "
+                                "Error: The request you are sending to ZATCA is in incorrect format. "
                                 "Please report to system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
                                 f"{response.text}"
@@ -316,7 +316,7 @@ def reporting_api_pos_without_xml(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca Authentication failed."
+                                "Error: ZATCA Authentication failed."
                                 "Your access token may be expired or not valid. "
                                 "Please contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
@@ -348,7 +348,7 @@ def reporting_api_pos_without_xml(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca server busy or not responding."
+                                "Error: ZATCA server busy or not responding."
                                 " Try after sometime or contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br> "
                                 f"{response.text}"
@@ -368,7 +368,7 @@ def reporting_api_pos_without_xml(
                     )
                     msg += (
                         f"Status Code: {response.status_code}<br><br>"
-                        f"Zatca Response: {response.text}<br><br>"
+                        f"ZATCA Response: {response.text}<br><br>"
                     )
                     if pos_invoice_doc.custom_zatca_pos_name:
                         if (
@@ -401,9 +401,9 @@ def reporting_api_pos_without_xml(
                 else:
                     error_log()
             except (ValueError, TypeError, KeyError) as e:
-                frappe.throw(_(
-                    ("Error in reporting API-2 pos without xml " f"error: {str(e)}")
-                ))
+                frappe.throw(
+                    _(("Error in reporting API-2 pos without xml " f"error: {str(e)}"))
+                )
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(_(("Error in reporting API-1 pos without xml" f"error: {str(e)}")))

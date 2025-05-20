@@ -518,7 +518,7 @@ def get_address(pos_invoice_doc, company_doc):
                 filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
             )
             if not address_list:
-                frappe.throw("Zatca requires a proper address. Please add")
+                frappe.throw("ZATCA requires a proper address. Please add")
             if address_list:
                 return address_list[0]
 

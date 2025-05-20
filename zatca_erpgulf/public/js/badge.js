@@ -125,7 +125,7 @@ frappe.ui.form.on('Sales Invoice', {
                     return; // Exit since it's an error
                 }
             
-                let zatcaResponse = JSON.parse(ztcaresponse.match(/Zatca Response: ({.*})/)[1]);
+                let zatcaResponse = JSON.parse(ztcaresponse.match(/ZATCA Response: ({.*})/)[1]);
 
                 const validationResults = zatcaResponse.validationResults || {};
                 const status = validationResults.status; // PASS/WARNINGAILED

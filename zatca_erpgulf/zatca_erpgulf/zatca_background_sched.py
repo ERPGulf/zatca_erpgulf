@@ -236,7 +236,7 @@ def zatca_call_scheduler_background(
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.log_error(
-            title="Zatca invoice call failed",
+            title="ZATCA invoice call failed",
             message=f"{frappe.get_traceback()}\nError: {str(e)}",
         )
 
@@ -335,7 +335,7 @@ def reporting_api_sales_withoutxml(
                     frappe.throw(
                         _(
                             (
-                                "Error: The request you are sending to Zatca is in incorrect format. "
+                                "Error: The request you are sending to ZATCA is in incorrect format. "
                                 "Please report to system administrator. "
                                 f"Status code: {response.status_code}<br><br>"
                                 f"{response.text}"
@@ -366,7 +366,7 @@ def reporting_api_sales_withoutxml(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca Authentication failed. "
+                                "Error: ZATCA Authentication failed. "
                                 "Your access token may be expired or not valid. "
                                 "Please contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br>"
@@ -398,7 +398,7 @@ def reporting_api_sales_withoutxml(
                     frappe.throw(
                         _(
                             (
-                                "Error: Zatca server busy or not responding."
+                                "Error: ZATCA server busy or not responding."
                                 " Try after sometime or contact your system administrator. "
                                 f"Status code: {response.status_code}<br><br>"
                                 f"{response.text}"
@@ -418,7 +418,7 @@ def reporting_api_sales_withoutxml(
                     )
                     msg += (
                         f"Status Code: {response.status_code}<br><br> "
-                        f"Zatca Response: {response.text}<br><br>"
+                        f"ZATCA Response: {response.text}<br><br>"
                     )
 
                     if sales_invoice_doc.custom_zatca_pos_name:

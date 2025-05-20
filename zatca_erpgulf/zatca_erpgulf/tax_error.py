@@ -19,7 +19,7 @@ def validate_sales_invoice_taxes(doc, event=None):
     if is_gpos_installed and field_exists:
         if doc.custom_unique_id and not doc.custom_zatca_pos_name:
             frappe.throw(
-                "ZATCA POS Machine name is missing for invoice, Add Zatca POS machine name"
+                "ZATCA POS Machine name is missing for invoice, Add ZATCA POS machine name"
             )
     customer_doc = frappe.get_doc("Customer", doc.customer)
     # if customer_doc.custom_b2c != 1:

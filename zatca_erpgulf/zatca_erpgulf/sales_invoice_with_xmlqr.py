@@ -47,8 +47,8 @@ def success_log(response, uuid1, invoice_number):
         frappe.get_doc(
             {
                 "doctype": "Zatca ERPgulf Success Log",
-                "title": "Zatca invoice call done successfully",
-                "message": "This message by Zatca Compliance",
+                "title": "ZATCA invoice call done successfully",
+                "message": "This message by ZATCA Compliance",
                 "uuid": uuid1,
                 "invoice_number": invoice_number,
                 "time": current_time,
@@ -64,7 +64,7 @@ def error_log():
     """defining the error log"""
     try:
         frappe.log_error(
-            title="Zatca invoice call failed in clearance status",
+            title="ZATCA invoice call failed in clearance status",
             message=frappe.get_traceback(),
         )
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
@@ -191,7 +191,7 @@ def reporting_api_xml_sales_invoice(
                 frappe.throw(
                     _(
                         (
-                            "Error: The request you are sending to Zatca is in incorrect format. "
+                            "Error: The request you are sending to ZATCA is in incorrect format. "
                             "Please report to system administrator. "
                             f"Status code: {response.status_code}<br><br>"
                             f"{response.text}"
@@ -219,7 +219,7 @@ def reporting_api_xml_sales_invoice(
                 frappe.throw(
                     _(
                         (
-                            "Error: Zatca Authentication failed. "
+                            "Error: ZATCA Authentication failed. "
                             "Your access token may be expired or not valid. "
                             "Please contact your system administrator. "
                             f"Status code: {response.status_code}<br><br>"
@@ -248,7 +248,7 @@ def reporting_api_xml_sales_invoice(
                 frappe.throw(
                     _(
                         (
-                            "Error: Zatca server busy or not responding."
+                            "Error: ZATCA server busy or not responding."
                             " Try after sometime or contact your system administrator. "
                             f"Status code: {response.status_code}<br><br>"
                             f"{response.text}"
@@ -268,7 +268,7 @@ def reporting_api_xml_sales_invoice(
                 )
                 msg += (
                     f"Status Code: {response.status_code}<br><br> "
-                    f"Zatca Response: {response.text}<br><br>"
+                    f"ZATCA Response: {response.text}<br><br>"
                 )
                 if sales_invoice_doc.custom_zatca_pos_name:
                     if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:

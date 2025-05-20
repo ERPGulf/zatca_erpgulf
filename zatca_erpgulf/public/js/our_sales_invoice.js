@@ -76,7 +76,7 @@ frappe.realtime.on('hide_gif', () => {
 frappe.ui.form.on("Sales Invoice", {
     refresh: function (frm) {
         if (frm.doc.docstatus === 1 && !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status)) {
-            frm.add_custom_button(__("Send invoice to Zatca"), function () {
+            frm.add_custom_button(__("Send invoice to ZATCA"), function () {
                 frm.call({
                     method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
                     args: {
@@ -93,7 +93,7 @@ frappe.ui.form.on("Sales Invoice", {
 
 
                 });
-            }, __("Zatca Phase-2"));
+            }, __("ZATCA Phase-2"));
         }
         frm.page.add_menu_item(__('Print PDF-A3'), function () {
             // Create a dialog box with fields for Print Format, Letterhead, and Language
