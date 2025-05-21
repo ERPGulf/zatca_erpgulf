@@ -966,7 +966,7 @@ def compliance_api_call(
         if response.status_code != 200:
             frappe.throw(_(f"Error in compliance: {response.text}"))
         if response.status_code != 202:
-            frappe.throw(_(f"Warning from zatca in compliance: {response.text}"))
+            frappe.throw(_(f"Warning from ZATCA in compliance: {response.text}"))
 
         return response.text
     except requests.exceptions.RequestException as e:

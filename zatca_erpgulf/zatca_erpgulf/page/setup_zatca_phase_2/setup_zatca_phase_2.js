@@ -134,7 +134,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: "Setup Zatca Phase-2",
+		title: "Setup ZATCA Phase-2",
 		single_column: true,
 	});
 
@@ -146,15 +146,15 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 	const slides_settings = [
 		{
 			name: "welcome",
-			title: __("Zatca Phase 2 Wizard (ERPGulf)"),
+			title: __("ZATCA Phase 2 Wizard (ERPGulf)"),
 			fields: [
 				{
 					fieldtype: "HTML",
 					options: `
 			  <div style="text-align: center;">
 				<img src="/assets/zatca_erpgulf/images/ERPGulf.png" alt="ERPGulf" style="max-width: 120px;">
-				<h2>Zatca Phase 2 Wizard</h2>
-				<p>Fill out the form carefully for successful Zatca Phase 2 Integration</p>
+				<h2>ZATCA Phase 2 Wizard</h2>
+				<p>Fill out the form carefully for successful ZATCA Phase 2 Integration</p>
 			  </div>
 			`,
 				},
@@ -264,7 +264,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 					fieldname: "select_machine",
 					label: __("Select Machine"),
 					fieldtype: "Link",
-					options: "Zatca Multiple Setting",
+					options: "ZATCA Multiple Setting",
 					hidden: true, // Initially hidden
 					onchange: function () {
 						const selectedMachine = this.get_value();
@@ -289,7 +289,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		},
 		{
 			name: "integration_type",
-			title: __("Zatca Integration Type"),
+			title: __("ZATCA Integration Type"),
 			fields: [
 				{
 					fieldname: "integration_type",
@@ -429,7 +429,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 										: null;
 									if (portal_type && company_abbr) {
 										const doctype = isOfflinePOS
-											? "Zatca Multiple Setting"
+											? "ZATCA Multiple Setting"
 											: "Company";
 											
 										const name = isOfflinePOS
@@ -521,7 +521,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							}
 						}
 						// Step 1: Save the OTP in the company document
-						const doctype = isOfflinePOS ? "Zatca Multiple Setting" : "Company";
+						const doctype = isOfflinePOS ? "ZATCA Multiple Setting" : "Company";
                 		const name = isOfflinePOS ? selectedMachine : selected_company;
 						frappe.call({
 							method: "frappe.client.set_value",
@@ -558,7 +558,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 												if (portal_type && company_abbr) {
 													const doctype = isOfflinePOS
-													? "Zatca Multiple Setting"
+													? "ZATCA Multiple Setting"
 													: "Company";
 												const name = isOfflinePOS
 													? selectedMachine
@@ -617,7 +617,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		
 		{
 			name: "zatca_compliance_check",
-			title: __("Zatca Compliance Check"),
+			title: __("ZATCA Compliance Check"),
 			fields: [
 				// {
 				// 	fieldname: "conditions_section",
@@ -659,7 +659,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							}
 							const isOfflinePOS = slideData["select_company_is_offline_pos"];
 							const selectedMachine = slideData["selected_machine"] ;
-							const doctype = isOfflinePOS? "Zatca Multiple Setting": "Company";
+							const doctype = isOfflinePOS? "ZATCA Multiple Setting": "Company";
 							const name = isOfflinePOS? selectedMachine: selected_company;
 							
 		
@@ -775,7 +775,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 									if (company_abbr) {
 										const doctype = isOfflinePOS
-										? "Zatca Multiple Setting"
+										? "ZATCA Multiple Setting"
 										: "Company";
 									const name = isOfflinePOS
 										? selectedMachine
@@ -836,7 +836,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
                         <h2 style="color: green;">✅ SUCCESS!</h2>
                         <p>You have successfully finished <strong>ZATCA Phase-2</strong> on-boarding.</p>
                         <p>You can now send invoices to ZATCA as they get submitted.</p>
-                        <p>If you want to make any changes to ZATCA settings, please use the <strong>"Zatca Setting"</strong> inside the <strong>Company</strong> master.</p>
+                        <p>If you want to make any changes to ZATCA settings, please use the <strong>"ZATCA Setting"</strong> inside the <strong>Company</strong> master.</p>
                     </div>
 					`,
 				},
@@ -864,9 +864,9 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						},
 						callback: function (response) {
 							if (response && response.message) {
-								console.log(__("✅ 'Zatca Invoice Enabled' has been activated for the company."));
+								console.log(__("✅ 'ZATCA Invoice Enabled' has been activated for the company."));
 							} else {
-								frappe.msgprint(__("⚠️ Failed to enable 'Zatca Invoice'. Please check logs."));
+								frappe.msgprint(__("⚠️ Failed to enable 'ZATCA Invoice'. Please check logs."));
 							}
 			
 							// Proceed to next slide after setting the value
@@ -1061,7 +1061,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			removeTooltips();
 		});
 		if (slide.name === "create_csr") {
-			const doctype = slideData["select_company_is_offline_pos"] ? "Zatca Multiple Setting" : "Company";
+			const doctype = slideData["select_company_is_offline_pos"] ? "ZATCA Multiple Setting" : "Company";
     		const name = slideData["select_company_is_offline_pos"] ? slideData["selected_machine"] : selected_company;
 			dialog.set_value("csr_config_box", csr_config.replace(/^\s+|\s+$/gm, ""));
 
@@ -1118,7 +1118,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 	}
 
 	function submit_wizard(values) {
-		frappe.msgprint(__("Thank You! Successfully completed Zatca Phase 2 integration."));
+		frappe.msgprint(__("Thank You! Successfully completed ZATCA Phase 2 integration."));
 	}
 
 	render_slide(slides_settings[current_slide_index]);

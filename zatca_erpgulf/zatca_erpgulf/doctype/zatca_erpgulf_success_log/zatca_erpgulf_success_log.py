@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ZatcaERPgulfSuccessLog(Document):
+class ZATCAERPGulfSuccessLog(Document):
 	pass

@@ -133,8 +133,8 @@ def create_private_keys(company_abbr, zatca_doc):
 
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
-        if doc.doctype == "Zatca Multiple Setting":
-            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+        if doc.doctype == "ZATCA Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("ZATCA Multiple Setting", doc.name)
         elif doc.doctype == "Company":
             company_name = frappe.db.get_value(
                 "Company", {"abbr": company_abbr}, "name"
@@ -146,7 +146,7 @@ def create_private_keys(company_abbr, zatca_doc):
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),
         )
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             multiple_setting_doc.custom_private_key = private_key_pem.decode("utf-8")
             multiple_setting_doc.save(ignore_permissions=True)
         elif doc.doctype == "Company":
@@ -188,7 +188,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
         # Fetch CSR data based on document type
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             csr_values = get_csr_data_multiple(doc)
             # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
         elif doc.doctype == "Company":
@@ -219,7 +219,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
             customoid = encode_customoid("PREZATCA-Code-Signing")
         else:
             customoid = encode_customoid("ZATCA-Code-Signing")
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             private_key_pem = create_private_keys(doc, zatca_doc)
             # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
         elif doc.doctype == "Company":
@@ -279,8 +279,8 @@ def create_csr(zatca_doc, portal_type, company_abbr):
         mycsr = csr.public_bytes(serialization.Encoding.PEM)
         base64csr = base64.b64encode(mycsr)
         encoded_string = base64csr.decode("utf-8")
-        if doc.doctype == "Zatca Multiple Setting":
-            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+        if doc.doctype == "ZATCA Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("ZATCA Multiple Setting", doc.name)
             multiple_setting_doc.custom_csr_data = encoded_string.strip()
             multiple_setting_doc.save(ignore_permissions=True)
         elif doc.doctype == "Company":
@@ -333,8 +333,8 @@ def create_csid(zatca_doc, company_abbr):
             )
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
-        if doc.doctype == "Zatca Multiple Setting":
-            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+        if doc.doctype == "ZATCA Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("ZATCA Multiple Setting", doc.name)
             csr_data_str = multiple_setting_doc.get("custom_csr_data", "")
         elif doc.doctype == "Company":
             company_name = frappe.db.get_value(
@@ -355,7 +355,7 @@ def create_csid(zatca_doc, company_abbr):
 
         payload = json.dumps({"csr": csr_contents})
         # frappe.msgprint(f"Using OTP: {company_doc.custom_otp}")
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             otp = multiple_setting_doc.get("custom_otp", "")
             # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
         elif doc.doctype == "Company":
@@ -395,7 +395,7 @@ def create_csid(zatca_doc, company_abbr):
 
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
         encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             multiple_setting_doc.custom_certficate = base64.b64decode(
                 data["binarySecurityToken"]
             ).decode("utf-8")
@@ -436,7 +436,7 @@ def create_public_key(company_abbr, source_doc):
                     # Fetch Zatca settings and use its certificate
 
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate", "")
                 else:
@@ -466,13 +466,13 @@ def create_public_key(company_abbr, source_doc):
         if source_doc.doctype in SUPPORTED_INVOICES:
             if source_doc.custom_zatca_pos_name:
                 zatca_settings = frappe.get_doc(
-                    "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                    "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                 )
 
                 if not hasattr(zatca_settings, "custom_public_key"):
                     frappe.throw(
                         _(
-                            "Field `custom_public_key` not found in Zatca Multiple Setting Doctype."
+                            "Field `custom_public_key` not found in ZATCA Multiple Setting Doctype."
                         )
                     )
 
@@ -574,7 +574,7 @@ def digital_signature(hash1, company_abbr, source_doc):
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     private_key_data_str = zatca_settings.get("custom_private_key")
                 else:
@@ -614,7 +614,7 @@ def extract_certificate_details(company_abbr, source_doc):
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate")
                 else:
@@ -664,7 +664,7 @@ def certificate_hash(company_abbr, source_doc):
                 # Use certificate from the company document for Sales Invoice
                 if source_doc.custom_zatca_pos_name:
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate", "")
                 else:
@@ -820,7 +820,7 @@ def populate_the_ubl_extensions_output(
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_data_str = zatca_settings.get("custom_certficate")
                 else:
@@ -877,7 +877,7 @@ def extract_public_key_data(company_abbr, source_doc):
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     public_key_pem = zatca_settings.get("custom_public_key", "")
                 else:
@@ -954,7 +954,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
                 if source_doc.custom_zatca_pos_name:
                     # Fetch Zatca settings and use its certificate
                     zatca_settings = frappe.get_doc(
-                        "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                        "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
                     certificate_content = zatca_settings.custom_certficate or ""
                 else:
@@ -1180,7 +1180,7 @@ def compliance_api_call(
             and source_doc.custom_zatca_pos_name
         ):
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", source_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
             )
             csid = zatca_settings.custom_basic_auth_from_csid
         else:
@@ -1238,8 +1238,8 @@ def production_csid(zatca_doc, company_abbr):
             )
         # Fetch the document based on doctype and name
         doc = frappe.get_doc(zatca_doc.get("doctype"), zatca_doc.get("name"))
-        if doc.doctype == "Zatca Multiple Setting":
-            multiple_setting_doc = frappe.get_doc("Zatca Multiple Setting", doc.name)
+        if doc.doctype == "ZATCA Multiple Setting":
+            multiple_setting_doc = frappe.get_doc("ZATCA Multiple Setting", doc.name)
             csid = multiple_setting_doc.custom_basic_auth_from_csid
             request_id = multiple_setting_doc.custom_compliance_request_id_
         elif doc.doctype == "Company":
@@ -1285,7 +1285,7 @@ def production_csid(zatca_doc, company_abbr):
         data = response.json()
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]
         encoded_value = base64.b64encode(concatenated_value.encode()).decode()
-        if doc.doctype == "Zatca Multiple Setting":
+        if doc.doctype == "ZATCA Multiple Setting":
             multiple_setting_doc.custom_certificate = base64.b64decode(
                 data["binarySecurityToken"]
             ).decode("utf-8")

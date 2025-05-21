@@ -1,7 +1,7 @@
 // Copyright (c) 2024, ERPGulf and contributors
 // For license information, please see license.txt
 
-// frappe.ui.form.on("Zatca ERPgulf Success Log", {
+// frappe.ui.form.on("ZATCA ERPGulf Success Log", {
 // 	refresh(frm) {
 
 // 	},

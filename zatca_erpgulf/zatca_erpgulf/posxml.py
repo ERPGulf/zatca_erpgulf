@@ -385,7 +385,7 @@ def additional_reference(invoice, company_abbr, pos_invoice_doc):
         # pih = company_doc.custom_pih  # Assuming this is already in the correct format
         if pos_invoice_doc.custom_zatca_pos_name:
             zatca_settings = frappe.get_doc(
-                "Zatca Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
             pih = zatca_settings.custom_pih
         else:
@@ -518,7 +518,7 @@ def get_address(pos_invoice_doc, company_doc):
                 filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
             )
             if not address_list:
-                frappe.throw("Zatca requires a proper address. Please add")
+                frappe.throw("ZATCA requires a proper address. Please add")
             if address_list:
                 return address_list[0]
 
