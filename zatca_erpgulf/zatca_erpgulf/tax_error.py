@@ -25,6 +25,7 @@ def validate_sales_invoice_taxes(doc, event=None):
     # if customer_doc.custom_b2c != 1:
     #     frappe.throw("This customer should be B2C for Background")
     company_doc = frappe.get_doc("Company", doc.company)
+
     if (
         customer_doc.custom_b2c != 1
         and company_doc.custom_send_invoice_to_zatca == "Background"

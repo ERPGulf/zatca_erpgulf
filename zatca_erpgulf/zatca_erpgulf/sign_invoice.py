@@ -23,6 +23,7 @@ from zatca_erpgulf.zatca_erpgulf.createxml import (
     add_document_level_discount_with_tax,
     company_data,
     customer_data,
+    get_address,
     invoice_typecode_compliance,
     add_nominal_discount_tax,
     doc_reference_compliance,
@@ -971,6 +972,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         company_name = sales_invoice_doc.company
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
         if (
             sales_invoice_doc.taxes
@@ -1033,6 +1035,34 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                                 "Check the ZATCA category code and enable it as standard."
                             )
                         )
+        if not company_doc.tax_id:
+            frappe.throw(_("Company Tax ID is mandatory for ZATCA"))
+        if company_doc.tax_id and not (
+            company_doc.tax_id.isdigit() and len(company_doc.tax_id) == 15
+        ):
+            frappe.throw(_("Company Tax ID must be a 15-digit number for ZATCA "))
+        address = get_address(sales_invoice_doc, company_doc)
+        if not address.address_line1:
+            frappe.throw(_("Address Line 1 is required in the company address."))
+
+        if not address.address_line2:
+            frappe.throw(_("Address Line 2 is required in the company address."))
+
+        if (
+            not address.custom_building_number
+            or not address.custom_building_number.isdigit()
+            or len(address.custom_building_number) != 4
+        ):
+            frappe.throw(
+                _("Building Number must be exactly 4 digitsin company address.")
+            )
+
+        if (
+            not address.pincode
+            or not address.pincode.isdigit()
+            or len(address.pincode) != 5
+        ):
+            frappe.throw(_("Pincode must be exactly 5 digits in company address."))
         base_discount_amount = sales_invoice_doc.get("base_discount_amount", 0.0)
         if (
             sales_invoice_doc.custom_zatca_nominal_invoice == 1
@@ -1050,6 +1080,50 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
                 frappe.throw("Customer ID number has to be provided for B2B invoices")
+        address = None
+        if customer_doc.custom_b2c != 1:
+            if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
+                if sales_invoice_doc.customer_address:
+                    address = frappe.get_doc(
+                        "Address", sales_invoice_doc.customer_address
+                    )
+            else:
+                if customer_doc.customer_primary_address:
+                    address = frappe.get_doc(
+                        "Address", customer_doc.customer_primary_address
+                    )
+
+            if not address:
+                frappe.throw(_("Customer address is mandatory for non-B2C customers."))
+
+            # ZATCA-required field validation
+            if not address.address_line1:
+                frappe.throw(_("Address Line 1 is required in customer address."))
+            if not address.address_line2:
+                frappe.throw(_("Address Line 2 is required in customer address."))
+            if (
+                not address.custom_building_number
+                or not address.custom_building_number.isdigit()
+                or len(address.custom_building_number) != 4
+            ):
+                frappe.throw(
+                    _("Building Number must be exactly 4 digits in customer address.")
+                )
+            if (
+                not address.pincode
+                or not address.pincode.isdigit()
+                or len(address.pincode) != 5
+            ):
+                frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+            # if customer_doc.custom_b2c != 1:
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
+
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
@@ -1225,6 +1299,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 _(f"Company abbreviation for {sales_invoice_doc.company} not found.")
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
@@ -1300,11 +1375,81 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     " Please ensure the discount is applied correctly."
                 )
             )
+        if not company_doc.tax_id:
+            frappe.throw(_("Company Tax ID is mandatory for ZATCA"))
+        if company_doc.tax_id and not (
+            company_doc.tax_id.isdigit() and len(company_doc.tax_id) == 15
+        ):
+            frappe.throw(_("Company Tax ID must be a 15-digit number for ZATCA "))
+        address = get_address(sales_invoice_doc, company_doc)
+        if not address.address_line1:
+            frappe.throw(_("Address Line 1 is required in the company address."))
+
+        if not address.address_line2:
+            frappe.throw(_("Address Line 2 is required in the company address."))
+
+        if (
+            not address.custom_building_number
+            or not address.custom_building_number.isdigit()
+            or len(address.custom_building_number) != 4
+        ):
+            frappe.throw(
+                _("Building Number must be exactly 4 digitsin company address.")
+            )
+
+        if (
+            not address.pincode
+            or not address.pincode.isdigit()
+            or len(address.pincode) != 5
+        ):
+            frappe.throw(_("Pincode must be exactly 5 digits in company address."))
+
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
                 frappe.throw("Customer ID number has to be provided for B2B invoices")
+        address = None
+        if customer_doc.custom_b2c != 1:
+            if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
+                if sales_invoice_doc.customer_address:
+                    address = frappe.get_doc(
+                        "Address", sales_invoice_doc.customer_address
+                    )
+            else:
+                if customer_doc.customer_primary_address:
+                    address = frappe.get_doc(
+                        "Address", customer_doc.customer_primary_address
+                    )
 
+            if not address:
+                frappe.throw(_("Customer address is mandatory for non-B2C customers."))
+
+            # ZATCA-required field validation
+            if not address.address_line1:
+                frappe.throw(_("Address Line 1 is required in customer address."))
+            if not address.address_line2:
+                frappe.throw(_("Address Line 2 is required in customer address."))
+            if (
+                not address.custom_building_number
+                or not address.custom_building_number.isdigit()
+                or len(address.custom_building_number) != 4
+            ):
+                frappe.throw(
+                    _("Building Number must be exactly 4 digits in customer address.")
+                )
+            if (
+                not address.pincode
+                or not address.pincode.isdigit()
+                or len(address.pincode) != 5
+            ):
+                frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
