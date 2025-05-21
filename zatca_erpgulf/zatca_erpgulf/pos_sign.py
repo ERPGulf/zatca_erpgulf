@@ -1127,6 +1127,14 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 or len(address.pincode) != 5
             ):
                 frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
+
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if not company_doc.tax_id:
             frappe.throw(_("Company Tax ID is mandatory for ZATCA"))

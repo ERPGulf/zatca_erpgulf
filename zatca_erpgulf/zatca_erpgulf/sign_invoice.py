@@ -1115,6 +1115,15 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                 or len(address.pincode) != 5
             ):
                 frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+            # if customer_doc.custom_b2c != 1:
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
+
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
@@ -1434,6 +1443,13 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 or len(address.pincode) != 5
             ):
                 frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
