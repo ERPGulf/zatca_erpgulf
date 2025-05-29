@@ -831,7 +831,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
             if any(item.item_tax_template for item in pos_invoice_doc.items):
                 frappe.throw(
                     _(
-                        "Item Tax Template cannot be used when taxes are included in "
+                        "As per ZATCA regulation,Item Tax Template cannot be used when taxes are included in "
                         "the print rate. Please remove Item Tax Templates."
                     )
                 )
@@ -856,7 +856,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                     ]:
                         frappe.throw(
                             _(
-                                "ZATCA tax category should be 'Zero Rated', 'Exempted' or "
+                                "As per ZATCA regulation, ZATCA tax category should be 'Zero Rated', 'Exempted' or "
                                 "'Services outside scope of tax / Not subject to VAT' for items with "
                                 "tax rate not equal to 5.00 or 15.00."
                             )
@@ -868,14 +868,14 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                     ):
                         frappe.throw(
                             _(
-                                "Check the ZATCA category code and enable it as standard."
+                                "As per ZATCA regulation, Check the ZATCA category code and enable it as standard."
                             )
                         )
         base_discount_amount = pos_invoice_doc.get("base_discount_amount", 0.0)
         if len(tax_categories) > 1 and base_discount_amount > 0:
             frappe.throw(
                 _(
-                    "ZATCA does not respond for multiple items with multiple tax categories"
+                    "As per ZATCA regulation, ZATCA does not respond for multiple items with multiple tax categories"
                     " with doc-level discount. Please ensure all items have the same tax category."
                 )
             )
@@ -1050,7 +1050,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             if any(item.item_tax_template for item in pos_invoice_doc.items):
                 frappe.throw(
                     _(
-                        "Item Tax Template cannot be used when taxes are included in "
+                        "As per ZATCA regulation, Item Tax Template cannot be used when taxes are included in "
                         "the print rate. Please remove Item Tax Templates."
                     )
                 )
@@ -1075,7 +1075,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     ]:
                         frappe.throw(
                             _(
-                                "ZATCA tax category should be 'Zero Rated', 'Exempted' or "
+                                "As per ZATCA regulation, ZATCA tax category should be 'Zero Rated', 'Exempted' or "
                                 "'Services outside scope of tax / Not subject to VAT' for items with "
                                 "tax rate not equal to 5.00 or 15.00."
                             )
@@ -1087,12 +1087,17 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     ):
                         frappe.throw(
                             _(
-                                "Check the ZATCA category code and enable it as standard."
+                                "As per ZATCA regulation,Check the ZATCA category code and enable it as standard."
                             )
                         )
 
         address = None
         customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
+        if customer_doc.custom_b2c == 0:
+            if not customer_doc.custom_buyer_id:
+                frappe.throw(
+                    "As per ZATCA regulation- For B2B Customers, customer CR number has to be provided"
+                )
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
                 if pos_invoice_doc.customer_address:
@@ -1106,48 +1111,84 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     )
 
             if not address:
-                frappe.throw(_("Customer address is mandatory for non-B2C customers."))
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Customer address is mandatory for non-B2C customers."
+                    )
+                )
 
             # ZATCA-required field validation
             if not address.address_line1:
-                frappe.throw(_("Address Line 1 is required in customer address."))
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Address Line 1 is required in customer address."
+                    )
+                )
             if not address.address_line2:
-                frappe.throw(_("Address Line 2 is required in customer address."))
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation,Address Line 2 is required in customer address."
+                    )
+                )
             if (
                 not address.custom_building_number
                 or not address.custom_building_number.isdigit()
                 or len(address.custom_building_number) != 4
             ):
                 frappe.throw(
-                    _("Building Number must be exactly 4 digits in customer address.")
+                    _(
+                        "As per ZATCA regulation, Building Number must be exactly 4 digits in customer address."
+                    )
                 )
             if (
                 not address.pincode
                 or not address.pincode.isdigit()
                 or len(address.pincode) != 5
             ):
-                frappe.throw(_("Pincode must be exactly 5 digits in customer address."))
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Pincode must be exactly 5 digits in customer address."
+                    )
+                )
             if address and address.country == "Saudi Arabia":
                 if not customer_doc.tax_id:
-                    frappe.throw(_("Tax ID is required for customers in Saudi Arabia."))
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulation, Tax ID is required for customers in Saudi Arabia."
+                        )
+                    )
                 elif (
                     not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
                 ):
-                    frappe.throw(_("Customer Tax ID must be exactly 15 digits."))
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulation, Customer Tax ID must be exactly 15 digits."
+                        )
+                    )
 
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if not company_doc.tax_id:
-            frappe.throw(_("Company Tax ID is mandatory for ZATCA"))
+            frappe.throw(_("As per ZATCA regulation, Company Tax ID is mandatory"))
         if company_doc.tax_id and not (
             company_doc.tax_id.isdigit() and len(company_doc.tax_id) == 15
         ):
-            frappe.throw(_("Company Tax ID must be a 15-digit number for ZATCA "))
+            frappe.throw(
+                _("As per ZATCA regulation, Company Tax ID must be a 15-digit number")
+            )
         address = get_address(pos_invoice_doc, company_doc)
         if not address.address_line1:
-            frappe.throw(_("Address Line 1 is required in the company address."))
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, Address Line 1 is required in the company address."
+                )
+            )
 
         if not address.address_line2:
-            frappe.throw(_("Address Line 2 is required in the company address."))
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, Address Line 2 is required in the company address."
+                )
+            )
 
         if (
             not address.custom_building_number
@@ -1155,7 +1196,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             or len(address.custom_building_number) != 4
         ):
             frappe.throw(
-                _("Building Number must be exactly 4 digitsin company address.")
+                _(
+                    "As per ZATCA regulation, Building Number must be exactly 4 digitsin company address."
+                )
             )
 
         if (
@@ -1163,12 +1206,16 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             or not address.pincode.isdigit()
             or len(address.pincode) != 5
         ):
-            frappe.throw(_("Pincode must be exactly 5 digits in company address."))
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation,Pincode must be exactly 5 digits in company address."
+                )
+            )
         base_discount_amount = pos_invoice_doc.get("base_discount_amount", 0.0)
         if len(tax_categories) > 1 and base_discount_amount > 0:
             frappe.throw(
                 _(
-                    "ZATCA does not respond for multiple items with multiple tax categories "
+                    "As per ZATCA regulation, ZATCA does not respond for multiple items with multiple tax categories "
                     "with doc-level discount. Please ensure all items have the same tax category."
                 )
             )
