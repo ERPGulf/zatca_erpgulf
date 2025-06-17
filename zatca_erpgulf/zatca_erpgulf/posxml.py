@@ -831,8 +831,10 @@ def add_document_level_discount_with_tax_template(invoice, pos_invoice_doc):
             cbc_id.text = "O"
         else:
             frappe.throw(
-                "Invalid VAT category code. Must be one of 'Standard', 'Zero Rated', 'Exempted', "
-                "or 'Services outside scope of tax / Not subject to VAT'."
+                "Invalid or missing ZATCA VAT category in the Item Tax Template " 
+                "linked to Sales Invoice Item. Ensure each Item Tax Template " 
+                "includes one of the following categories: "
+                "'Standard', 'Zero Rated', 'Exempted', or 'Services outside scope of tax / Not subject to VAT'."
             )
 
         cbc_percent = ET.SubElement(cac_taxcategory, "cbc:Percent")
