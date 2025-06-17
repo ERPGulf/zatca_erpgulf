@@ -87,5 +87,3 @@ For implementation support or customization, contact:
 👥 Social
 
 🚀 Now you’re ready to be fully ZATCA-compliant! 🎯
-
-Let me know if you need any further modifications! 😊🔥
