@@ -266,3 +266,47 @@ frappe.ui.form.on('Sales Invoice', {
     }
 });
 
+frappe.ui.form.on('Sales Invoice', {
+    refresh(frm) {
+        const response = frm.doc.custom_zatca_full_response;
+        if (!response) return;
+
+        try {
+            const json_start = response.indexOf('{');
+            const zatca = JSON.parse(response.slice(json_start));
+
+            const errors = zatca?.validationResults?.errorMessages || [];
+            const warnings = zatca?.validationResults?.warningMessages || [];
+
+            if (errors.length || warnings.length) {
+                let combined_html = "";
+
+                // Errors (in red)
+                if (errors.length) {
+                    combined_html += `<div style="color:#b71c1c; font-weight:bold;">Errors:</div>`;
+                    combined_html += `<div style="color:#b71c1c;">` + errors.map(e =>
+                        `<div style="margin-left:10px;"><b>${e.code}</b>: ${e.message}</div>`
+                    ).join('') + `</div>`;
+                }
+
+                // Warnings (fully orange)
+                if (warnings.length) {
+                    combined_html += `<div style="color:#ef6c00; font-weight:bold; margin-top:10px;">Warnings:</div>`;
+                    combined_html += `<div style="color:#ef6c00;">` + warnings.map(w =>
+                        `<div style="margin-left:10px;"><b>${w.code}</b>: ${w.message}</div>`
+                    ).join('') + `</div>`;
+                }
+
+                frm.dashboard.set_headline_alert(combined_html, 'orange');
+            }
+
+        } catch (e) {
+            if (response.includes("Error:")) {
+                frm.dashboard.set_headline_alert(response, 'red');
+            } else if (response.includes("Warning:")) {
+                frm.dashboard.set_headline_alert(response, 'orange');
+            }
+        }
+    }
+});
+
