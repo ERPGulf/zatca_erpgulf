@@ -21,6 +21,58 @@ frappe.realtime.on('show_gif', (data) => {
 });
 
 
+frappe.ui.form.on('POS Invoice', {
+    refresh(frm) {
+        const response = frm.doc.custom_zatca_full_response;
+        if (!response) return;
+
+        try {
+            // Find start and end of JSON
+            const json_start = response.indexOf('{');
+            const json_end = response.lastIndexOf('}');
+
+            if (json_start === -1 || json_end === -1 || json_end <= json_start) {
+                // frappe.msgprint("⚠️ ZATCA JSON not found in response.");
+                return;
+            }
+
+            const json_string = response.slice(json_start, json_end + 1);
+            const zatca = JSON.parse(json_string);  // Safe now
+
+            const errors = zatca?.validationResults?.errorMessages || [];
+            const warnings = zatca?.validationResults?.warningMessages || [];
+
+            if (errors.length || warnings.length) {
+                let combined_html = "";
+
+                if (errors.length) {
+                    combined_html += `<div style="color:#b71c1c; font-weight:bold;">Errors:</div>`;
+                    combined_html += `<div style="color:#b71c1c;">` + errors.map(e =>
+                        `<div style="margin-left:10px;"><b>${e.code}</b>: ${e.message}</div>`
+                    ).join('') + `</div>`;
+                }
+
+                if (warnings.length) {
+                    combined_html += `<div style="color:#ef6c00; font-weight:bold; margin-top:10px;">Warnings:</div>`;
+                    combined_html += `<div style="color:#ef6c00;">` + warnings.map(w =>
+                        `<div style="margin-left:10px;"><b>${w.code}</b>: ${w.message}</div>`
+                    ).join('') + `</div>`;
+                }
+
+                const alert_color = errors.length ? 'red' : 'orange';
+                frm.dashboard.set_headline_alert(combined_html, alert_color);
+            }
+
+        } catch (e) {
+            frappe.msgprint("❌ Failed to parse ZATCA response JSON.<br><code>" + e.message + "</code>");
+            console.error("ZATCA parse error:", e);
+        }
+    }
+});
+
+
+
+
 // frappe.ui.form.on("POS Invoice", {
 //     refresh: function(frm) {
 //         if (frm.doc.docstatus === 1 && !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status)) {
@@ -119,4 +171,3 @@ frappe.realtime.on('show_gif', (data) => {
 //         }
 //     }
 // });
-

@@ -413,4 +413,11 @@ def reporting_api_pos_without_xml(
                 )
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+        invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+        invoice_doc.db_set(
+            "custom_zatca_full_response",
+            f"Error: {str(e)}",
+            commit=True,
+            update_modified=True,
+        )
         frappe.throw(_(("Error in reporting API-1 pos without xml" f"error: {str(e)}")))
