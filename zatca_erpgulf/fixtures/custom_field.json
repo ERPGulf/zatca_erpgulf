@@ -1182,7 +1182,7 @@
   "collapsible": 0,
   "collapsible_depends_on": null,
   "columns": 0,
-  "default": "CRN",
+  "default": "TIN",
   "depends_on": null,
   "description": null,
   "docstatus": 0,
