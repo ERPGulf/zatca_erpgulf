@@ -266,3 +266,71 @@ frappe.ui.form.on('Sales Invoice', {
     }
 });
 
+
+frappe.ui.form.on('Sales Invoice', {
+    refresh(frm) {
+        const response = frm.doc.custom_zatca_full_response;
+        if (!response) return;
+
+        try {
+            let jsonText = null;
+
+            // Try extract after 'ZATCA Response:'
+            const anchor = 'ZATCA Response:';
+            if (response.includes(anchor)) {
+                const afterAnchor = response.split(anchor)[1];
+                const firstBrace = afterAnchor.indexOf('{');
+                const lastBrace = afterAnchor.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1) {
+                    jsonText = afterAnchor.slice(firstBrace, lastBrace + 1).trim();
+                }
+            }
+
+            // Fallback: first JSON block in the entire response
+            if (!jsonText && response.includes('{')) {
+                const firstBrace = response.indexOf('{');
+                const lastBrace = response.lastIndexOf('}');
+                jsonText = response.slice(firstBrace, lastBrace + 1).trim();
+            }
+
+            if (!jsonText) {
+                console.warn("⚠️ No JSON detected in ZATCA response");
+                return;
+            }
+
+            // Safely parse JSON
+            const zatca = JSON.parse(jsonText);
+            const vr = zatca?.validationResults;
+
+            const errors = Array.isArray(vr?.errorMessages) ? vr.errorMessages : [];
+            const warnings = Array.isArray(vr?.warningMessages) ? vr.warningMessages : [];
+
+            if (!errors.length && !warnings.length) return;
+
+            let combined_html = "";
+
+            if (errors.length) {
+                combined_html += `<div style="color:#b71c1c; font-weight:bold;">Errors:</div>`;
+                combined_html += `<div style="color:#b71c1c;">` + errors.map(e =>
+                    `<div style="margin-left:10px;"><b>${e.code}</b>: ${e.message}</div>`
+                ).join('') + `</div>`;
+            }
+
+            if (warnings.length) {
+                combined_html += `<div style="color:#ef6c00; font-weight:bold; margin-top:10px;">Warnings:</div>`;
+                combined_html += `<div style="color:#ef6c00;">` + warnings.map(w =>
+                    `<div style="margin-left:10px;"><b>${w.code}</b>: ${w.message}</div>`
+                ).join('') + `</div>`;
+            }
+
+            // Show orange if no errors, red if errors exist
+            const alertColor = errors.length ? 'red' : 'orange';
+
+            frm.dashboard.clear_headline();
+            frm.dashboard.set_headline_alert(combined_html, alertColor);
+
+        } catch (e) {
+            console.warn("❌ ZATCA JSON parse failed", e);
+        }
+    }
+});

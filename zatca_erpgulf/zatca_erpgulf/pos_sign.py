@@ -317,6 +317,13 @@ def reporting_api(
                 frappe.throw(_(("Error in reporting API-2 " f"error: {str(e)}")))
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+        invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+        invoice_doc.db_set(
+            "custom_zatca_full_response",
+            f"Error: {str(e)}",
+            commit=True,
+            update_modified=True,
+        )
         frappe.throw(_(("Error in reporting API-1 " f"error: {str(e)}")))
 
 
@@ -526,6 +533,19 @@ def clearance_api(
             return None
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
+        invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
+        invoice_doc.db_set(
+            "custom_zatca_full_response",
+            f"Error: {str(e)}",
+            commit=True,
+            update_modified=True,
+        )
+        invoice_doc.db_set(
+            "custom_zatca_status",
+            "503 Service Unavailable",
+            commit=True,
+            update_modified=True,
+        )
         frappe.throw(_(("Error in clearance API " f"error: {str(e)}")))
         return None
 
