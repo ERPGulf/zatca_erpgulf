@@ -40,5 +40,89 @@
     "role": "Sales User"
    }
   ]
+ },
+ {
+  "add_total_row": 1,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-02-24 20:17:17.638545",
+  "module": "Accounts",
+  "name": "Item-wise Sales Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Item-wise Sales Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Item-wise Sales Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Item-wise Sales Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ]
+ },
+ {
+  "add_total_row": 1,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-02-24 20:17:31.238117",
+  "module": "Accounts",
+  "name": "Item-wise Purchase Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Invoice",
+  "reference_report": null,
+  "report_name": "Item-wise Purchase Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Item-wise Purchase Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Item-wise Purchase Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Item-wise Purchase Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   },
+   {
+    "parent": "Item-wise Purchase Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ]
  }
 ]
