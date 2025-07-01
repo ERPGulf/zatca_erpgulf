@@ -272,21 +272,21 @@ doctype_list_js = {
 
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
 fixtures = [
-    # {
-    #     "dt": "Number Card",
-    #     "filters": [
-    #         [
-    #             "name",
-    #             "in",
-    #             [
-    #                 "Cleared This Month",
-    #                 "Not Submitted This Month",
-    #                 "Reported This Month",
-    #                 "503 Service Unavailable This Month",
-    #             ],
-    #         ]
-    #     ],
-    # },
+    {
+        "dt": "Number Card",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Cleared This Month",
+                    "Not Submitted This Month",
+                    "Reported This Month",
+                    "503 Service Unavailable This Month",
+                ],
+            ]
+        ],
+    },
     {
         "dt": "Dashboard Chart",
         "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
@@ -313,7 +313,7 @@ fixtures = [
             ]
         ],
     },
-    {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
+    # {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
     #    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
 ]
 
