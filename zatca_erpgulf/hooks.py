@@ -297,8 +297,8 @@ fixtures = [
         "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
     },
     {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
+    {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
+    # {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
     {
         "dt": "Report",
         "filters": [
@@ -313,7 +313,7 @@ fixtures = [
             ]
         ],
     },
-    # {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
+    {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
     #    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
 ]
 
