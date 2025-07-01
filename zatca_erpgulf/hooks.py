@@ -314,7 +314,7 @@ fixtures = [
         ],
     },
     # {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
-    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}},
+    # {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}},
 ]
 
 app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"
