@@ -313,7 +313,7 @@ fixtures = [
             ]
         ],
     },
-    # {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
+    {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
     #    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
 ]
 
