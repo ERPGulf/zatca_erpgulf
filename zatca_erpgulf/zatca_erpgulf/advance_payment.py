@@ -325,17 +325,6 @@ def tax_data(invoice, sales_invoice_doc):
             )
         )
 
-        cbc_prepaidamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PrepaidAmount")
-        cbc_prepaidamount.set(
-            "currencyID", sales_invoice_doc.paid_from_account_currency
-        )
-        cbc_prepaidamount.text = str(
-            round(
-                abs(sales_invoice_doc.total) + abs(tax_amount_without_retention),
-                2,
-            )
-        )
-
         cbc_allowancetotalamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
