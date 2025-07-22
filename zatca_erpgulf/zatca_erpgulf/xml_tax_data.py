@@ -182,7 +182,8 @@ def tax_data(invoice, sales_invoice_doc):
             tax_amount_without_retention = (
                 taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
             )
-            cbc_taxamount_usd_1.text = str(round(tax_amount_without_retention, 2))
+            # cbc_taxamount_usd_1.text = str(round(tax_amount_without_retention, 2))
+            cbc_taxamount_usd_1.text = str(round(abs(tax_amount_without_retention), 2))
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount_usd = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount_usd.set(
@@ -201,7 +202,8 @@ def tax_data(invoice, sales_invoice_doc):
             tax_amount_without_retention = (
                 taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
             )
-            cbc_taxamount_usd.text = str(round(tax_amount_without_retention, 2))
+            # cbc_taxamount_usd.text = str(round(tax_amount_without_retention, 2))
+            cbc_taxamount_usd.text = str(round(abs(tax_amount_without_retention), 2))
 
             # Tax Subtotal
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, "cac:TaxSubtotal")

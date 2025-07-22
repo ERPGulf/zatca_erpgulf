@@ -127,7 +127,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-06-12 10:46:29.952575",
+ "modified": "2025-07-22 11:14:24.736079",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "ZATCA ERPGulf",
@@ -160,7 +160,7 @@
   }
  ],
  "roles": [],
- "sequence_id": 28.0,
+ "sequence_id": 18.0,
  "shortcuts": [
   {
    "color": "Grey",
