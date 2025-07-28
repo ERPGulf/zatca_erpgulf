@@ -966,6 +966,7 @@ def zatca_call_compliance(
 def zatca_background(invoice_number, source_doc, bypass_background_check=False):
     """defines the zatca bacground"""
     try:
+        # frappe.throw("DEBUG: Country found in address: ")
         if source_doc:
             source_doc = frappe.get_doc(json.loads(source_doc))
         sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
@@ -1119,7 +1120,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     address = frappe.get_doc(
                         "Address", customer_doc.customer_primary_address
                     )
-
+            # frappe.throw(f"DEBUG: Country found in address: '{address.country}'")
             if not address:
                 frappe.throw(
                     _(
@@ -1140,26 +1141,29 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         "As per ZATCA regulations,Address Line 2 is required in customer address."
                     )
                 )
-            if (
-                not address.custom_building_number
-                or not address.custom_building_number.isdigit()
-                or len(address.custom_building_number) != 4
-            ):
-                frappe.throw(
-                    _(
-                        "As per ZATCA regulations,Building Number must be exactly 4 digits in customer address."
+
+            if address and address.country == "Saudi Arabia":
+                if (
+                    not address.custom_building_number
+                    or not address.custom_building_number.isdigit()
+                    or len(address.custom_building_number) != 4
+                ):
+
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulations,Building Number must be exactly 4 digits in customer address."
+                        )
                     )
-                )
-            if (
-                not address.pincode
-                or not address.pincode.isdigit()
-                or len(address.pincode) != 5
-            ):
-                frappe.throw(
-                    _(
-                        "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
+                if (
+                    not address.pincode
+                    or not address.pincode.isdigit()
+                    or len(address.pincode) != 5
+                ):
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
+                        )
                     )
-                )
             # if customer_doc.custom_b2c != 1:
             if address and address.country == "Saudi Arabia":
                 if not customer_doc.tax_id:
@@ -1531,26 +1535,27 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         "As per ZATCA regulations, Address Line 2 is required in customer address."
                     )
                 )
-            if (
-                not address.custom_building_number
-                or not address.custom_building_number.isdigit()
-                or len(address.custom_building_number) != 4
-            ):
-                frappe.throw(
-                    _(
-                        "As per ZATCA regulations, Building Number must be exactly 4 digits in customer address."
+            if address and address.country == "Saudi Arabia":
+                if (
+                    not address.custom_building_number
+                    or not address.custom_building_number.isdigit()
+                    or len(address.custom_building_number) != 4
+                ):
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulations, Building Number must be exactly 4 digits in customer address."
+                        )
                     )
-                )
-            if (
-                not address.pincode
-                or not address.pincode.isdigit()
-                or len(address.pincode) != 5
-            ):
-                frappe.throw(
-                    _(
-                        "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
+                if (
+                    not address.pincode
+                    or not address.pincode.isdigit()
+                    or len(address.pincode) != 5
+                ):
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
+                        )
                     )
-                )
             if address and address.country == "Saudi Arabia":
                 if not customer_doc.tax_id:
                     frappe.throw(
