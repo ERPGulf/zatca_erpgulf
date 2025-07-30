@@ -975,12 +975,12 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-        if company_doc.custom_zatca_invoice_enabled != 1 or (
-            company_doc.custom_zatca_invoice_enabled == 1
-            and company_doc.custom_phase_1_or_2 == "Phase-1"
-        ):
-            # frappe.msgprint("Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document.")
-            return
+        # if company_doc.custom_zatca_invoice_enabled != 1 or (
+        #     company_doc.custom_zatca_invoice_enabled == 1
+        #     and company_doc.custom_phase_1_or_2 == "Phase-1"
+        # ):
+        #     # frappe.msgprint("Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document.")
+        #     return
 
         if (
             sales_invoice_doc.taxes
@@ -1374,16 +1374,17 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
-        # if company_doc.custom_zatca_invoice_enabled != 1:
-        #     # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
-        #     return  # Exit the function without further checks
-        if company_doc.custom_zatca_invoice_enabled != 1 or (
+        if company_doc.custom_zatca_invoice_enabled != 1:
+            # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
+            return  # Exit the function without further checks
+        if (
             company_doc.custom_zatca_invoice_enabled == 1
             and company_doc.custom_phase_1_or_2 == "Phase-1"
         ):
             # frappe.msgprint(
             #     "Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document."
             # )
+            create_qr_code(sales_invoice_doc, method=_method)
             return
 
         if (
