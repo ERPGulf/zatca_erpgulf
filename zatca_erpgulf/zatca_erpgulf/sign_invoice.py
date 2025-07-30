@@ -76,6 +76,7 @@ from zatca_erpgulf.zatca_erpgulf.zatca_background_sched import (
 )
 
 REPORTED_XML = "%Reported xml file%"
+SAUDI_ARABIA = "Saudi Arabia"
 
 
 def xml_base64_decode(signed_xmlfile_name):
@@ -974,6 +975,12 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         settings = frappe.get_doc("Company", company_name)
         company_abbr = settings.abbr
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+        if company_doc.custom_zatca_invoice_enabled != 1 or (
+            company_doc.custom_zatca_invoice_enabled == 1
+            and company_doc.custom_phase_1_or_2 == "Phase-1"
+        ):
+            # frappe.msgprint("Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document.")
+            return
 
         if (
             sales_invoice_doc.taxes
@@ -1142,7 +1149,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     )
                 )
 
-            if address and address.country == "Saudi Arabia":
+            if address and address.country == SAUDI_ARABIA:
                 if (
                     not address.custom_building_number
                     or not address.custom_building_number.isdigit()
@@ -1165,7 +1172,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         )
                     )
             # if customer_doc.custom_b2c != 1:
-            if address and address.country == "Saudi Arabia":
+            if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
@@ -1367,9 +1374,17 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
-        if company_doc.custom_zatca_invoice_enabled != 1:
-            # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
-            return  # Exit the function without further checks
+        # if company_doc.custom_zatca_invoice_enabled != 1:
+        #     # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
+        #     return  # Exit the function without further checks
+        if company_doc.custom_zatca_invoice_enabled != 1 or (
+            company_doc.custom_zatca_invoice_enabled == 1
+            and company_doc.custom_phase_1_or_2 == "Phase-1"
+        ):
+            frappe.msgprint(
+                "Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document."
+            )
+            return
 
         if (
             sales_invoice_doc.taxes
@@ -1535,7 +1550,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         "As per ZATCA regulations, Address Line 2 is required in customer address."
                     )
                 )
-            if address and address.country == "Saudi Arabia":
+            if address and address.country == SAUDI_ARABIA:
                 if (
                     not address.custom_building_number
                     or not address.custom_building_number.isdigit()
@@ -1556,7 +1571,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                             "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
                         )
                     )
-            if address and address.country == "Saudi Arabia":
+            if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
