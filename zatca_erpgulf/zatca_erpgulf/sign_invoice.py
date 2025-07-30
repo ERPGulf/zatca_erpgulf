@@ -1381,9 +1381,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             company_doc.custom_zatca_invoice_enabled == 1
             and company_doc.custom_phase_1_or_2 == "Phase-1"
         ):
-            frappe.msgprint(
-                "Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document."
-            )
+            # frappe.msgprint(
+            #     "Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document."
+            # )
             return
 
         if (
