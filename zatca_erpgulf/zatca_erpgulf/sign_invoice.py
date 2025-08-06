@@ -1377,6 +1377,35 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
+        
+        
+        is_gpos_installed = "gpos" in frappe.get_installed_apps()
+        field_exists = frappe.get_meta("Sales Invoice").has_field("custom_offline_invoice_number")
+
+        # If GPOS is installed and field exists, check its value
+        if is_gpos_installed and field_exists:
+            offline_invoice_number = sales_invoice_doc.get("custom_offline_invoice_number")
+            
+            # If the field has data and Phase-1 is enabled, skip QR creation
+            if (
+                offline_invoice_number
+                and company_doc.custom_zatca_invoice_enabled == 1
+                and company_doc.custom_phase_1_or_2 == "Phase-1"
+            ):
+                return
+            
+            # If the field is blank, create QR code
+            create_qr_code(sales_invoice_doc, method=_method)
+            return
+
+        # Separate check for ZATCA Phase-1 condition (when GPOS is not applicable)
+        if (
+            company_doc.custom_zatca_invoice_enabled == 1
+            and company_doc.custom_phase_1_or_2 == "Phase-1"
+        ):
+            create_qr_code(sales_invoice_doc, method=_method)
+            return
+
         if (
             company_doc.custom_zatca_invoice_enabled == 1
             and company_doc.custom_phase_1_or_2 == "Phase-1"
