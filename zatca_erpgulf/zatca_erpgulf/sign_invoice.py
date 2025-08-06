@@ -1397,7 +1397,10 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
     # If offline invoice number is blank → only create QR when Phase-1
             if company_doc.custom_phase_1_or_2 == "Phase-1":
                 create_qr_code(sales_invoice_doc, method=_method)
-            return
+                return
+            if company_doc.custom_phase_1_or_2 == "Phase-2":
+        
+                pass 
             
 
         # Separate check for ZATCA Phase-1 condition (when GPOS is not applicable)
