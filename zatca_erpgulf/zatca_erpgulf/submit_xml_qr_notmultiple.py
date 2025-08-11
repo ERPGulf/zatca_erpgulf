@@ -257,16 +257,21 @@ def handle_successful_submission(
 def update_invoice_status(invoice_number, status, uuid1=None, msg=None):
     """update_invoice_status"""
     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-    invoice_doc.db_set(
-        "custom_uuid", uuid1 or NOT_SUBMITTED, commit=True, update_modified=True
-    )
-    invoice_doc.db_set("custom_zatca_status", status, commit=True, update_modified=True)
-    invoice_doc.db_set(
-        "custom_zatca_full_response",
-        msg or NOT_SUBMITTED,
-        commit=True,
-        update_modified=True,
-    )
+    # invoice_doc.db_set(
+    #     "custom_uuid", uuid1 or NOT_SUBMITTED, commit=True, update_modified=True
+    # )
+    # invoice_doc.db_set("custom_zatca_status", status, commit=True, update_modified=True)
+    # invoice_doc.db_set(
+    #     "custom_zatca_full_response",
+    #     msg or NOT_SUBMITTED,
+    #     commit=True,
+    #     update_modified=True,
+    # )
+    invoice_doc.custom_uuid = uuid1 or NOT_SUBMITTED
+    invoice_doc.custom_zatca_status = status
+    invoice_doc.custom_zatca_full_response = msg or NOT_SUBMITTED
+    invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+    frappe.db.commit()
 
 
 def update_company_or_pos_settings(sales_invoice_doc, encoded_hash, msg):

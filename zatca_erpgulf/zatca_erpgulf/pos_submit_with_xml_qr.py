@@ -122,21 +122,27 @@ def reporting_api_machine(
             frappe.publish_realtime("hide_gif", user=frappe.session.user)
             if response.status_code in (400, 405, 406, 409):
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
+                # invoice_doc.db_set(
+                #     "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_status",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_full_response",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
+                invoice_doc.custom_uuid = "Not Submitted"
+                invoice_doc.custom_zatca_status = "Not Submitted"
+                invoice_doc.custom_zatca_full_response = "Not Submitted"
+                invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                frappe.db.commit()
+
                 frappe.throw(
                     _(
                         (
@@ -150,21 +156,27 @@ def reporting_api_machine(
 
             if response.status_code in (401, 403, 407, 451):
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
+                # invoice_doc.db_set(
+                #     "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_status",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_full_response",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
+                invoice_doc.custom_uuid = "Not Submitted"
+                invoice_doc.custom_zatca_status = "Not Submitted"
+                invoice_doc.custom_zatca_full_response = "Not Submitted"
+                invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                frappe.db.commit()
+
                 frappe.throw(
                     _(
                         (
@@ -179,21 +191,27 @@ def reporting_api_machine(
 
             if response.status_code not in (200, 202):
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_uuid", "Not Submitted", commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_full_response",
-                    "Not Submitted",
-                    commit=True,
-                    update_modified=True,
-                )
+                invoice_doc.custom_uuid = "Not Submitted"
+                invoice_doc.custom_zatca_status = "Not Submitted"
+                invoice_doc.custom_zatca_full_response = "Not Submitted"
+                invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                frappe.db.commit()
+
+                # invoice_doc.db_set(
+                #     "custom_uuid", "Not Submitted", commit=True, update_modified=True
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_status",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_full_response",
+                #     "Not Submitted",
+                #     commit=True,
+                #     update_modified=True,
+                # )
                 frappe.throw(
                     _(
                         (
@@ -230,15 +248,20 @@ def reporting_api_machine(
                     zatca_settings.save(ignore_permissions=True)
 
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-                invoice_doc.db_set(
-                    "custom_zatca_full_response", msg, commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_uuid", uuid1, commit=True, update_modified=True
-                )
-                invoice_doc.db_set(
-                    "custom_zatca_status", "REPORTED", commit=True, update_modified=True
-                )
+                # invoice_doc.db_set(
+                #     "custom_zatca_full_response", msg, commit=True, update_modified=True
+                # )
+                # invoice_doc.db_set(
+                #     "custom_uuid", uuid1, commit=True, update_modified=True
+                # )
+                # invoice_doc.db_set(
+                #     "custom_zatca_status", "REPORTED", commit=True, update_modified=True
+                # )
+                invoice_doc.custom_zatca_full_response = msg
+                invoice_doc.custom_uuid = uuid1
+                invoice_doc.custom_zatca_status = "REPORTED"
+                invoice_doc.save(ignore_permissions=True)
+                frappe.db.commit()
                 success_log(response.text, uuid1, invoice_number)
             else:
                 error_log()
@@ -249,12 +272,15 @@ def reporting_api_machine(
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
-        invoice_doc.db_set(
-            "custom_zatca_full_response",
-            f"Error: {str(e)}",
-            commit=True,
-            update_modified=True,
-        )
+        # invoice_doc.db_set(
+        #     "custom_zatca_full_response",
+        #     f"Error: {str(e)}",
+        #     commit=True,
+        #     update_modified=True,
+        # )
+        invoice_doc.custom_zatca_full_response = f"Error: {str(e)}"
+        invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+        frappe.db.commit()
         frappe.throw(_(("Error in reporting API-1 with xml pos" f"error: {str(e)}")))
 
 
