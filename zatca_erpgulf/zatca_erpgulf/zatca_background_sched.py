@@ -298,6 +298,7 @@ def reporting_api_sales_withoutxml(
             "Cookie": "TS0106293e=0132a679c0639d13d069bcba831384623a2ca6da47fac8d91bef610c47c7119dcdd3b817f963ec301682dae864351c67ee3a402866",
         }
         if company_doc.custom_send_invoice_to_zatca not in ["Batches", "Background"]:
+       
 
             try:
                 frappe.publish_realtime(
@@ -314,24 +315,30 @@ def reporting_api_sales_withoutxml(
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
                 if response.status_code in (400, 405, 406, 409):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-                    invoice_doc.db_set(
-                        "custom_uuid",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_status",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_full_response",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
+                    # invoice_doc.db_set(
+                    #     "custom_uuid",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_status",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_full_response",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    invoice_doc.custom_uuid = "Not Submitted"
+                    invoice_doc.custom_zatca_status = "Not Submitted"
+                    invoice_doc.custom_zatca_full_response = "Not Submitted"
+                    invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                    frappe.db.commit()
+
                     frappe.throw(
                         _(
                             (
@@ -345,24 +352,30 @@ def reporting_api_sales_withoutxml(
 
                 if response.status_code in (401, 403, 407, 451):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-                    invoice_doc.db_set(
-                        "custom_uuid",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_status",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_full_response",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
+                    # invoice_doc.db_set(
+                    #     "custom_uuid",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_status",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_full_response",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    invoice_doc.custom_uuid = "Not Submitted"
+                    invoice_doc.custom_zatca_status = "Not Submitted"
+                    invoice_doc.custom_zatca_full_response = "Not Submitted"
+                    invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                    frappe.db.commit()
+
                     frappe.throw(
                         _(
                             (
@@ -377,24 +390,24 @@ def reporting_api_sales_withoutxml(
 
                 if response.status_code not in (200, 202):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-                    invoice_doc.db_set(
-                        "custom_uuid",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_status",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_full_response",
-                        "Not Submitted",
-                        commit=True,
-                        update_modified=True,
-                    )
+                    # invoice_doc.db_set(
+                    #     "custom_uuid",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_status",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_full_response",
+                    #     "Not Submitted",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
                     frappe.throw(
                         _(
                             (
