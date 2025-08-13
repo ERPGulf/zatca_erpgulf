@@ -158,7 +158,7 @@ def reporting_api_xml_sales_invoice_simplified(
                 url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
                 headers=headers,
                 json=payload,
-                timeout=300,
+                timeout=480,
             )
             frappe.publish_realtime("hide_gif", user=frappe.session.user)
             if response.status_code in (400, 405, 406, 409):
@@ -339,4 +339,12 @@ def submit_sales_invoice_simplifeid(sales_invoice_doc, file_path, invoice_number
         )
 
     except Exception as e:
+        try:
+            invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+            invoice_doc.custom_zatca_full_response = f"Failed: {str(e)}"
+            invoice_doc.save(ignore_permissions=True)
+            frappe.db.commit()
+        except Exception as inner_e:
+            frappe.log_error(f"Failed to save ZATCA error response: {str(inner_e)}")
+            
         frappe.throw(_(f"Error in submitting sales in simplifed: {str(e)}"))
