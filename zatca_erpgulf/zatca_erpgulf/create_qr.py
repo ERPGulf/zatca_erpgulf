@@ -156,4 +156,7 @@ def create_qr_code(doc, method=None):  # pylint: disable=unused-argument
 
         # assigning to document
         doc.db_set("ksa_einv_qr", _file.file_url)
+        doc.custom_zatca_status="Phase-1 QR Generated"
+        doc.save(ignore_permissions=True)  # or with permissions if needed
+        frappe.db.commit()
         doc.notify_update()
