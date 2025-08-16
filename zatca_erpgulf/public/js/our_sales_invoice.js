@@ -95,32 +95,41 @@ frappe.realtime.on('hide_gif', () => {
 //                 });
 //             }, __("ZATCA Phase-2"));
 //         }
+
 frappe.ui.form.on("Sales Invoice", {
     refresh: function (frm) {
-        if (
-            frm.doc.docstatus === 1 &&
-            !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status)
-        ) {
-            // Get company phase setting
-            frappe.db.get_value("Company", frm.doc.company, "custom_phase_1_or_2", function (r) {
-                if (r && r.custom_phase_1_or_2 !== "Phase-1") {
-                    // ✅ Button will now show on the top bar (not inside dropdown)
-                    frm.add_custom_button(__("Send invoice to ZATCA"), function () {
-                        frm.call({
-                            method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
-                            args: {
-                                "invoice_number": frm.doc.name,
-                                "source_doc": frm.doc
+        // Load the company doctype to check phase setting
+        if (frm.doc.company) {
+            frappe.db.get_value("Company", frm.doc.company, "custom_phase_1_or_2")
+                .then(value => {
+                    let phase = value.message.custom_phase_1_or_2;
+
+                    if (
+                        frm.doc.docstatus === 1 &&
+                        !["CLEARED", "REPORTED"].includes(frm.doc.custom_zatca_status) &&
+                        phase === "Phase-2"
+                    ) {
+                        frm.add_custom_button(
+                            __("Send invoice to ZATCA"),
+                            function () {
+                                frm.call({
+                                    method: "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background",
+                                    args: {
+                                        invoice_number: frm.doc.name,
+                                        source_doc: frm.doc
+                                    },
+                                    callback: function (r) {
+                                        console.log(r.message);
+                                        frm.reload_doc();
+                                    }
+                                });
                             },
-                            callback: function (res) {
-                                console.log(res.message);
-                                frm.reload_doc();
-                            }
-                        });
-                    });
-                }
-            });
+                            __("ZATCA Phase-2")
+                        );
+                    }
+                });
         }
+   
 
         frm.page.add_menu_item(__('Print PDF-A3'), function () {
             // Create a dialog box with fields for Print Format, Letterhead, and Language
