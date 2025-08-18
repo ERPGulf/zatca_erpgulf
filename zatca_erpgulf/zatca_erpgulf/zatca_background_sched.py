@@ -316,7 +316,7 @@ def reporting_api_sales_withoutxml(
                 
                 
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
-                if response.status_code in (400, 405, 406, 409):
+                if response.status_code in (400, 405, 406):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     # invoice_doc.db_set(
                     #     "custom_uuid",
@@ -474,6 +474,41 @@ def reporting_api_sales_withoutxml(
 
                     invoice_doc.save(ignore_permissions=True)
                     frappe.db.commit()
+
+                    success_log(response.text, uuid1, invoice_number)
+                else:
+
+                    error_log()
+                if response.status_code == 409:
+                    msg = "SUCCESS: <br><br>"
+                    msg += (
+                        f"Status Code: {response.status_code}<br><br> "
+                        f"ZATCA Response: {response.text}<br><br>"
+                    )
+
+                    # Update PIH
+                    if sales_invoice_doc.custom_zatca_pos_name:
+                        zatca_settings = frappe.get_doc(
+                            "ZATCA Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+                        )
+                        if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                            frappe.msgprint(msg)
+                        zatca_settings.custom_pih = encoded_hash
+                        zatca_settings.save(ignore_permissions=True)
+                    else:
+                        company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
+                        if company_doc.custom_send_einvoice_background:
+                            frappe.msgprint(msg)
+                        company_doc.custom_pih = encoded_hash
+                        company_doc.save(ignore_permissions=True)
+
+                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc.custom_zatca_full_response = msg
+                    invoice_doc.custom_uuid = uuid1
+                    invoice_doc.custom_zatca_status = "REPORTED"
+                    invoice_doc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    
 
                     success_log(response.text, uuid1, invoice_number)
                 else:
