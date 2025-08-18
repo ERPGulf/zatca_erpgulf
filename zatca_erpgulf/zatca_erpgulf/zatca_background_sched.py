@@ -306,12 +306,15 @@ def reporting_api_sales_withoutxml(
                     {"gif_url": "/assets/zatca_erpgulf/js/loading.gif"},
                     user=frappe.session.user,
                 )
+                
                 response = requests.post(
                     url=get_api_url(company_abbr, base_url="invoices/reporting/single"),
                     headers=headers,
                     json=payload,
                     timeout=300,
                 )
+                
+                
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
                 if response.status_code in (400, 405, 406, 409):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
@@ -390,6 +393,11 @@ def reporting_api_sales_withoutxml(
 
                 if response.status_code not in (200, 202):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
+                    invoice_doc.custom_uuid = "Not Submitted"
+                    invoice_doc.custom_zatca_status = "Not Submitted"
+                    invoice_doc.custom_zatca_full_response = "Not Submitted"
+                    invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+                    frappe.db.commit()
                     # invoice_doc.db_set(
                     #     "custom_uuid",
                     #     "Not Submitted",
@@ -445,21 +453,27 @@ def reporting_api_sales_withoutxml(
                         zatca_settings.save(ignore_permissions=True)
 
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-                    invoice_doc.db_set(
-                        "custom_zatca_full_response",
-                        msg,
-                        commit=True,
-                        update_modified=True,
-                    )
-                    invoice_doc.db_set(
-                        "custom_uuid", uuid1, commit=True, update_modified=True
-                    )
-                    invoice_doc.db_set(
-                        "custom_zatca_status",
-                        "REPORTED",
-                        commit=True,
-                        update_modified=True,
-                    )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_full_response",
+                    #     msg,
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_uuid", uuid1, commit=True, update_modified=True
+                    # )
+                    # invoice_doc.db_set(
+                    #     "custom_zatca_status",
+                    #     "REPORTED",
+                    #     commit=True,
+                    #     update_modified=True,
+                    # )
+                    invoice_doc.custom_zatca_full_response = msg
+                    invoice_doc.custom_uuid = uuid1
+                    invoice_doc.custom_zatca_status = "REPORTED"
+
+                    invoice_doc.save(ignore_permissions=True)
+                    frappe.db.commit()
 
                     success_log(response.text, uuid1, invoice_number)
                 else:
@@ -472,10 +486,13 @@ def reporting_api_sales_withoutxml(
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
-        invoice_doc.db_set(
-            "custom_zatca_full_response",
-            f"Error: {str(e)}",
-            commit=True,
-            update_modified=True,
-        )
+        # invoice_doc.db_set(
+        #     "custom_zatca_full_response",
+        #     f"Error: {str(e)}",
+        #     commit=True,
+        #     update_modified=True,
+        # )
+        invoice_doc.custom_zatca_full_response = f"Error: {str(e)}"
+        invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
+        frappe.db.commit()
         frappe.throw(_(f"Error in reporting API-1 sales invoice with xml: {str(e)}"))
