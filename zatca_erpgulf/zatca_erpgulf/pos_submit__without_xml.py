@@ -341,7 +341,41 @@ def reporting_api_pos_without_xml(
                             )
                         )
                     )
+                if response.status_code == 409:
+                    msg = "SUCCESS: <br><br>"
+                    msg += (
+                        f"Status Code: {response.status_code}<br><br> "
+                        f"ZATCA Response: {response.text}<br><br>"
+                    )
 
+                    # Update PIH
+                    if pos_invoice_doc.custom_zatca_pos_name:
+                        zatca_settings = frappe.get_doc(
+                            "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
+                        )
+                        if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                            frappe.msgprint(msg)
+                        zatca_settings.custom_pih = encoded_hash
+                        zatca_settings.save(ignore_permissions=True)
+                    else:
+                        company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
+                        if company_doc.custom_send_einvoice_background:
+                            frappe.msgprint(msg)
+                        company_doc.custom_pih = encoded_hash
+                        company_doc.save(ignore_permissions=True)
+
+                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc.custom_zatca_full_response = msg
+                    invoice_doc.custom_uuid = uuid1
+                    invoice_doc.custom_zatca_status = "REPORTED"
+                    invoice_doc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    
+
+                    success_log(response.text, uuid1, invoice_number)
+                else:
+
+                    error_log()
                 if response.status_code not in (200, 202):
                     invoice_doc = frappe.get_doc(POS_INVOICE, invoice_number)
                     invoice_doc.custom_uuid = "Not Submitted"
@@ -428,41 +462,7 @@ def reporting_api_pos_without_xml(
                     success_log(response.text, uuid1, invoice_number)
                 else:
                     error_log()
-                if response.status_code == 409:
-                    msg = "SUCCESS: <br><br>"
-                    msg += (
-                        f"Status Code: {response.status_code}<br><br> "
-                        f"ZATCA Response: {response.text}<br><br>"
-                    )
-
-                    # Update PIH
-                    if pos_invoice_doc.custom_zatca_pos_name:
-                        zatca_settings = frappe.get_doc(
-                            "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
-                        )
-                        if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
-                            frappe.msgprint(msg)
-                        zatca_settings.custom_pih = encoded_hash
-                        zatca_settings.save(ignore_permissions=True)
-                    else:
-                        company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
-                        if company_doc.custom_send_einvoice_background:
-                            frappe.msgprint(msg)
-                        company_doc.custom_pih = encoded_hash
-                        company_doc.save(ignore_permissions=True)
-
-                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-                    invoice_doc.custom_zatca_full_response = msg
-                    invoice_doc.custom_uuid = uuid1
-                    invoice_doc.custom_zatca_status = "REPORTED"
-                    invoice_doc.save(ignore_permissions=True)
-                    frappe.db.commit()
-                    
-
-                    success_log(response.text, uuid1, invoice_number)
-                else:
-
-                    error_log()
+                
             except (ValueError, TypeError, KeyError) as e:
                 frappe.throw(
                     _(("Error in reporting API-2 pos without xml " f"error: {str(e)}"))
