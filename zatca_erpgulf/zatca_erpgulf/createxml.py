@@ -634,12 +634,14 @@ def customer_data(invoice, sales_invoice_doc):
             invoice, "cac:AccountingCustomerParty"
         )
         cac_party_2 = ET.SubElement(cac_accountingcustomerparty, "cac:Party")
-        cac_partyidentification_1 = ET.SubElement(
-            cac_party_2, "cac:PartyIdentification"
-        )
-        cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
-        cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
-        cbc_id_4.text = customer_doc.custom_buyer_id
+        
+        # Only add PartyIdentification if NOT B2C otherwise ZATCA gives warning for empty tag
+        if not customer_doc.custom_b2c:
+            cac_partyidentification_1 = ET.SubElement(cac_party_2, "cac:PartyIdentification")
+            cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
+            cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
+            cbc_id_4.text = customer_doc.custom_buyer_id            
+
         country_dict = country_code_mapping()
         address = None
         if customer_doc.custom_b2c != 1:
