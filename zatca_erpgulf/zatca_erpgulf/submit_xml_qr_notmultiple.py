@@ -335,7 +335,7 @@ def reporting_api_xml_sales_invoice_simplified(
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-      
+        
         invoice_doc.custom_zatca_full_response = f"Error: {str(e)}"
         invoice_doc.save(ignore_permissions=True)  # or with permissions if needed
         frappe.db.commit()
