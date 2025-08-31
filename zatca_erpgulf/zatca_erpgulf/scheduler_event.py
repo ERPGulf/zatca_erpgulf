@@ -104,6 +104,7 @@ def submit_invoices_to_zatca_background():
                     "custom_zatca_status",
                     "in",
                     ["Not Submitted", "503 Service Unavailable"],
+                     ["custom_zatca_status", "!=", "REPORTED"],
                 ],
             ],
             fields=["name", "docstatus", "company"],
