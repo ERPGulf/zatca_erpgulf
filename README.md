@@ -20,7 +20,7 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 🌐 ERPNext Version13, 14 and 15<br>
 🖥️ Platforms	Ubuntu, Centos, Oracle Linux<br>
 
-🛠 Installation & Setup
+🛠 Installation Configuration & Setup
 
 🔹 For Frappe Cloud Users
 
