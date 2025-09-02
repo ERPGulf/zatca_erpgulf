@@ -717,13 +717,13 @@ def customer_data(invoice, sales_invoice_doc):
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
 
         # # Only include tax ID if country is Saudi Arabia
-        # if address and address.country == "Saudi Arabia":
-        #     cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
-        #     cbc_company_id.text = customer_doc.tax_id
-         # Only add CompanyID if custom_buyer_id is not set
-        if not customer_doc.custom_buyer_id:
+        if address and address.country == "Saudi Arabia":
             cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
-            cbc_company_id.text = customer_doc.tax_id 
+            cbc_company_id.text = customer_doc.tax_id
+         # Only add CompanyID if custom_buyer_id is not set
+        # if not customer_doc.custom_buyer_id:
+        #     cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
+        #     cbc_company_id.text = customer_doc.tax_id 
 
 
         # Always include tax scheme
