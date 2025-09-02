@@ -1259,7 +1259,8 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         )
                     )
             # if customer_doc.custom_b2c != 1:
-            if address and address.country == SAUDI_ARABIA:
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
@@ -1693,7 +1694,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                             "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
                         )
                     )
-            if address and address.country == SAUDI_ARABIA:
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
