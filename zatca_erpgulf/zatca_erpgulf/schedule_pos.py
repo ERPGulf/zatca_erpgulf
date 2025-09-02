@@ -81,7 +81,7 @@ def submit_posinvoices_to_zatca_background_process():
                     "in",
                     
                     ["Not Submitted", "503 Service Unavailable"],
-                     ["custom_zatca_status", "!=", "REPORTED"],
+                    
 
                 ],
             ],
