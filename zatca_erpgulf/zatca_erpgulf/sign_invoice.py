@@ -547,7 +547,7 @@ def clearance_api(
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
-        if response.status_code in (400, 405, 406, 409):
+        if response.status_code in (400, 405, 406):
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
                 "custom_uuid", "Not Submitted", commit=True, update_modified=True
@@ -589,6 +589,42 @@ def clearance_api(
                     )
                 )
             )
+
+        if response.status_code == 409:
+                    msg = "SUCCESS: <br><br>"
+                    msg += (
+                        f"Status Code: {response.status_code}<br><br> "
+                        f"ZATCA Response: {response.text}<br><br>"
+                    )
+
+                    # Update PIH
+                    if sales_invoice_doc.custom_zatca_pos_name:
+                        zatca_settings = frappe.get_doc(
+                            "ZATCA Multiple Setting", sales_invoice_doc.custom_zatca_pos_name
+                        )
+                        if zatca_settings.custom_send_pos_invoices_to_zatca_on_background:
+                            frappe.msgprint(msg)
+                        zatca_settings.custom_pih = encoded_hash
+                        zatca_settings.save(ignore_permissions=True)
+                    else:
+                        company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
+                        if company_doc.custom_send_einvoice_background:
+                            frappe.msgprint(msg)
+                        company_doc.custom_pih = encoded_hash
+                        company_doc.save(ignore_permissions=True)
+
+                    invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                    invoice_doc.custom_zatca_full_response = msg
+                    invoice_doc.custom_uuid = uuid1
+                    invoice_doc.custom_zatca_status = "REPORTED"
+                    invoice_doc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    
+
+                    success_log(response.text, uuid1, invoice_number)
+                else:
+
+                    error_log()
         if response.status_code not in (200, 202, 409):
             invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             invoice_doc.db_set(
@@ -1223,7 +1259,8 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         )
                     )
             # if customer_doc.custom_b2c != 1:
-            if address and address.country == SAUDI_ARABIA :
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
@@ -1657,8 +1694,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                             "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
                         )
                     )
-            if address and address.country == SAUDI_ARABIA :
-            
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
