@@ -426,7 +426,7 @@ def reporting_api_sales_withoutxml(
 
                     error_log()
 
-                if response.status_code not in (200, 202):
+                if response.status_code not in (200, 202, 409):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     invoice_doc.custom_uuid = "Not Submitted"
                     invoice_doc.custom_zatca_status = "Not Submitted"
