@@ -211,7 +211,7 @@ def reporting_api_machine(
                     company_doc.custom_pih = encoded_hash
                     company_doc.save(ignore_permissions=True)
 
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
                 invoice_doc.custom_zatca_full_response = msg
                 invoice_doc.custom_uuid = uuid1
                 invoice_doc.custom_zatca_status = "REPORTED"
@@ -223,7 +223,7 @@ def reporting_api_machine(
             else:
 
                 error_log()
-            if response.status_code not in (200, 202):
+            if response.status_code not in (200, 202, 409):
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
                 invoice_doc.custom_uuid = "Not Submitted"
                 invoice_doc.custom_zatca_status = "Not Submitted"
