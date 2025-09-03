@@ -243,7 +243,7 @@ def reporting_api_xml_sales_invoice_simplified(
                     company_doc.custom_pih = encoded_hash
                     company_doc.save(ignore_permissions=True)
 
-                invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
+                invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                 invoice_doc.custom_zatca_full_response = msg
                 invoice_doc.custom_uuid = uuid1
                 invoice_doc.custom_zatca_status = "REPORTED"
