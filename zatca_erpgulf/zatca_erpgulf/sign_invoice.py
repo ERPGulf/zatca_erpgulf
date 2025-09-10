@@ -481,7 +481,7 @@ def reporting_api(
                     error_log()
                 
             except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-                frappe.throw(_(f"Error in reporting API-2 : {str(e)}"))
+                frappe.throw(_(f"Error in reporting API-2 original reporting: {str(e)}"))
 
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
