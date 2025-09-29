@@ -1068,6 +1068,14 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         # ):
         #     # frappe.msgprint("Zatca Invoice is not enabled or Phase is not Phase-1. Submitting the document.")
         #     return
+        # customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
+        # if company_doc.tax_id and customer_doc.tax_id:
+        #     if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
+        #         sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
+        #         sales_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
+        #         sales_invoice_doc.save(ignore_permissions=True)
+        #         frappe.db.commit()
+        #         return
 
         if (
             sales_invoice_doc.taxes
@@ -1284,7 +1292,8 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                             "As per ZATCA regulations, Customer Tax ID must start with 3 and end with 3."
                         )
                     )
-
+        if not customer_doc.custom_buyer_id_type and customer_doc.custom_buyer_id:
+            frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")
@@ -1461,11 +1470,20 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 _(f"Company abbreviation for {sales_invoice_doc.company} not found.")
             )
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
-
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
-        
+
+        # 🚨 Skip ZATCA logic if Company Tax ID = Customer Tax ID
+        if company_doc.tax_id and customer_doc.tax_id:
+            if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
+                sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
+                sales_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
+                sales_invoice_doc.save(ignore_permissions=True)
+                frappe.db.commit()
+                return
+
         
         is_gpos_installed = "gpos" in frappe.get_installed_apps()
         field_exists = frappe.get_meta("Sales Invoice").has_field("custom_offline_invoice_number")
@@ -1719,6 +1737,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                             "As per ZATCA regulations, Customer Tax ID must start with 3 and end with 3."
                         )
                     )
+        if not customer_doc.custom_buyer_id_type and customer_doc.custom_buyer_id:
+            frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
         if "claudion4saudi" in frappe.get_installed_apps():
             if (
                 hasattr(sales_invoice_doc, "custom_advances_copy")

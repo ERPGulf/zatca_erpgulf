@@ -1073,11 +1073,27 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         company_abbr = frappe.db.get_value(
             "Company", {"name": pos_invoice_doc.company}, "abbr"
         )
+
+        customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         if not company_abbr:
             frappe.throw(
                 _(f"Company abbreviation for {pos_invoice_doc.company} not found.")
             )
+        if company_doc.custom_zatca_invoice_enabled != 1:
+            # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
+            return 
+        
+        if company_doc.tax_id and customer_doc.tax_id:
+            if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
+                sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
+                sales_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
+                sales_invoice_doc.save(ignore_permissions=True)
+                frappe.db.commit()
+                return
 
+        if not customer_doc.custom_buyer_id_type and customer_doc.custom_buyer_id:
+            frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
         any_item_has_tax_template = False
 
         for item in pos_invoice_doc.items:

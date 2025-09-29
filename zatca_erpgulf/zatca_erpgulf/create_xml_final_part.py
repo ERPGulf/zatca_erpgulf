@@ -633,6 +633,7 @@ def item_data(invoice, sales_invoice_doc):
                             )
                         )
                     )
+                    
             else:
                 # For other currencies
                 if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
