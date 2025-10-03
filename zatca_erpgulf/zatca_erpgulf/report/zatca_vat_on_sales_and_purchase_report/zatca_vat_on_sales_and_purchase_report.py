@@ -42,7 +42,7 @@ def execute(filters=None):
         "adjustment": sales_totals["Exempt"]["adjustment"],
         "vat": 0
     })
-
+    total_sales_vat = sum(v["vat"] for v in sales_totals.values())   # ✅ define here
     # Total Sales line
     data.append({
         "category": "<b>Total Sales</b>",
@@ -98,6 +98,7 @@ def execute(filters=None):
     })
 
     # Line 12 - Total Purchases
+    total_purchase_vat = sum(v["vat"] for v in purchase_totals.values()) 
     data.append({
         "category": "<b>Total purchases</b>",
         "amount": sum(v["amount"] for v in purchase_totals.values()),
@@ -122,7 +123,13 @@ def execute(filters=None):
     #     "category": "VAT credit carried forward from previous period(s)",
     #     "amount": 0, "adjustment": 0, "vat": 0
     # })
-
+    vat_difference = total_sales_vat - total_purchase_vat
+    data.append({
+        "category": "<b>Net VAT Due (or Claim = Sales VAT - Purchases VAT)</b>",
+        "amount": None,
+        "adjustment": None,
+        "vat": vat_difference
+    })
     # # Line 16 - Net VAT due (or claim)
     # data.append({
     #     "category": "<b>Net VAT due (or claim)</b>",
