@@ -42,7 +42,7 @@ def execute(filters=None):
         "adjustment": sales_totals["Exempt"]["adjustment"],
         "vat": 0
     })
-
+    total_sales_vat = sum(v["vat"] for v in sales_totals.values())   # ✅ define here
     # Total Sales line
     data.append({
         "category": "<b>Total Sales</b>",
@@ -98,6 +98,7 @@ def execute(filters=None):
     })
 
     # Line 12 - Total Purchases
+    total_purchase_vat = sum(v["vat"] for v in purchase_totals.values()) 
     data.append({
         "category": "<b>Total purchases</b>",
         "amount": sum(v["amount"] for v in purchase_totals.values()),
