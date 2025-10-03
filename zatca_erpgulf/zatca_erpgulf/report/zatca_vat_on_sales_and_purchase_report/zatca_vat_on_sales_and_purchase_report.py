@@ -122,7 +122,13 @@ def execute(filters=None):
     #     "category": "VAT credit carried forward from previous period(s)",
     #     "amount": 0, "adjustment": 0, "vat": 0
     # })
-
+    vat_difference = total_sales_vat - total_purchase_vat
+    data.append({
+        "category": "<b>Net VAT Due (or Claim = Sales VAT - Purchases VAT)</b>",
+        "amount": None,
+        "adjustment": None,
+        "vat": vat_difference
+    })
     # # Line 16 - Net VAT due (or claim)
     # data.append({
     #     "category": "<b>Net VAT due (or claim)</b>",
