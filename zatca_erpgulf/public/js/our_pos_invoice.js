@@ -223,3 +223,32 @@ frappe.ui.form.on('POS Invoice', {
 //         }
 //     }
 // });
+
+
+
+
+
+
+frappe.ui.form.on('POS Invoice', {
+    refresh: function(frm) {
+        if (!frm.is_new()) {
+            // Add menu item like Print PDF-A3
+            frm.page.add_menu_item(__('Create XML for Debug'), function() {
+                frappe.call({
+                    method: "zatca_erpgulf.zatca_erpgulf.pos_debug_xml.debug_call",
+                    args: {
+                        invoice_number: frm.doc.name
+                    },
+                    freeze: true,
+                    freeze_message: __("Generating Debug XML..."),
+                    callback: function(r) {
+                        if (r.message && r.message.status === "success") {
+                            frappe.msgprint(__('✅ Debug XML attached successfully!'));
+                            frm.reload_doc();
+                        }
+                    }
+                });
+            });
+        }
+    }
+});
