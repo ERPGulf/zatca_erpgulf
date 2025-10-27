@@ -107,7 +107,7 @@ def debug_call(
         if company_doc.custom_zatca_invoice_enabled != 1:
             frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return
-        customer_doc = frappe.get_doc("Customer", invoice_doc.customer)
+        customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if company_doc.tax_id and customer_doc.tax_id:
             if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
                 sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
@@ -267,7 +267,8 @@ def debug_call(
                     handle_b2c_simplified = True
             else:
                 if is_qr_and_xml_attached(sales_invoice_doc):
-                    # Already has QR & XML => do nothing
+                    # Already has QR & XML => do 
+                    frappe.msgprint("✅ XML/QR already attached")
                     pass
                 elif settings.custom_send_invoice_to_zatca == "Background" and not bypass_background_check:
                     # Background sending => B2C simplified
