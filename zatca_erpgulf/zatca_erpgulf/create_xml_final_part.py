@@ -584,9 +584,10 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
             "cbc:BaseAmount",
             currencyID=sales_invoice_doc.currency,
         )
-        cbc_base_amount.text = str(
-            abs(single_item.rate) + abs(single_item.discount_amount)
-        )
+        # cbc_base_amount.text = str(
+        #     abs(single_item.rate) + abs(single_item.discount_amount)
+        # )
+        cbc_base_amount.text = f"{abs(single_item.rate) + abs(single_item.discount_amount):.2f}"
 
         return cac_price
 
