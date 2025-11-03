@@ -1251,7 +1251,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     # or len(address.custom_building_number) != 4
                 ):
 
-                    frappe.throw(
+                    frappe.msgprint(
                         _(
                             "As per ZATCA regulations,Building Number must be exactly 4 digits in customer address."
                         )
