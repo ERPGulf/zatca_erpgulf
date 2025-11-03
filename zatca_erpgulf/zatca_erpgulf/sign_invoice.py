@@ -1247,8 +1247,8 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
             if address and address.country == SAUDI_ARABIA:
                 if (
                     not address.custom_building_number
-                    or not address.custom_building_number.isdigit()
-                    or len(address.custom_building_number) != 4
+                    # or not address.custom_building_number.isdigit()
+                    # or len(address.custom_building_number) != 4
                 ):
 
                     frappe.throw(
