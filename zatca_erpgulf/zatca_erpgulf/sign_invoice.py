@@ -1244,28 +1244,28 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     )
                 )
 
-            if address and address.country == SAUDI_ARABIA:
-                if (
-                    not address.custom_building_number
+            # if address and address.country == SAUDI_ARABIA:
+            #     if (
+            #         not address.custom_building_number
                     # or not address.custom_building_number.isdigit()
                     # or len(address.custom_building_number) != 4
-                ):
+            #     ):
 
-                    frappe.msgprint(
-                        _(
-                            "As per ZATCA regulations,Building Number must be exactly 4 digits in customer address."
-                        )
-                    )
-                if (
-                    not address.pincode
-                    or not address.pincode.isdigit()
-                    or len(address.pincode) != 5
-                ):
-                    frappe.throw(
-                        _(
-                            "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
-                        )
-                    )
+            #         frappe.msgprint(
+            #             _(
+            #                 "As per ZATCA regulations,Building Number must be exactly 4 digits in customer address."
+            #             )
+            #         )
+            #     if (
+            #         not address.pincode
+            #         or not address.pincode.isdigit()
+            #         or len(address.pincode) != 5
+            #     ):
+            #         frappe.throw(
+            #             _(
+            #                 "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
+            #             )
+            #         )
             # if customer_doc.custom_b2c != 1:
             # if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
             if address and address.country == SAUDI_ARABIA:
