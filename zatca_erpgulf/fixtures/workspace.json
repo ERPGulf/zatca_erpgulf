@@ -212,7 +212,7 @@
     "description": null,
     "hidden": 0,
     "icon": null,
-    "is_query_report": 0,
+    "is_query_report": 1,
     "label": "VAT Report ZATCA on Sales & Purchase",
     "link_count": 0,
     "link_to": "VAT Report ZATCA on Sales & Purchase",
@@ -225,7 +225,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2025-10-09 15:14:11.991945",
+  "modified": "2025-10-15 11:54:42.189856",
   "module": "Zatca Erpgulf",
   "name": "ZATCA ERPGulf",
   "number_cards": [
