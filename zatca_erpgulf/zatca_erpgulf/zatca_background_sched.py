@@ -7,6 +7,7 @@ import requests
 from frappe import _
 import frappe
 from pyqrcode import create as qr_create
+from zatca_erpgulf.zatca_erpgulf.event_log import log_zatca_event
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from zatca_erpgulf.zatca_erpgulf.createxml import (
     xml_tags,
@@ -315,7 +316,48 @@ def reporting_api_sales_withoutxml(
                 )
                 
                 
+                
+                if response.status_code in (200, 202, 409):
+                    if response.status_code == 200:
+                            status_label = "Success"
+                            title = f"ZATCA Success - {invoice_number}"
+                    elif response.status_code == 202:
+                        status_label = "Warning"
+                        title = f"ZATCA Invoice with Warnings - {invoice_number}"
+                    elif response.status_code == 409:
+                        status_label = "Success (Duplicate Invoice)"
+                        title = f"ZATCA Duplicate Success - {invoice_number}"
+
+                    msg = (
+                        f"Status Code: {response.status_code}<br>"
+                        f"ZATCA Response: {response.text}"
+                    )
+
+                    log_zatca_event(
+                        invoice_number=invoice_number,
+                        response_text=msg,
+                        status=status_label,
+                        uuid=uuid1,
+                        title=title
+                    )
+
+                else:
+                    
+                    status_label = f"Failed (HTTP {response.status_code})"
+                    title = f"ZATCA API Failed - {invoice_number}"
+                    msg = (
+                        f"Status Code: {response.status_code}<br>"
+                        f"ZATCA Response: {response.text}"
+                    )
+                    log_zatca_event(
+                        invoice_number=invoice_number,
+                        response_text=msg,
+                        status=status_label,
+                        uuid=uuid1,
+                        title=title
+                    )
                 frappe.publish_realtime("hide_gif", user=frappe.session.user)
+                
                 if response.status_code in (400, 405, 406):
                     invoice_doc = frappe.get_doc(SALES_INVOICE, invoice_number)
                     # invoice_doc.db_set(
