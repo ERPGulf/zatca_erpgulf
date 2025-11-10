@@ -2,6 +2,7 @@ from frappe.utils import now_datetime
 import frappe
 
 def log_zatca_event(invoice_number, response_text, status, uuid=None, title=None):
+    """new doctype for handing logs"""
     try:
         event_doc = frappe.get_doc({
             "doctype": "ZATCA ERPGulf Event Log",
