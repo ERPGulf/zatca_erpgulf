@@ -608,7 +608,7 @@ def delivery_and_payment_means_for_compliance_advance(
             cbc_instruction_note = ET.SubElement(
                 cac_payment_means, "cbc:InstructionNote"
             )
-            cbc_instruction_note.text = "Cancellation"
+            cbc_instruction_note.text = "Cancellation or Additional Charge"
 
         return invoice
 
