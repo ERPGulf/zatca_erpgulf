@@ -10,7 +10,7 @@ def log_zatca_event(invoice_number, response_text, status, uuid=None, title=None
             "invoice_number": invoice_number,
             "time": now_datetime(),  #
             "api_response": response_text,  # store the API response here
-            "uuid": uuid or "",
+            "custom_uuid": uuid or "",
             "status": status  # e.g., "Success", "Failed", "Warning"
         })
         event_doc.insert(ignore_permissions=True)
