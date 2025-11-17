@@ -569,6 +569,7 @@ def digital_signature(hash1, company_abbr, source_doc):
 
         company_doc = frappe.get_doc("Company", company_name)
         # frappe.throw(f"Source doc type: {type(source_doc)}, value: {source_doc}")
+        private_key_data_str = None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
