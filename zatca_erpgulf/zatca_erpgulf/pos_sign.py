@@ -1285,9 +1285,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         
         if company_doc.tax_id and customer_doc.tax_id:
             if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
-                sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
-                sales_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
-                sales_invoice_doc.save(ignore_permissions=True)
+                pos_invoice_doc.custom_zatca_status = "Intra-company transfer"
+                pos_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
+                pos_invoice_doc.save(ignore_permissions=True)
                 frappe.db.commit()
                 return
 
