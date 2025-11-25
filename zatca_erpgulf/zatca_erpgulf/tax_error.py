@@ -31,13 +31,13 @@ def validate_sales_invoice_taxes(doc, event=None):
     #     frappe.throw("This customer should be B2C for Background")
     company_doc = frappe.get_doc("Company", doc.company)
 
-    if (
-        customer_doc.custom_b2c != 1
-        and company_doc.custom_send_invoice_to_zatca == "Background"
-    ):
-        frappe.throw(
-            _("As per ZATCA regulation, This customer should be B2C for Background")
-        )
+    # if (
+    #     customer_doc.custom_b2c != 1
+    #     and company_doc.custom_send_invoice_to_zatca == "Background"
+    # ):
+    #     frappe.throw(
+    #         _("As per ZATCA regulation, This customer should be B2C for Background")
+    #     )
 
     # If the company requires cost centers, ensure the invoice has one
     if company_doc.custom_costcenter == 1:

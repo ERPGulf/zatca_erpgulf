@@ -1511,7 +1511,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     )
                 elif (
                     settings.custom_send_invoice_to_zatca == "Background"
-                    and not bypass_background_check
+                    and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
                     zatca_call_scheduler_background(
                         invoice_number,
@@ -1534,7 +1534,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
             create_qr_code(sales_invoice_doc, method=None)
         return "Success"
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(_("Error in background call: " + str(e)))
+        frappe.throw(_("Error in background call : " + str(e)))
 
 
 @frappe.whitelist(allow_guest=False)
@@ -1942,7 +1942,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     )
                 elif (
                     settings.custom_send_invoice_to_zatca == "Background"
-                    and not bypass_background_check
+                    and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
                     zatca_call_scheduler_background(
                         invoice_number,
@@ -1965,7 +1965,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             create_qr_code(sales_invoice_doc, method=None)
         doc.reload()
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
-        frappe.throw(_(f"Error in background call: {str(e)}"))
+        frappe.throw(_(f"Error in background call on submit: {str(e)}"))
 
 
 @frappe.whitelist()

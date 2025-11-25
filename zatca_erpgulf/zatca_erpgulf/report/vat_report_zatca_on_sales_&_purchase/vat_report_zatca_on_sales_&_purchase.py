@@ -142,6 +142,7 @@ def get_sales_vat_totals_sql(filters):
         SELECT
             si.name AS invoice,
             si.is_return AS is_return,
+            si.is_debit_note,
             si.grand_total AS grand_total,
             si.total_taxes_and_charges AS total_taxes_and_charges,
             si.custom_zatca_tax_category AS invoice_zatca_cat,
@@ -170,6 +171,7 @@ def get_sales_vat_totals_sql(filters):
         if inv not in invoices:
             invoices[inv] = {
                 "is_return": bool(r.get("is_return")),
+                "is_debit_note": bool(r.get("is_debit_note")),
                 "grand_total": r.get("grand_total") or 0,
                 "total_taxes_and_charges": r.get("total_taxes_and_charges") or 0,
                 "custom_zatca_tax_category": r.get("invoice_zatca_cat"),
@@ -187,62 +189,161 @@ def get_sales_vat_totals_sql(filters):
                 "template_exemption_code": r.get("template_exemption_code"),
                 "tax_rate": r.get("template_first_tax_rate") or 0,
             })
-
-    # Now apply your original ORM logic per-invoice
+    # -----------------------------
+# Apply ORM-like logic per invoice
+# -----------------------------
     for inv_doc in invoices.values():
-        is_return = 1 if inv_doc["is_return"] else 0
-        key = "adjustment" if is_return else "amount"
+        is_return = bool(inv_doc["is_return"])   # Credit note
+        is_debit = bool(inv_doc["is_debit_note"]) # Debit note
 
+        # Determine key field
+        key = "adjustment" if (is_return or is_debit) else "amount"
+
+        # Check if invoice has item-level tax template
         has_item_template = any(item.get("item_tax_template") for item in inv_doc["items"])
 
         def calculate_item_vat(item):
             return (item.get("net_amount") or 0) * (item.get("tax_rate") or 0) / 100.0
 
-        # Standard Rated
+        # Determine signed amounts for adjustment
+        signed_grand_total = inv_doc["grand_total"] or 0
+        signed_vat = inv_doc["total_taxes_and_charges"] or 0
+
+        if is_return:
+            signed_grand_total = -abs(signed_grand_total)  # Credit note
+            signed_vat = -abs(signed_vat)
+        elif is_debit:
+            signed_grand_total = abs(signed_grand_total)   # Debit note
+            signed_vat = abs(signed_vat)
+
+        # --- Standard Rated ---
         if inv_doc.get("custom_zatca_tax_category") == "Standard":
-            totals["Standard"][key] += inv_doc["grand_total"]
+            totals["Standard"][key] += signed_grand_total
             if not has_item_template:
-                totals["Standard"]["vat"] += inv_doc["total_taxes_and_charges"]
+                totals["Standard"]["vat"] += signed_vat
         else:
             for item in inv_doc["items"]:
                 if item.get("template_category") == "Standard":
-                    totals["Standard"][key] += item.get("amount") or 0
-                    totals["Standard"]["vat"] += calculate_item_vat(item)
+                    item_amount = item.get("amount") or 0
+                    item_vat = calculate_item_vat(item)
+                    if is_return:
+                        item_amount = -abs(item_amount)
+                        item_vat = -abs(item_vat)
+                    elif is_debit:
+                        item_amount = abs(item_amount)
+                        item_vat = abs(item_vat)
+                    totals["Standard"][key] += item_amount
+                    totals["Standard"]["vat"] += item_vat
 
-        # Zero Rated
+        # --- Zero Rated ---
         if inv_doc.get("custom_zatca_tax_category") == "Zero Rated":
-            totals["Zero Rated"][key] += inv_doc["grand_total"]
+            totals["Zero Rated"][key] += signed_grand_total
         else:
             for item in inv_doc["items"]:
                 if item.get("template_category") == "Zero Rated":
-                    totals["Zero Rated"][key] += item.get("amount") or 0
+                    item_amount = item.get("amount") or 0
+                    if is_return:
+                        item_amount = -abs(item_amount)
+                    elif is_debit:
+                        item_amount = abs(item_amount)
+                    totals["Zero Rated"][key] += item_amount
 
-        # Exports
+        # --- Exports ---
         if int(inv_doc.get("custom_zatca_export_invoice") or 0) == 1:
-            totals["Exports"][key] += inv_doc["grand_total"]
+            totals["Exports"][key] += signed_grand_total
             if not has_item_template:
-                totals["Exports"]["vat"] += inv_doc["total_taxes_and_charges"]
+                totals["Exports"]["vat"] += signed_vat
 
-        # Healthcare / Education (exemption codes)
+        # --- Healthcare / Education ---
         if inv_doc.get("custom_exemption_reason_code") in ["VATEX-SA-HEA", "VATEX-SA-EDU"]:
-            totals["HealthcareEdu"][key] += inv_doc["grand_total"]
+            totals["HealthcareEdu"][key] += signed_grand_total
             if not has_item_template:
-                totals["HealthcareEdu"]["vat"] += inv_doc["total_taxes_and_charges"]
+                totals["HealthcareEdu"]["vat"] += signed_vat
         else:
             for item in inv_doc["items"]:
                 if item.get("template_exemption_code") in ["VATEX-SA-HEA", "VATEX-SA-EDU"]:
-                    totals["HealthcareEdu"][key] += item.get("amount") or 0
-                    totals["HealthcareEdu"]["vat"] += calculate_item_vat(item)
+                    item_amount = item.get("amount") or 0
+                    item_vat = calculate_item_vat(item)
+                    if is_return:
+                        item_amount = -abs(item_amount)
+                        item_vat = -abs(item_vat)
+                    elif is_debit:
+                        item_amount = abs(item_amount)
+                        item_vat = abs(item_vat)
+                    totals["HealthcareEdu"][key] += item_amount
+                    totals["HealthcareEdu"]["vat"] += item_vat
 
-        # Exempt
+        # --- Exempt ---
         if inv_doc.get("custom_zatca_tax_category") == "Exempted":
-            totals["Exempt"][key] += inv_doc["grand_total"]
+            totals["Exempt"][key] += signed_grand_total
         else:
             for item in inv_doc["items"]:
                 if item.get("template_category") == "Exempted":
-                    totals["Exempt"][key] += item.get("amount") or 0
+                    item_amount = item.get("amount") or 0
+                    if is_return:
+                        item_amount = -abs(item_amount)
+                    elif is_debit:
+                        item_amount = abs(item_amount)
+                    totals["Exempt"][key] += item_amount
 
     return totals
+
+    # # Now apply your original ORM logic per-invoice
+    # for inv_doc in invoices.values():
+    #     is_return = 1 if inv_doc["is_return"] else 0
+    #     is_debit = 1 if inv_doc["is_debit_note"] else 0
+    #     key = "adjustment" if is_return else "amount"
+
+    #     has_item_template = any(item.get("item_tax_template") for item in inv_doc["items"])
+
+    #     def calculate_item_vat(item):
+    #         return (item.get("net_amount") or 0) * (item.get("tax_rate") or 0) / 100.0
+
+    #     # Standard Rated
+    #     if inv_doc.get("custom_zatca_tax_category") == "Standard":
+    #         totals["Standard"][key] += inv_doc["grand_total"]
+    #         if not has_item_template:
+    #             totals["Standard"]["vat"] += inv_doc["total_taxes_and_charges"]
+    #     else:
+    #         for item in inv_doc["items"]:
+    #             if item.get("template_category") == "Standard":
+    #                 totals["Standard"][key] += item.get("amount") or 0
+    #                 totals["Standard"]["vat"] += calculate_item_vat(item)
+
+    #     # Zero Rated
+    #     if inv_doc.get("custom_zatca_tax_category") == "Zero Rated":
+    #         totals["Zero Rated"][key] += inv_doc["grand_total"]
+    #     else:
+    #         for item in inv_doc["items"]:
+    #             if item.get("template_category") == "Zero Rated":
+    #                 totals["Zero Rated"][key] += item.get("amount") or 0
+
+    #     # Exports
+    #     if int(inv_doc.get("custom_zatca_export_invoice") or 0) == 1:
+    #         totals["Exports"][key] += inv_doc["grand_total"]
+    #         if not has_item_template:
+    #             totals["Exports"]["vat"] += inv_doc["total_taxes_and_charges"]
+
+    #     # Healthcare / Education (exemption codes)
+    #     if inv_doc.get("custom_exemption_reason_code") in ["VATEX-SA-HEA", "VATEX-SA-EDU"]:
+    #         totals["HealthcareEdu"][key] += inv_doc["grand_total"]
+    #         if not has_item_template:
+    #             totals["HealthcareEdu"]["vat"] += inv_doc["total_taxes_and_charges"]
+    #     else:
+    #         for item in inv_doc["items"]:
+    #             if item.get("template_exemption_code") in ["VATEX-SA-HEA", "VATEX-SA-EDU"]:
+    #                 totals["HealthcareEdu"][key] += item.get("amount") or 0
+    #                 totals["HealthcareEdu"]["vat"] += calculate_item_vat(item)
+
+    #     # Exempt
+    #     if inv_doc.get("custom_zatca_tax_category") == "Exempted":
+    #         totals["Exempt"][key] += inv_doc["grand_total"]
+    #     else:
+    #         for item in inv_doc["items"]:
+    #             if item.get("template_category") == "Exempted":
+    #                 totals["Exempt"][key] += item.get("amount") or 0
+
+    # return totals
 
 
 # -----------------------------
