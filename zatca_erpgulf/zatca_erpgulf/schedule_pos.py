@@ -100,6 +100,9 @@ def submit_posinvoices_to_zatca_background_process():
             pos_invoice_doc = frappe.get_doc("POS Invoice", invoice["name"])
             company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
             # print(f"Processing {pos_invoice_doc.name}", "ZATCA Background Job")
+            if company_doc.custom_phase_1_or_2 == "Phase-1":
+                # frappe.log_error(f"Skipping invoice {invoice['name']} because company is Phase-1", "ZATCA Background Debug")
+                continue
             if pos_invoice_doc.docstatus == 1:
                 zatca_background_on_submit(
                     pos_invoice_doc, bypass_background_check=True
