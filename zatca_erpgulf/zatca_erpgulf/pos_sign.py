@@ -1004,6 +1004,126 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                                 "As per ZATCA regulation, Check the ZATCA category code and enable it as standard."
                             )
                         )
+        address = None
+        customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
+        if customer_doc.custom_b2c == 0:
+            if not customer_doc.custom_buyer_id:
+                frappe.throw(
+                    "As per ZATCA regulation- For B2B Customers, customer CR number has to be provided"
+                )
+        if customer_doc.custom_b2c != 1:
+            if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
+                if pos_invoice_doc.customer_address:
+                    address = frappe.get_doc(
+                        "Address", pos_invoice_doc.customer_address
+                    )
+            else:
+                if customer_doc.customer_primary_address:
+                    address = frappe.get_doc(
+                        "Address", customer_doc.customer_primary_address
+                    )
+
+            if not address:
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Customer address is mandatory for non-B2C customers."
+                    )
+                )
+
+            # ZATCA-required field validation
+            if not address.address_line1:
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Address Line 1 is required in customer address."
+                    )
+                )
+            if not address.address_line2:
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation,Address Line 2 is required in customer address."
+                    )
+                )
+            if (
+                not address.custom_building_number
+                or not address.custom_building_number.isdigit()
+                or len(address.custom_building_number) != 4
+            ):
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Building Number must be exactly 4 digits in customer address."
+                    )
+                )
+            if (
+                not address.pincode
+                or not address.pincode.isdigit()
+                or len(address.pincode) != 5
+            ):
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulation, Pincode must be exactly 5 digits in customer address."
+                    )
+                )
+            if address and address.country == "Saudi Arabia":
+                if not customer_doc.tax_id:
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulation, Tax ID is required for customers in Saudi Arabia."
+                        )
+                    )
+                elif (
+                    not customer_doc.tax_id.isdigit() or len(customer_doc.tax_id) != 15
+                ):
+                    frappe.throw(
+                        _(
+                            "As per ZATCA regulation, Customer Tax ID must be exactly 15 digits."
+                        )
+                    )
+
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+        if not company_doc.tax_id:
+            frappe.throw(_("As per ZATCA regulation, Company Tax ID is mandatory"))
+        if company_doc.tax_id and not (
+            company_doc.tax_id.isdigit() and len(company_doc.tax_id) == 15
+        ):
+            frappe.throw(
+                _("As per ZATCA regulation, Company Tax ID must be a 15-digit number")
+            )
+        address = get_address(pos_invoice_doc, company_doc)
+        if not address.address_line1:
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, Address Line 1 is required in the company address."
+                )
+            )
+
+        if not address.address_line2:
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, Address Line 2 is required in the company address."
+                )
+            )
+
+        if (
+            not address.custom_building_number
+            or not address.custom_building_number.isdigit()
+            or len(address.custom_building_number) != 4
+        ):
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, Building Number must be exactly 4 digitsin company address."
+                )
+            )
+
+        if (
+            not address.pincode
+            or not address.pincode.isdigit()
+            or len(address.pincode) != 5
+        ):
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation,Pincode must be exactly 5 digits in company address."
+                )
+            )
         base_discount_amount = pos_invoice_doc.get("base_discount_amount", 0.0)
         if len(tax_categories) > 1 and base_discount_amount > 0:
             frappe.throw(
@@ -1090,7 +1210,7 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
                     )
                 elif (
                     settings.custom_send_invoice_to_zatca == "Background"
-                    and not bypass_background_check
+                    and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
                     zatca_call_pos_without_xml_background(
                         invoice_number,
@@ -1165,9 +1285,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         
         if company_doc.tax_id and customer_doc.tax_id:
             if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
-                sales_invoice_doc.custom_zatca_status = "Intra-company transfer"
-                sales_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
-                sales_invoice_doc.save(ignore_permissions=True)
+                pos_invoice_doc.custom_zatca_status = "Intra-company transfer"
+                pos_invoice_doc.custom_zatca_full_response = "Intra-company transfer"
+                pos_invoice_doc.save(ignore_permissions=True)
                 frappe.db.commit()
                 return
 
@@ -1459,7 +1579,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     )
                 elif (
                     settings.custom_send_invoice_to_zatca == "Background"
-                    and not bypass_background_check
+                    and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
                     zatca_call_pos_without_xml_background(
                         invoice_number,
