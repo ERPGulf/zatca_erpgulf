@@ -636,8 +636,8 @@ def customer_data(invoice, pos_invoice_doc):
             cac_party_2, "cac:PartyIdentification"
         )
         cbc_id_4 = ET.SubElement(cac_partyidentification_1, "cbc:ID")
-        cbc_id_4.set("schemeID", "CRN")
-        cbc_id_4.text = customer_doc.tax_id
+        cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
+        cbc_id_4.text = customer_doc.custom_buyer_id   
         # frappe.throw(f"Customer Tax ID set to: {cbc_ID_4.text}")
         if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
             address = frappe.get_doc("Address", pos_invoice_doc.customer_address)
