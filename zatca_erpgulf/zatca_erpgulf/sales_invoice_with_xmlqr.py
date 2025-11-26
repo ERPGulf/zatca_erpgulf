@@ -126,7 +126,7 @@ def reporting_api_xml_sales_invoice(
         company_abbr = frappe.db.get_value(
             "Company", {"name": sales_invoice_doc.company}, "abbr"
         )
-
+        company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
         payload = {
             "invoiceHash": encoded_hash,
             "uuid": uuid1,
