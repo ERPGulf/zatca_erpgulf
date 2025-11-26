@@ -1485,7 +1485,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     settings.custom_send_invoice_to_zatca == "Background"
                     and not bypass_background_check
                     and customer_doc.custom_b2c == 1
-                    and not custom_xml_field
+                    # and not custom_xml_field
                 ):
                     zatca_call_scheduler_background(
                         invoice_number,
@@ -1527,6 +1527,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     settings.custom_send_invoice_to_zatca == "Background"
                     and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
+                    # frappe.throw("hi")
                     zatca_call_scheduler_background(
                         invoice_number,
                         "0",
@@ -1931,7 +1932,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     settings.custom_send_invoice_to_zatca == "Background"
                     and not bypass_background_check
                     and customer_doc.custom_b2c == 1 
-                    and not custom_xml_field
+                    # and not custom_xml_field
                 ):
                     zatca_call_scheduler_background(
                         invoice_number,
