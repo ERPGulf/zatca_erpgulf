@@ -1527,7 +1527,6 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                     settings.custom_send_invoice_to_zatca == "Background"
                     and not bypass_background_check and customer_doc.custom_b2c == 1
                 ):
-                    # frappe.throw("hi")
                     zatca_call_scheduler_background(
                         invoice_number,
                         "0",
@@ -1933,7 +1932,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     and not bypass_background_check
                     and customer_doc.custom_b2c == 1 
                     # and not custom_xml_field
-                ):
+                ):  frappe.throw("new1")
                     zatca_call_scheduler_background(
                         invoice_number,
                         "0",
@@ -1944,10 +1943,12 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                 elif is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = sales_invoice_doc.custom_xml
+                    frappe.throw("new2")
                     submit_sales_invoice_withxmlqr(
                         sales_invoice_doc, custom_xml_field, invoice_number
                     )
                 else:
+                    frappe.throw("new3")
                     zatca_call_withoutxml(
                         invoice_number,
                         "0",
@@ -1966,6 +1967,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                         },
                         "file_url",
                     )
+                    frappe.throw("new4")
                     submit_sales_invoice_simplifeid(
                         sales_invoice_doc, custom_xml_field, invoice_number
                     )
