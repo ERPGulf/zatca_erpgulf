@@ -1350,8 +1350,8 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                         )
                     )
             # if customer_doc.custom_b2c != 1:
-            # if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
-            if address and address.country == SAUDI_ARABIA:
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
@@ -1480,13 +1480,25 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
                 )
         if settings.custom_phase_1_or_2 == "Phase-2":
             if field_exists and sales_invoice_doc.custom_unique_id:
-
-                if is_gpos_installed and sales_invoice_doc.custom_xml:
+                if (
+                    settings.custom_send_invoice_to_zatca == "Background"
+                    and not bypass_background_check
+                    and customer_doc.custom_b2c == 1
+                ):
+                    zatca_call_scheduler_background(
+                        invoice_number,
+                        "0",
+                        any_item_has_tax_template,
+                        company_abbr,
+                        source_doc,
+                    )
+                elif is_gpos_installed and sales_invoice_doc.custom_xml:
                     # Set the custom XML field
                     custom_xml_field = sales_invoice_doc.custom_xml
                     submit_sales_invoice_withxmlqr(
                         sales_invoice_doc, custom_xml_field, invoice_number
                     )
+                    
                 else:
                     zatca_call_withoutxml(
                         invoice_number,
@@ -1795,8 +1807,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                             "As per ZATCA regulations, Pincode must be exactly 5 digits in customer address."
                         )
                     )
-            # if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
-            if address and address.country == SAUDI_ARABIA:
+            if address and address.country == SAUDI_ARABIA and not customer_doc.custom_buyer_id:
+            # if address and address.country == SAUDI_ARABIA:
                 if not customer_doc.tax_id:
                     frappe.throw(
                         _(
