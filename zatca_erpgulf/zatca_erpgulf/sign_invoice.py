@@ -1932,7 +1932,8 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
                     and not bypass_background_check
                     and customer_doc.custom_b2c == 1 
                     # and not custom_xml_field
-                ):  frappe.throw("new1")
+                ):  
+                    frappe.throw("new1")
                     zatca_call_scheduler_background(
                         invoice_number,
                         "0",
