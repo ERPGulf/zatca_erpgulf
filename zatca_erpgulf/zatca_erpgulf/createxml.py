@@ -362,7 +362,7 @@ def doc_reference(invoice, sales_invoice_doc, invoice_number):
         cbc_documentcurrencycode = ET.SubElement(invoice, "cbc:DocumentCurrencyCode")
         cbc_documentcurrencycode.text = sales_invoice_doc.currency
         cbc_taxcurrencycode = ET.SubElement(invoice, "cbc:TaxCurrencyCode")
-        cbc_taxcurrencycode.text = sales_invoice_doc.currency  # SAR is as zatca requires tax amount in SAR
+        cbc_taxcurrencycode.text ="SAR" # SAR is as zatca requires tax amount in SAR
         # if sales_invoice_doc.is_return == 1:
         if sales_invoice_doc.is_return == 1 or sales_invoice_doc.is_debit_note == 1:
             invoice = billing_reference_for_credit_and_debit_note(

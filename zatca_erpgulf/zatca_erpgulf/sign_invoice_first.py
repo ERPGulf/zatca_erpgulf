@@ -570,6 +570,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         company_doc = frappe.get_doc("Company", company_name)
         # frappe.throw(f"Source doc type: {type(source_doc)}, value: {source_doc}")
         private_key_data_str = None
+
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -582,6 +583,8 @@ def digital_signature(hash1, company_abbr, source_doc):
                     private_key_data_str = company_doc.get("custom_private_key")
             elif source_doc.doctype == "Company":
                 private_key_data_str = company_doc.get("custom_private_key")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                private_key_data_str = source_doc.get("custom_private_key")
 
         if not private_key_data_str:
             frappe.throw(_("No private key data found for the company."))
@@ -596,7 +599,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         return encoded_signature
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(_)("eError in digital signature:" + str(e))
+        frappe.throw(_("Error in digital signature: ") + str(e))
         return None
 
 
@@ -608,7 +611,7 @@ def extract_certificate_details(company_abbr, source_doc):
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
-
+        certificate_data_str = None     
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -622,9 +625,11 @@ def extract_certificate_details(company_abbr, source_doc):
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                certificate_data_str = source_doc.get("custom_certficate")
 
         if not certificate_data_str:
-            frappe.throw(_(f"No certificate data found for company {company_name}"))
+            frappe.throw(_(f"No certificate data found for company {source_doc}"))
 
         certificate_content = certificate_data_str.strip()
 
@@ -660,6 +665,7 @@ def certificate_hash(company_abbr, source_doc):
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
+        certificate_data_str = None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -672,6 +678,8 @@ def certificate_hash(company_abbr, source_doc):
                     certificate_data_str = company_doc.get("custom_certificate", "")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate", "")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                certificate_data_str = source_doc.get("custom_certficate")
 
         if not certificate_data_str:
             frappe.throw(_(f"No certificate data found for company {company_name}"))
@@ -814,7 +822,7 @@ def populate_the_ubl_extensions_output(
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
-
+        certificate_data_str - None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -828,6 +836,8 @@ def populate_the_ubl_extensions_output(
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                certificate_data_str = source_doc.get("custom_certficate") 
 
         if not certificate_data_str:
             frappe.throw(_(f"No certificate data found for company {company_name}"))

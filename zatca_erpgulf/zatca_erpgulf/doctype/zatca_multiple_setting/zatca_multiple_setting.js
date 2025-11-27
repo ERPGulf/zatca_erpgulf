@@ -205,7 +205,8 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
                         args: {
                             "invoice_number": frm.doc.custom_sample_invoice_number_to_test,
                             "compliance_type": "1",
-                            "company_abbr": data.message.abbr
+                            "company_abbr": data.message.abbr,
+                            "source_doc": frm.doc,
                         },
                         callback: function (r) {
                             if (!r.exc) {
