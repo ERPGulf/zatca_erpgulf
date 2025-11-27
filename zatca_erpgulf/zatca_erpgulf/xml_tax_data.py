@@ -168,7 +168,7 @@ def tax_data(invoice, sales_invoice_doc):
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount_usd_1 = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount_usd_1.set(
-                "currencyID", sales_invoice_doc.currency
+                "currencyID", "SAR"
             )  # USD currency
             if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 taxable_amount_1 = sales_invoice_doc.total - sales_invoice_doc.get(
@@ -507,7 +507,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         else:
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
-            cbc_taxamount_sar.set("currencyID", sales_invoice_doc.currency)
+            cbc_taxamount_sar.set("currencyID", "SAR")
             tax_amount_without_retention_sar = round(abs(total_tax), 2)
             cbc_taxamount_sar.text = str(tax_amount_without_retention_sar)
 
