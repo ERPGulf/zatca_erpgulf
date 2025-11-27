@@ -822,7 +822,7 @@ def populate_the_ubl_extensions_output(
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
-        certificate_data_str - None
+        certificate_data_str = None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
