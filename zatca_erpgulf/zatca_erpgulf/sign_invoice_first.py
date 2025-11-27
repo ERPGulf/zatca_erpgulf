@@ -444,6 +444,8 @@ def create_public_key(company_abbr, source_doc):
                     certificate_data_str = company_doc.get("custom_certificate", "")
             elif source_doc.doctype == "Company":
                 certificate_data_str = company_doc.get("custom_certificate", "")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                certificate_data_str = source_doc.get("custom_certficate") 
             else:
                 frappe.throw(_(f"Unsupported document type: {source_doc.doctype}"))
 
@@ -881,7 +883,7 @@ def extract_public_key_data(company_abbr, source_doc):
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
-
+        public_key_pem = None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -895,8 +897,10 @@ def extract_public_key_data(company_abbr, source_doc):
                     public_key_pem = company_doc.get("custom_public_key", "")
             elif source_doc.doctype == "Company":
                 public_key_pem = company_doc.get("custom_public_key", "")
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                public_key_pem = source_doc.get("custom_public_key", "")
         if not public_key_pem:
-            frappe.throw(_(f"No public key found for company {company_name}"))
+            frappe.throw(_(f"No public key found for company {source_doc}"))
 
         lines = public_key_pem.splitlines()
         key_data = "".join(lines[1:-1])
@@ -958,7 +962,7 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
-
+        certificate_content = None
         if source_doc:
             if source_doc.doctype in SUPPORTED_INVOICES:
                 # Use certificate from the company document for Sales Invoice
@@ -972,6 +976,8 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
                     certificate_content = company_doc.custom_certificate or ""
             elif source_doc.doctype == "Company":
                 certificate_content = company_doc.custom_certificate or ""
+            elif source_doc.doctype == "ZATCA Multiple Setting":
+                certificate_content = source_doc.custom_certficate
 
         if not certificate_content:
             frappe.throw(_(f"No certificate found for company in tag9 {company_abbr}"))
