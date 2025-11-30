@@ -387,7 +387,11 @@ def additional_reference(invoice, company_abbr, pos_invoice_doc):
             zatca_settings = frappe.get_doc(
                 "ZATCA Multiple Setting", pos_invoice_doc.custom_zatca_pos_name
             )
-            pih = zatca_settings.custom_pih
+            if zatca_settings.custom__use_company_certificate__keys != 1:
+                pih = zatca_settings.custom_pih
+            else:
+                linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                pih = linked_doc.custom_pih
         else:
             pih = company_doc.custom_pih
 

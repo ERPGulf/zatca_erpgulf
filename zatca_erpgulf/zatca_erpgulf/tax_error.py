@@ -40,6 +40,18 @@ def validate_sales_invoice_taxes(doc, event=None):
     #     )
 
     # If the company requires cost centers, ensure the invoice has one
+    if doc.custom_zatca_pos_name:
+        zatca_settings = frappe.get_doc("ZATCA Multiple Setting", doc.custom_zatca_pos_name)
+
+        # Get the linked Company from custom_linked_doctype
+        linked_company_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+
+        # Validation: doc.company and linked company must be the same
+        if linked_company_doc.name != doc.company:
+            frappe.throw(
+                f"Company mismatch: Document company '{doc.company}' "
+                f"does not match linked ZATCA company '{linked_company_doc.name}of machine setting'."
+            )
     if company_doc.custom_costcenter == 1:
         if not doc.cost_center:
             frappe.throw(_("This company requires a Cost Center"))
