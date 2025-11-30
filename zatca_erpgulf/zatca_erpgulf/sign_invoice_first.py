@@ -580,7 +580,11 @@ def digital_signature(hash1, company_abbr, source_doc):
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    private_key_data_str = zatca_settings.get("custom_private_key")
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        private_key_data_str = zatca_settings.get("custom_private_key")
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        private_key_data_str = linked_doc.get("custom_private_key")
                 else:
                     private_key_data_str = company_doc.get("custom_private_key")
             elif source_doc.doctype == "Company":
@@ -622,7 +626,11 @@ def extract_certificate_details(company_abbr, source_doc):
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    certificate_data_str = zatca_settings.get("custom_certficate")
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        certificate_data_str = zatca_settings.get("custom_certficate")
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        certificate_data_str = linked_doc.get("custom_certificate")
                 else:
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
@@ -675,7 +683,11 @@ def certificate_hash(company_abbr, source_doc):
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    certificate_data_str = zatca_settings.get("custom_certficate", "")
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        certificate_data_str = zatca_settings.get("custom_certficate", "")
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        certificate_data_str = linked_doc.get("custom_certificate", "")
                 else:
                     certificate_data_str = company_doc.get("custom_certificate", "")
             elif source_doc.doctype == "Company":
@@ -833,7 +845,11 @@ def populate_the_ubl_extensions_output(
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    certificate_data_str = zatca_settings.get("custom_certficate")
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        certificate_data_str = zatca_settings.get("custom_certficate")
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        certificate_data_str = linked_doc.get("custom_certificate")
                 else:
                     certificate_data_str = company_doc.get("custom_certificate")
             elif source_doc.doctype == "Company":
@@ -892,7 +908,11 @@ def extract_public_key_data(company_abbr, source_doc):
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    public_key_pem = zatca_settings.get("custom_public_key", "")
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        public_key_pem = zatca_settings.get("custom_public_key", "")
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        public_key_pem = linked_doc.get("custom_public_key", "")
                 else:
                     public_key_pem = company_doc.get("custom_public_key", "")
             elif source_doc.doctype == "Company":
@@ -971,7 +991,11 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
                     zatca_settings = frappe.get_doc(
                         "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
                     )
-                    certificate_content = zatca_settings.custom_certficate or ""
+                    if zatca_settings.custom__use_company_certificate__keys != 1:
+                        certificate_content = zatca_settings.custom_certficate or ""
+                    else:
+                        linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                        certificate_content = linked_doc.custom_certificate or ""
                 else:
                     certificate_content = company_doc.custom_certificate or ""
             elif source_doc.doctype == "Company":
@@ -1199,11 +1223,15 @@ def compliance_api_call(
             zatca_settings = frappe.get_doc(
                 "ZATCA Multiple Setting", source_doc.custom_zatca_pos_name
             )
-            csid = zatca_settings.custom_basic_auth_from_csid
+            if zatca_settings.custom__use_company_certificate__keys != 1:
+                csid = zatca_settings.custom_basic_auth_from_csid
+            else:
+                linked_doc = frappe.get_doc("Company", zatca_settings.custom_linked_doctype)
+                csid = linked_doc.custom_basic_auth_from_csid
         else:
             csid = company_doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw(_((f"CSID for company {company_abbr} not found")))
+            frappe.throw(_((f"CSID for company {company_abbr} not foundor not found in multpile setting page")))
 
         headers = {
             "accept": "application/json",

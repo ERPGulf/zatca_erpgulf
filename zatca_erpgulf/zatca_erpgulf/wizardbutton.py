@@ -104,6 +104,9 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
             doc_type = "ZATCA Multiple Setting"
             doc_name = machine
             doc = frappe.get_doc(doc_type, doc_name)
+            if doc.custom__use_company_certificate__keys == 1:
+                # Fallback to Company
+                doc = frappe.get_doc("Company", company_name)
         else:
             doc_type = frappe.get_doc("Company", company_name)
             doc_name = company_name
