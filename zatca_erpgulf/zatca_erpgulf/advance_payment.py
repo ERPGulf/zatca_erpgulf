@@ -93,64 +93,42 @@ def get_tax_for_item(full_string, item):
     except TypeError as e:
         frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
-
-import json
 from decimal import Decimal, ROUND_HALF_UP
+import json
 
-def generate_item_wise_tax_detail(sales_invoice_doc):
+def generate_item_wise_tax_detail(sales_invoice_doc, tax_index=0):
     """
-    Generates item_wise_tax_detail dynamically for all items.
-    Handles:
-    - Percentage-based taxes
-    - Actual taxes distributed proportionally
-    - Proper rounding for ZATCA compliance
-    Returns the JSON string and sets it in taxes[0].item_wise_tax_detail
+    Generate item-wise tax detail for a sales invoice.
     """
-    if not sales_invoice_doc.taxes or not sales_invoice_doc.custom_item:
-        return "{}"  # No taxes or items
+    if not sales_invoice_doc.custom_item:
+        return "{}"
 
-    tax_row = sales_invoice_doc.taxes[0]  # assuming first tax row
+    # Get the tax rate from the specified tax entry
+    tax_rate = sales_invoice_doc.taxes[tax_index].rate
+
     item_wise_tax_detail = {}
 
-    # Determine base for allocation
-    if tax_row.charge_type == "Actual":
-        total_base = sum(item.base_amount for item in sales_invoice_doc.custom_item)
-        total_tax = tax_row.base_tax_amount or 0
-        allocated_sum = 0
+    for single_item in sales_invoice_doc.custom_item:
+        item_code = single_item.item_code
+        amount = Decimal(str(single_item.amount))
+        tax_amount = (amount * Decimal(str(tax_rate)) / Decimal("100")).quantize(
+            Decimal("0.0001"), rounding=ROUND_HALF_UP
+        )
 
-        for idx, item in enumerate(sales_invoice_doc.custom_item):
-            if idx < len(sales_invoice_doc.custom_item) - 1:
-                proportion = (item.base_amount / total_base) if total_base else 0
-                item_tax = total_tax * proportion
-                item_tax = float(Decimal(item_tax).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-                allocated_sum += item_tax
-            else:
-                # Assign remaining tax to last item to fix rounding differences
-                item_tax = float(Decimal(total_tax - allocated_sum).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
+        item_wise_tax_detail[item_code] = [float(tax_rate), float(tax_amount)]
 
-            item_wise_tax_detail[item.item_code] = [0.0, item_tax]  # 0 rate for Actual
+    # Store as JSON string in the tax entry
+    sales_invoice_doc.taxes[tax_index].item_wise_tax_detail = json.dumps(item_wise_tax_detail)
 
-    else:
-        # Percentage-based tax
-        for item in sales_invoice_doc.custom_item:
-            tax_rate = tax_row.rate or 0
-            item_tax = item.base_amount * (tax_rate / 100)
-            item_tax = float(Decimal(item_tax).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-            item_wise_tax_detail[item.item_code] = [float(tax_rate), item_tax]
-
-    # Convert to JSON string and assign to field
-    item_wise_tax_json = json.dumps(item_wise_tax_detail)
-    sales_invoice_doc.taxes[0].item_wise_tax_detail = item_wise_tax_json
-
-    return sales_invoice_doc.taxes[0].item_wise_tax_detail
+    return sales_invoice_doc.taxes[tax_index].item_wise_tax_detail
 
 
 def get_tax_total_from_items(sales_invoice_doc):
     """Getting tax total for items"""
     try:
         total_tax = 0
+        tax_detail = generate_item_wise_tax_detail(sales_invoice_doc)
         for single_item in sales_invoice_doc.custom_item:
-            tax_detail= generate_item_wise_tax_detail(sales_invoice_doc)
             _item_tax_amount, tax_percent = get_tax_for_item(
                 tax_detail, single_item.item_code
             )
@@ -673,8 +651,8 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
     The function defines the xml creating without item tax template
     """
     try:
+        tax_detail = generate_item_wise_tax_detail(sales_invoice_doc)
         for single_item in sales_invoice_doc.custom_item:
-            tax_detail= generate_item_wise_tax_detail(sales_invoice_doc)
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
                 tax_detail, single_item.item_code
             )
