@@ -152,12 +152,17 @@ def tax_data(invoice, sales_invoice_doc):
                     "base_discount_amount", 0.0
                 )
 
-            else:
-                taxable_amount = (
-                    sales_invoice_doc.base_net_total
-                    - sales_invoice_doc.get("base_discount_amount", 0.0)
-                )
-
+            else: 
+                if sales_invoice_doc.discount_amount ==0:
+                    taxable_amount = (
+                        sales_invoice_doc.base_net_total
+                        - sales_invoice_doc.get("base_discount_amount", 0.0)
+                    )
+                else:
+                    # frappe.throw("hi")
+                    taxable_amount = (
+                        sales_invoice_doc.base_net_total
+                    )
             cbc_taxableamount.text = str(abs(round(taxable_amount, 2)))
             cbc_taxamount_2 = ET.SubElement(cac_taxsubtotal, "cbc:TaxAmount")
             cbc_taxamount_2.set("currencyID", sales_invoice_doc.currency)
@@ -272,9 +277,13 @@ def tax_data(invoice, sales_invoice_doc):
         if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             cbc_lineextensionamount.text = str(round(abs(sales_invoice_doc.total), 2))
         else:
-
-            cbc_lineextensionamount.text = str(
-                round(abs(sales_invoice_doc.base_net_total), 2)
+            if sales_invoice_doc.discount_amount==0:
+                cbc_lineextensionamount.text = str(
+                    round(abs(sales_invoice_doc.base_net_total), 2)
+                )
+            else:
+                cbc_lineextensionamount.text = str(
+                round(abs(sales_invoice_doc.base_net_total+ sales_invoice_doc.get("discount_amount", 0.0)), 2)
             )
         cbc_taxexclusiveamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:TaxExclusiveAmount"
@@ -291,15 +300,25 @@ def tax_data(invoice, sales_invoice_doc):
                 )
             )
         else:
-            cbc_taxexclusiveamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.base_net_total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
-                    ),
-                    2,
+            if sales_invoice_doc.discount_amount ==0:
+                cbc_taxexclusiveamount.text = str(
+                    round(
+                        abs(
+                            sales_invoice_doc.base_net_total
+                            - sales_invoice_doc.get("discount_amount", 0.0)
+                        ),
+                        2,
+                    )
                 )
-            )
+            else:
+                cbc_taxexclusiveamount.text = str(
+                    round(
+                        abs(
+                            sales_invoice_doc.base_net_total
+                        ),
+                        2,
+                    )
+                )
         cbc_taxinclusiveamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:TaxInclusiveAmount"
         )
@@ -316,16 +335,28 @@ def tax_data(invoice, sales_invoice_doc):
                 )
             )
         else:
-            cbc_taxinclusiveamount.text = str(
-                round(
-                    abs(
-                        sales_invoice_doc.base_net_total
-                        - sales_invoice_doc.get("discount_amount", 0.0)
+            if sales_invoice_doc.discount_amount ==0:
+
+                cbc_taxinclusiveamount.text = str(
+                    round(
+                        abs(
+                            sales_invoice_doc.base_net_total
+                            - sales_invoice_doc.get("discount_amount", 0.0)
+                        )
+                        + abs(tax_amount_without_retention),
+                        2,
                     )
-                    + abs(tax_amount_without_retention),
-                    2,
                 )
-            )
+            else:
+                cbc_taxinclusiveamount.text = str(
+                    round(
+                        abs(
+                            sales_invoice_doc.base_net_total
+                        )
+                        + abs(tax_amount_without_retention),
+                        2,
+                    )
+                )
         cbc_allowancetotalamount = ET.SubElement(
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
@@ -343,14 +374,24 @@ def tax_data(invoice, sales_invoice_doc):
                 2,
             )
         else:
-            total_amount = round(
-                abs(
-                    sales_invoice_doc.base_net_total
-                    - sales_invoice_doc.get("discount_amount", 0.0)
+            if sales_invoice_doc.discount_amount ==0:
+                total_amount = round(
+                    abs(
+                        sales_invoice_doc.base_net_total
+                        - sales_invoice_doc.get("discount_amount", 0.0)
+                    )
+                    + abs(tax_amount_without_retention),
+                    2,
                 )
-                + abs(tax_amount_without_retention),
-                2,
-            )
+            else:
+                total_amount=round(
+                    abs(
+                        sales_invoice_doc.base_net_total
+                    )
+                    + abs(tax_amount_without_retention),
+                    2,
+                )
+
 
         if (
             "claudion4saudi" in frappe.get_installed_apps()
