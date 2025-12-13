@@ -2030,6 +2030,7 @@ def resubmit_invoices(invoice_numbers, bypass_background_check=False):
             # Fetch the Sales Invoice document
             sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
             company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
+            customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
             if (
                 sales_invoice_doc.docstatus == 1
             ):  # Check if the invoice is already submitted
@@ -2038,12 +2039,17 @@ def resubmit_invoices(invoice_numbers, bypass_background_check=False):
                     sales_invoice_doc, bypass_background_check=True
                 )
 
-            elif company_doc.custom_submit_or_not == 1:
+            # elif company_doc.custom_submit_or_not == 1:
+            elif (
+                sales_invoice_doc.docstatus == 0
+                and company_doc.custom_submit_or_not == 1
+                and customer_doc.custom_b2c == 1
+            ):
                 # Submit the invoice
                 sales_invoice_doc.submit()
-                zatca_background_on_submit(
-                    sales_invoice_doc, bypass_background_check=True
-                )
+                # zatca_background_on_submit(
+                #     sales_invoice_doc, bypass_background_check=True
+                # )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(_(f"Error in background call: {str(e)}"))

@@ -1653,6 +1653,8 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
             # Fetch the Sales Invoice document
             pos_invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
             company_doc = frappe.get_doc("Company", pos_invoice_doc.company)
+            customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
+
 
             if (
                 pos_invoice_doc.docstatus == 1
@@ -1662,11 +1664,16 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
                     pos_invoice_doc, bypass_background_check=True
                 )
 
-            elif company_doc.custom_submit_or_not == 1:
+            # elif company_doc.custom_submit_or_not == 1:
+            elif (
+                sales_invoice_doc.docstatus == 0
+                and company_doc.custom_submit_or_not == 1
+                and customer_doc.custom_b2c == 1
+            ):
                 pos_invoice_doc.submit()
-                zatca_background_on_submit(
-                    pos_invoice_doc, bypass_background_check=True
-                )
+                # zatca_background_on_submit(
+                #     pos_invoice_doc, bypass_background_check=True
+                # )
 
         except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
             frappe.throw(_(f"Error in background call: {str(e)}"))

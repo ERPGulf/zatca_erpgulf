@@ -790,7 +790,7 @@ def tax_data_with_template(invoice, sales_invoice_doc):
                 advance_amount = sum(
                     advance.advance_amount
                     for advance in sales_invoice_doc.custom_advances_copy
-                )
+                )  
             cbc_prepaidamount = ET.SubElement(
                 cac_legalmonetarytotal, "cbc:PrepaidAmount"
             )
