@@ -104,6 +104,16 @@ def validate_sales_invoice_taxes(doc, event=None):
                     "or include taxes in the invoice."
                 )
             )
+    if doc.is_return == 1 and doc.doctype in ["Sales Invoice", "POS Invoice"]:
+        if not doc.return_against:
+            frappe.throw(
+                _(
+                    "As per ZATCA regulation, the Billing Reference ID "
+                    "(Original Invoice Number) is mandatory for "
+                    "Credit Notes and Return Invoices. "
+                    "Please select the original invoice in the 'Return Against' field."
+                )
+            )
     if doc.doctype == "Sales Invoice":
         if doc.is_debit_note == 1 and not doc.return_against:
             frappe.throw(
