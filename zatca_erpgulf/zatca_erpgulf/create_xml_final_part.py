@@ -1338,14 +1338,15 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
         return None
 
 
-def xml_structuring(invoice):
+def xml_structuring(invoice,invoice_number):
     """
     Xml structuring and final saving of the xml into private files
     """
     try:
 
         tree = ET.ElementTree(invoice)
-        xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
+        # xml_file_path = frappe.local.site + "/private/files/xml_files_{invoice_number}.xml"
+        xml_file_path = f"{frappe.local.site}/private/files/xml_files_{invoice_number}.xml"
         # Save the XML tree to a file
         with open(xml_file_path, "wb") as file:
             tree.write(file, encoding="utf-8", xml_declaration=True)
@@ -1359,7 +1360,7 @@ def xml_structuring(invoice):
         pretty_xml_string = xml_dom.toprettyxml(indent="  ")
 
         # Write the formatted XML to the final file
-        final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
+        final_xml_path = f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml"
 
         with open(final_xml_path, "w", encoding="utf-8") as file:
             file.write(pretty_xml_string)

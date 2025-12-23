@@ -952,10 +952,10 @@ def zatca_call(
             else:
                 invoice = item_data_with_template(invoice, sales_invoice_doc)
 
-        xml_structuring(invoice)
+        xml_structuring(invoice,invoice_number)
         try:
             with open(
-                frappe.local.site + "/private/files/finalzatcaxml.xml",
+                f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml",
                 "r",
                 encoding="utf-8",
             ) as file:
@@ -970,7 +970,7 @@ def zatca_call(
             company_abbr, source_doc
         )
         encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
-        namespaces, signing_time = signxml_modify(company_abbr, source_doc)
+        namespaces, signing_time = signxml_modify(company_abbr,invoice_number,source_doc)
         signed_properties_base64 = generate_signed_properties_hash(
             signing_time, issuer_name, serial_number, encoded_certificate_hash
         )
@@ -980,9 +980,10 @@ def zatca_call(
             signed_properties_base64,
             encoded_hash,
             company_abbr,
+            invoice_number,
             source_doc,
         )
-        tlv_data = generate_tlv_xml(company_abbr, source_doc)
+        tlv_data = generate_tlv_xml(company_abbr,invoice_number, source_doc)
 
         tagsbufsarray = []
         for tag_num, tag_value in tlv_data.items():
@@ -990,8 +991,8 @@ def zatca_call(
 
         qrcodebuf = b"".join(tagsbufsarray)
         qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
-        update_qr_toxml(qrcodeb64, company_abbr)
-        signed_xmlfile_name = structuring_signedxml()
+        update_qr_toxml(qrcodeb64,invoice_number, company_abbr)
+        signed_xmlfile_name = structuring_signedxml(invoice_number)
         # Example usage
         # file_path = generate_invoice_pdf(
         #     invoice_number, l anguage="en", letterhead="Sample letterhead"
@@ -1120,9 +1121,9 @@ def zatca_call_compliance(
         else:
             item_data_with_template(invoice, sales_invoice_doc)
         # Generate and process the XML data
-        xml_structuring(invoice)
+        xml_structuring(invoice,invoice_number)
         with open(
-            frappe.local.site + "/private/files/finalzatcaxml.xml",
+            f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml",
             "r",
             encoding="utf-8",
         ) as file:
@@ -1136,7 +1137,7 @@ def zatca_call_compliance(
             company_abbr, source_doc
         )
         encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
-        namespaces, signing_time = signxml_modify(company_abbr, source_doc)
+        namespaces, signing_time = signxml_modify(company_abbr,invoice_number, source_doc)
         signed_properties_base64 = generate_signed_properties_hash(
             signing_time, issuer_name, serial_number, encoded_certificate_hash
         )
@@ -1146,10 +1147,11 @@ def zatca_call_compliance(
             signed_properties_base64,
             encoded_hash,
             company_abbr,
+            invoice_number,
             source_doc,
         )
         # Generate the TLV data and QR code
-        tlv_data = generate_tlv_xml(company_abbr, source_doc)
+        tlv_data = generate_tlv_xml(company_abbr,invoice_number, source_doc)
         tagsbufsarray = []
         for tag_num, tag_value in tlv_data.items():
             tagsbufsarray.append(get_tlv_for_value(tag_num, tag_value))
@@ -1157,8 +1159,8 @@ def zatca_call_compliance(
         qrcodebuf = b"".join(tagsbufsarray)
         qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
 
-        update_qr_toxml(qrcodeb64, company_abbr)
-        signed_xmlfile_name = structuring_signedxml()
+        update_qr_toxml(qrcodeb64,invoice_number,company_abbr)
+        signed_xmlfile_name = structuring_signedxml(invoice_number)
         value = compliance_api_call(
             uuid1, encoded_hash, signed_xmlfile_name, company_abbr, source_doc
         )
