@@ -761,22 +761,14 @@ def custom_round(value):
         return float(decimal_value.quantize(Decimal("0.01"), rounding=ROUND_DOWN))
 
 
-def xml_structuring_advance(invoice,invoice_number, sales_invoice_doc):
+def xml_structuring_advance(invoice, sales_invoice_doc):
     """
     Xml structuring and final saving of the xml into private files
     """
     try:
 
         tree = ET.ElementTree(invoice)
-        xml_file_path = f"{frappe.local.site}/private/files/xml_filesadavance1_{invoice_number}.xml"
-
-        # Save the XML tree to a file
-        with open(xml_file_path, "wb") as file:
-            tree.write(file, encoding="utf-8", xml_declaration=True)
-
-        # Read the XML file and format it
-        with open(xml_file_path, "r", encoding="utf-8") as file:
-            xml_string = file.read()
+        xml_string = ET.tostring(invoice, encoding="utf-8", method="xml")
 
         # Format the XML string to make it pretty
         xml_dom = minidom.parseString(xml_string)
@@ -1201,15 +1193,7 @@ def zatca_call(
         # frappe.throw(str(sales_invoice_doc))
         invoice = tax_data(invoice, sales_invoice_doc)
         invoice = item_data_advance(invoice, sales_invoice_doc, invoice_number)
-        file_content = xml_structuring_advance(invoice,invoice_number,sales_invoice_doc)
-
-        # with open(
-        #     f"{frappe.local.site}/private/files/finalzatcaxmladavance1_{invoice_number}.xml",
-        #     "r",
-        #     encoding="utf-8",
-        # ) as file:
-        #     file_content = file.read()
-        #     # frappe.msgprint(file_content)
+        file_content = xml_structuring_advance(invoice,sales_invoice_doc)
 
         tag_removed_xml = removetags(file_content)
         canonicalized_xml = canonicalize_xml(tag_removed_xml)

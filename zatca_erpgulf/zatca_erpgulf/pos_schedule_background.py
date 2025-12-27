@@ -114,7 +114,7 @@ def zatca_call_pos_without_xml_background(
         else:
             invoice = item_data_with_template(invoice, pos_invoice_doc)
 
-        file_content = xml_structuring(invoice,invoice_number)
+        file_content = xml_structuring(invoice)
 
         # try:
         #     with open(

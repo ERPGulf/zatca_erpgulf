@@ -170,7 +170,7 @@ def debug_call(
                 invoice = tax_data_with_template(invoice, invoice_doc)
                 invoice = item_data_with_template(invoice, invoice_doc)
 
-            file_content = xml_structuring(invoice,invoice_number)
+            file_content = xml_structuring(invoice)
 
             # --- Read XML file ---
             # try:

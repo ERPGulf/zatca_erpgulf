@@ -183,7 +183,7 @@ def debug_call(
                     invoice = item_data_with_template(invoice, invoice_doc)
 
             # Step 6: XML Structuring & reading
-            file_content = xml_structuring(invoice,invoice_number)
+            file_content = xml_structuring(invoice)
             # xml_file_path = f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml"
             # try:
             #     with open(xml_file_path, "r", encoding="utf-8") as file:
