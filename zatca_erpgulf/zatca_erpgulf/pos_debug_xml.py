@@ -170,14 +170,14 @@ def debug_call(
                 invoice = tax_data_with_template(invoice, invoice_doc)
                 invoice = item_data_with_template(invoice, invoice_doc)
 
-            xml_structuring(invoice,invoice_number)
+            file_content = xml_structuring(invoice,invoice_number)
 
             # --- Read XML file ---
-            try:
-                with open(f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml", "r", encoding="utf-8") as file:
-                    file_content = file.read()
-            except FileNotFoundError:
-                frappe.throw("XML file not found")
+            # try:
+            #     with open(f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml", "r", encoding="utf-8") as file:
+            #         file_content = file.read()
+            # except FileNotFoundError:
+            #     frappe.throw("XML file not found")
 
             tag_removed_xml = removetags(file_content)
             canonicalized_xml = canonicalize_xml(tag_removed_xml)
@@ -185,17 +185,17 @@ def debug_call(
             encoded_signature = digital_signature(hash1, company_abbr, source_doc)
             issuer_name, serial_number = extract_certificate_details(company_abbr, source_doc)
             encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
-            namespaces, signing_time = signxml_modify(company_abbr,invoice_number, source_doc)
+            modified_xml_string, namespaces, signing_time = signxml_modify(company_abbr,file_content, source_doc)
             signed_properties_base64 = generate_signed_properties_hash(signing_time, issuer_name, serial_number, encoded_certificate_hash)
-            populate_the_ubl_extensions_output(encoded_signature, namespaces, signed_properties_base64, encoded_hash, company_abbr,invoice_number, source_doc)
+            final_xml_string = populate_the_ubl_extensions_output(modified_xml_string,encoded_signature, namespaces, signed_properties_base64, encoded_hash, company_abbr, source_doc)
 
-            tlv_data = generate_tlv_xml(company_abbr,invoice_number, source_doc)
+            tlv_data = generate_tlv_xml(final_xml_string, company_abbr, source_doc)
             tagsbufsarray = [get_tlv_for_value(tag_num, tag_value) for tag_num, tag_value in tlv_data.items()]
             qrcodebuf = b"".join(tagsbufsarray)
             qrcodeb64 = base64.b64encode(qrcodebuf).decode("utf-8")
-            update_qr_toxml(qrcodeb64,invoice_number, company_abbr)
+            updated_xml_string = update_qr_toxml(final_xml_string, qrcodeb64, company_abbr)
 
-            signed_xmlfile_name = structuring_signedxml(invoice_number)
+            signed_xmlfile_name = structuring_signedxml(invoice_number ,updated_xml_string)
             signed_xmlfile_name = f"{frappe.local.site}/private/files/final_xml_after_indent_{invoice_number}.xml"
             debug_filename = f"DEBUG_INVOICE_{invoice_doc.name}.xml"
 

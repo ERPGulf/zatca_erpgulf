@@ -313,9 +313,9 @@ def reporting_api_xml_sales_invoice_simplified(
                 
 
                 success_log(response.text, uuid1, invoice_number)
-            else:
+            # else:
 
-                error_log()
+            #     error_log()
             if response.status_code not in (200, 202, 409):
                 invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
                 invoice_doc.db_set(

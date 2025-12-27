@@ -508,16 +508,19 @@ def xml_base64_decode(signed_xmlfile_name):
         return None
 
 
-def signxml_modify(company_abbr,invoice_number, source_doc):
+def signxml_modify(company_abbr,finalzatcaxml, source_doc):
     """modify the signed xml by adding the values like signing time,serial number etc"""
     try:
         encoded_certificate_hash = certificate_hash(company_abbr, source_doc)
         issuer_name, serial_number = extract_certificate_details(
             company_abbr, source_doc
         )
-        original_invoice_xml = etree.parse(
-            f"{frappe.local.site}/private/files/finalzatcaxmladavance1_{invoice_number}.xml"
-        )
+        # original_invoice_xml = etree.parse(
+        #     f"{frappe.local.site}/private/files/finalzatcaxmladavance1_{invoice_number}.xml"
+        # )
+        # root = original_invoice_xml.getroot()
+        root_element = etree.fromstring(finalzatcaxml.encode("utf-8"))
+        original_invoice_xml = etree.ElementTree(root_element)
         root = original_invoice_xml.getroot()
         namespaces = {
             "ext": "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
@@ -540,15 +543,21 @@ def signxml_modify(company_abbr,invoice_number, source_doc):
         signing_time = element_st.text
         element_in.text = issuer_name
         element_sn.text = str(serial_number)
-        with open(
-            f"{frappe.local.site}/private/files/after_step_4advance1_{invoice_number}.xml", "wb"
-        ) as file:
-            original_invoice_xml.write(
-                file,
-                encoding="utf-8",
-                xml_declaration=True,
-            )
-        return namespaces, signing_time
+        modified_xml_string = etree.tostring(
+            root,
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
+        ).decode("utf-8")
+        # with open(
+        #     f"{frappe.local.site}/private/files/after_step_4advance1_{invoice_number}.xml", "wb"
+        # ) as file:
+        #     original_invoice_xml.write(
+        #         file,
+        #         encoding="utf-8",
+        #         xml_declaration=True,
+        #     )
+        return modified_xml_string,namespaces, signing_time
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(_(" error in modification of xml sign part: " + str(e)))
         return None
@@ -596,20 +605,22 @@ def generate_signed_properties_hash(
 
 
 def populate_the_ubl_extensions_output(
+    modified_xml_string,
     encoded_signature,
     namespaces,
     signed_properties_base64,
     encoded_hash,
     company_abbr,
-    invoice_number,
     source_doc,
 ):
     """populate the ubl extension output by giving the signature values and digest values"""
     try:
-        updated_invoice_xml = etree.parse(
-            f"{frappe.local.site}/private/files/after_step_4advance1_{invoice_number}.xml"
-        )
-        root3 = updated_invoice_xml.getroot()
+        # updated_invoice_xml = etree.parse(
+        #     f"{frappe.local.site}/private/files/after_step_4advance1_{invoice_number}.xml"
+        # )
+        # root3 = updated_invoice_xml.getroot()
+        root3 = etree.fromstring(modified_xml_string.encode("utf-8"))
+        updated_invoice_xml = etree.ElementTree(root3)
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
@@ -640,12 +651,17 @@ def populate_the_ubl_extensions_output(
         x509certificate6.text = content
         digestvalue6.text = signed_properties_base64
         digestvalue6_2.text = encoded_hash
-
-        with open(
-            f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml", "wb"
-        ) as file:
-            updated_invoice_xml.write(file, encoding="utf-8", xml_declaration=True)
-
+        final_xml_string = etree.tostring(
+            root3,
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
+        ).decode("utf-8")
+        # with open(
+        #     f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml", "wb"
+        # ) as file:
+        #     updated_invoice_xml.write(file, encoding="utf-8", xml_declaration=True)
+        return final_xml_string
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(_("Error in populating UBL extension output: " + str(e)))
         return
@@ -750,15 +766,15 @@ def tag9_signature_ecdsa(company_abbr, source_doc):
         return None
 
 
-def generate_tlv_xml(company_abbr,invoice_number, source_doc):
+def generate_tlv_xml(final_xml_string,company_abbr, source_doc):
     """generate xml by adding the tlv data"""
     try:
-
-        with open(
-            f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml", "rb"
-        ) as file:
-            xml_data = file.read()
-        root = etree.fromstring(xml_data)
+        root = etree.fromstring(final_xml_string.encode("utf-8"))
+        # with open(
+        #     f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml", "rb"
+        # ) as file:
+        #     xml_data = file.read()
+        # root = etree.fromstring(xml_data)
         namespaces = {
             "ubl": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
             "cac": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
@@ -829,13 +845,14 @@ def generate_tlv_xml(company_abbr,invoice_number, source_doc):
         return None
 
 
-def update_qr_toxml(qrcodeb64,invoice_number, company_abbr):
+def update_qr_toxml(final_xml_string, qrcodeb64, company_abbr):
     """updating the  alla values of qr to xml"""
     try:
-        xml_file_path = (
-            f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml"
-        )
-        xml_tree = etree.parse(xml_file_path)
+        # xml_file_path = (
+        #     f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml"
+        # )
+        # xml_tree = etree.parse(xml_file_path)
+        xml_tree = etree.fromstring(final_xml_string.encode("utf-8"))
         namespaces = {
             "cac": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
             "cbc": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
@@ -850,22 +867,29 @@ def update_qr_toxml(qrcodeb64,invoice_number, company_abbr):
             frappe.msgprint(
                 f"QR code element not found in the XML for company {company_abbr}"
             )
-        xml_tree.write(xml_file_path, encoding="UTF-8", xml_declaration=True)
+        # xml_tree.write(xml_file_path, encoding="UTF-8", xml_declaration=True)
+        updated_xml_string = etree.tostring(
+            xml_tree,
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
+        ).decode("utf-8")
+        return updated_xml_string
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
             _(f"Error in saving TLV data to XML for company {company_abbr}: " + str(e))
         )
 
 
-def structuring_signedxml(invoice_number):
+def structuring_signedxml(invoice_number,updated_xml_string):
     """structuring the signed xml"""
     try:
-        with open(
-            f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml",
-            "r",
-            encoding="utf-8",
-        ) as file:
-            xml_content = file.readlines()
+        # with open(
+        #     f"{frappe.local.site}/private/files/final_xml_after_signadvance1_{invoice_number}.xml",
+        #     "r",
+        #     encoding="utf-8",
+        # ) as file:
+        #     xml_content = file.readlines()
         indentations = {
             29: [
                 '<xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="signature">',
@@ -906,13 +930,17 @@ def structuring_signedxml(invoice_number):
                         return " " * (col - 1) + line.lstrip()
             return line
 
-        adjusted_xml_content = [adjust_indentation(line) for line in xml_content]
+        # adjusted_xml_content = [adjust_indentation(line) for line in xml_content]
+        adjusted_xml_content = [
+        adjust_indentation(line) for line in updated_xml_string.splitlines(keepends=True)
+        ]
         with open(
             f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{invoice_number}.xml",
             "w",
             encoding="utf-8",
         ) as file:
             file.writelines(adjusted_xml_content)
+    
         signed_xmlfile_name = (
             f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{invoice_number}.xml"
         )

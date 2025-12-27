@@ -274,9 +274,9 @@ def reporting_api_machine(
                 
 
                 success_log(response.text, uuid1, invoice_number)
-            else:
+            # else:
 
-                error_log()
+            #     error_log()
             if response.status_code not in (200, 202, 409):
                 invoice_doc = frappe.get_doc("POS Invoice", invoice_number)
                 invoice_doc.custom_uuid = "Not Submitted"

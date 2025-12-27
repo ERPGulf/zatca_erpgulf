@@ -139,7 +139,14 @@ frappe.ui.form.on('Sales Invoice', {
 
                 // 🔴 Special condition → ignore Duplicate-Invoice error
                 errors = errors.filter(e => !(e.code === "Invoice-Errors" && e.category === "Duplicate-Invoice"));
-
+                const duplicateErrorExists = Array.isArray(validationResults.errorMessages) && validationResults.errorMessages.some(e => e.code === "Invoice-Errors" && e.category === "Duplicate-Invoice");
+                if (duplicateErrorExists && errors.length === 0) {
+                    console.log('Duplicate Invoice detected. Showing Duplicate badge.');
+                    let badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-duplicated.png" alt="Duplicate" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 215px;"></div>';
+                    frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
+                    frm.refresh_field('custom_zatca_status_notification');
+                    return; // Exit early since we handled duplicate
+                }
                 console.log("Validation Status:", status);
                 console.log("Reporting Status (from custom_zatca_status):", reportingStatus);
                 console.log("Warnings:", warnings);

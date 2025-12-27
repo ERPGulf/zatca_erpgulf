@@ -521,9 +521,10 @@ def xml_structuring(invoice,invoice_number):
         pretty_xml_string = xml_dom.toprettyxml(
             indent="  "
         )  # created xml into formatted xml form
-        final_xml_path = f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml"
-        with open(final_xml_path, "w", encoding="utf-8") as file:
-            file.write(pretty_xml_string)
+        # final_xml_path = f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml"
+        # with open(final_xml_path, "w", encoding="utf-8") as file:
+        #     file.write(pretty_xml_string)
+        return pretty_xml_string
     except (FileNotFoundError, IOError):
         frappe.throw(
             _(
