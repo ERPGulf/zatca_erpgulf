@@ -682,8 +682,9 @@ def tax_data_with_template(invoice, sales_invoice_doc):
 
             # Check if values match
             if cbc_taxamount_value != cbc_taxamount_2_value:
-                # cbc_taxamount_2_value =str(round(totals["tax_amount"], 2))
-                cbc_taxamount_2_value = str(tax_amount_without_retention)
+                cbc_taxamount_2_value =str(round(totals["tax_amount"], 2))
+ 
+                # cbc_taxamount_2_value = str(totals["tax_amount"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
             else:
                 cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
 
