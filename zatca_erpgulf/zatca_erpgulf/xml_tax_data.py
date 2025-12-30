@@ -187,8 +187,11 @@ def tax_data(invoice, sales_invoice_doc):
             tax_amount_without_retention = (
                 taxable_amount_1 * float(sales_invoice_doc.taxes[0].rate) / 100
             )
+            vat_sar = Decimal(str(sales_invoice_doc.base_total_taxes_and_charges)).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
             # cbc_taxamount_usd_1.text = str(round(tax_amount_without_retention, 2))
-            cbc_taxamount_usd_1.text = str(round(abs(tax_amount_without_retention), 2))
+            cbc_taxamount_usd_1.text = str(round(abs(vat_sar), 2))
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount_usd = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount_usd.set(
@@ -550,7 +553,10 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             cbc_taxamount_sar = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
             cbc_taxamount_sar.set("currencyID", "SAR")
             tax_amount_without_retention_sar = round(abs(total_tax), 2)
-            cbc_taxamount_sar.text = str(tax_amount_without_retention_sar)
+            vat_sar = Decimal(str(sales_invoice_doc.base_total_taxes_and_charges)).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            cbc_taxamount_sar.text = str(vat_sar)
 
             cac_taxtotal = ET.SubElement(invoice, CAC_TAX_TOTAL)
             cbc_taxamount = ET.SubElement(cac_taxtotal, "cbc:TaxAmount")
@@ -680,12 +686,16 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             cbc_taxamount_value = str(tax_amount_without_retention)
             cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
 
-            # Check if values match
-            if cbc_taxamount_value != cbc_taxamount_2_value:
-                cbc_taxamount_2_value =str(round(totals["tax_amount"], 2))
-                # cbc_taxamount_2_value = str(tax_amount_without_retention)
+            if totals["tax_rate"] == Decimal("15.00"):
+                cbc_taxamount_2_value = str(tax_amount_without_retention)
             else:
                 cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
+            # Check if values match
+            # if cbc_taxamount_value != cbc_taxamount_2_value:
+            #     cbc_taxamount_2_value =str(round(totals["tax_amount"], 2))
+            #     # cbc_taxamount_2_value = str(tax_amount_without_retention)
+            # else:
+            #     cbc_taxamount_2_value = str(round(totals["tax_amount"], 2))
 
             cbc_taxamount_2.text = cbc_taxamount_2_value
 
