@@ -1,5 +1,5 @@
 
-🇸🇦 Saudi Arabian E-Invoicing (ZATCA Phase-2) – A Frappe ERPNext App
+Saudi Arabian E-Invoicing (ZATCA Phase-2) – A Frappe ERPNext App
 
 A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZATCA Phase-2 e-invoicing regulations.
 
@@ -15,6 +15,13 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 ✅ Logging for audit trails & error handling<br>
 ✅ Reports to compare invoices with ZATCA portal statistics <br>
 
+🔹Version 3.0 Enhancements
+
+✨ Saves XML files directly without temporary storage → frees up hard disk space
+✨ Improved performance for invoice generation & submission
+✨ Enhanced error handling and logging for failed submissions
+✨ Optimized QR code generation and attachment
+✨ Updated compliance checks for latest ZATCA regulations
 
 🔹 Compatibility<br>
 🌐 ERPNext Version13, 14 and 15<br>
