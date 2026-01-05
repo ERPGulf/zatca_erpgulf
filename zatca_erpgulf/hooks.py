@@ -257,6 +257,16 @@ doc_events = {
         "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_background_on_submit",
     },
 }
+
+
+
+
+jinja = {
+    "methods": [
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_money_in_words"
+    ]
+}
+
 # doc_events = {
 #     "Sales Invoice": {
 #         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
