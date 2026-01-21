@@ -263,7 +263,8 @@ doc_events = {
 
 jinja = {
     "methods": [
-        "zatca_erpgulf.zatca_erpgulf.utils.arabic_money_in_words"
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_money_in_words",
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_number"
     ]
 }
 
