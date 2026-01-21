@@ -6,13 +6,13 @@
   }
  ],
  "content": "[{\"id\":\"AKT9aTatxp\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ZATCA ERPGulf</span>\",\"col\":12}},{\"id\":\"toI42v5BQz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"M9_4dICc9C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZATCA Detailed Dashboard\",\"col\":3}},{\"id\":\"h-WpFvrVrz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"FbzQ2ktrhH\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Cleared This Month\",\"col\":3}},{\"id\":\"fFwuBcwbN1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Reported This Month\",\"col\":3}},{\"id\":\"j_G3qIB5WM\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Not Submitted This Month\",\"col\":3}},{\"id\":\"MGV-xKY9ji\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"503 Service Unavailable This \",\"col\":3}},{\"id\":\"W2sWtADeQt\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Monthly Invoices Reported to ZATCA\",\"col\":12}},{\"id\":\"9ZhiRTDXf1\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"New Invoices\",\"col\":4}},{\"id\":\"J0fUqzkJsz\",\"type\":\"card\",\"data\":{\"card_name\":\"Shortcuts\",\"col\":4}},{\"id\":\"4YDRFLK7gC\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":4}}]",
- "creation": "2025-11-25 14:26:31.682113",
+ "creation": "2026-01-05 12:50:47.879685",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 1,
- "icon": "",
+ "icon": "quality",
  "idx": 0,
  "indicator_color": "",
  "is_hidden": 0,
@@ -81,7 +81,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Shortcuts",
-   "link_count": 8,
+   "link_count": 7,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -155,21 +155,10 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "ZATCA Duplicate UUID Invoices",
-   "link_count": 0,
-   "link_to": "ZATCA Duplicate UUID Invoices",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
   }
  ],
- "modified": "2025-12-22 11:38:39.794598",
+ "modified": "2026-01-21 19:37:28.870733",
  "modified_by": "Administrator",
- "type": "Module",
  "module": "Zatca Erpgulf",
  "name": "ZATCA ERPGulf",
  "number_cards": [
