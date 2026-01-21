@@ -43,6 +43,7 @@ import frappe
 import qrcode
 from io import BytesIO
 from frappe.utils import now_datetime
+
 def generate_qr_and_attach_doctype(doctype, docname, url, file_field=None):
     if not url:
         frappe.throw("QR URL is required")
