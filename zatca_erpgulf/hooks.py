@@ -4,11 +4,21 @@ app_publisher = "ERPGulf"
 app_description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
 app_email = "support@ERPGulf.com"
 app_license = "mit"
+app_home = "zatca_erpgulf"
 
 from frappe import _
 
 from . import __version__ as app_version
 
+add_to_apps_screen = [
+    {
+        "name": app_name,
+        "logo": "/assets/zatca_erpgulf/images/erpgulf.svg",
+        "title": app_title,
+        "route": app_home,
+        # "has_permission": "zatca_erpgulf.check_app_permission",
+    }
+]
 
 # required_apps = []
 
