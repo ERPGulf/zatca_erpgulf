@@ -162,7 +162,7 @@ frappe.ui.form.on('Sales Invoice', {
 
                     } else if (reportingStatus === 'REPORTED') {
                         console.log('PASS - Reported');
-                        badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png" alt="Reported" class="zatca-badge" width="110" height="36" style="margin-top: 0px; margin-left: 215px;"></div>';
+                        badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png" alt="Reported" class="zatca-badge" width="110" height="70" style="margin-top: -5px; margin-left: 215px;"></div>';
                     }
                 }
 
