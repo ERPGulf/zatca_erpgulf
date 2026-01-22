@@ -604,7 +604,7 @@ def item_data(invoice, sales_invoice_doc):
         qty = "cbc:BaseQuantity"
         for single_item in sales_invoice_doc.items:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
-                tax_rate = sales_invoice_doc.item_wise_tax_details[0].rate
+                tax_rate =  float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
             else:
                 tax_rate = sales_invoice_doc.taxes[0].item_wise_tax_detail
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
@@ -788,7 +788,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
         # Add regular item lines
         for single_item in sales_invoice_doc.items:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
-                tax_rate = sales_invoice_doc.item_wise_tax_details[0].rate
+                tax_rate =  float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
             else:
                 tax_rate = sales_invoice_doc.taxes[0].item_wise_tax_detail
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
