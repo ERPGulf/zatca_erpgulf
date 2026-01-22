@@ -96,32 +96,76 @@ def get_tax_for_item(full_string, item):
 from decimal import Decimal, ROUND_HALF_UP
 import json
 
+# def generate_item_wise_tax_detail(sales_invoice_doc, tax_index=0):
+#     """
+#     Generate item-wise tax detail for a sales invoice.
+#     """
+#     if not sales_invoice_doc.custom_item:
+#         return "{}"
+
+#     # Get the tax rate from the specified tax entry
+#     tax_rate = sales_invoice_doc.taxes[tax_index].rate
+
+#     item_wise_tax_detail = {}
+
+#     for single_item in sales_invoice_doc.custom_item:
+#         item_code = single_item.item_code
+#         amount = Decimal(str(single_item.amount))
+#         tax_amount = (amount * Decimal(str(tax_rate)) / Decimal("100")).quantize(
+#             Decimal("0.0001"), rounding=ROUND_HALF_UP
+#         )
+
+#         item_wise_tax_detail[item_code] = [float(tax_rate), float(tax_amount)]
+
+#     # Store as JSON string in the tax entry
+#     sales_invoice_doc.taxes[tax_index].item_wise_tax_detail = json.dumps(item_wise_tax_detail)
+
+#     return sales_invoice_doc.taxes[tax_index].item_wise_tax_detail
+
 def generate_item_wise_tax_detail(sales_invoice_doc, tax_index=0):
     """
     Generate item-wise tax detail for a sales invoice.
+    Compatible with Frappe v15 and v16.
     """
+
     if not sales_invoice_doc.custom_item:
         return "{}"
 
-    # Get the tax rate from the specified tax entry
-    tax_rate = sales_invoice_doc.taxes[tax_index].rate
-
     item_wise_tax_detail = {}
+
+    # -----------------------
+    # Frappe v16+
+    # -----------------------
+    if int(frappe.__version__.split(".", 1)[0]) >= 16 and sales_invoice_doc.item_wise_tax_details:
+        for tax in sales_invoice_doc.item_wise_tax_details:
+            item_row = frappe.get_doc("Sales Invoice Item", tax.item_row)
+
+            item_wise_tax_detail[item_row.item_code] = [
+                float(tax.rate),
+                float(tax.amount)
+            ]
+
+        # DO NOT store in taxes table in v16
+        return json.dumps(item_wise_tax_detail)
+
+    # -----------------------
+    # Frappe v15
+    # -----------------------
+    tax_rate = sales_invoice_doc.taxes[tax_index].rate
 
     for single_item in sales_invoice_doc.custom_item:
         item_code = single_item.item_code
         amount = Decimal(str(single_item.amount))
+
         tax_amount = (amount * Decimal(str(tax_rate)) / Decimal("100")).quantize(
             Decimal("0.0001"), rounding=ROUND_HALF_UP
         )
 
         item_wise_tax_detail[item_code] = [float(tax_rate), float(tax_amount)]
 
-    # Store as JSON string in the tax entry
     sales_invoice_doc.taxes[tax_index].item_wise_tax_detail = json.dumps(item_wise_tax_detail)
 
     return sales_invoice_doc.taxes[tax_index].item_wise_tax_detail
-
 
 def get_tax_total_from_items(sales_invoice_doc):
     """Getting tax total for items"""
