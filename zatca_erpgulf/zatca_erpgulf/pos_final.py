@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from frappe import _
 import frappe
+import json
 from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_exemption_reason_map,
     get_tax_for_item,
