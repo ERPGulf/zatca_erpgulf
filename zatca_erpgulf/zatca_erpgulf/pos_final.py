@@ -272,11 +272,8 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         frappe.throw(_(f"Data processing error in tax data with template: {str(e)}"))
 
 
-def item_data(invoice, pos_invoice_doc):
-    """Function for item data"""
-    try:
-        for single_item in pos_invoice_doc.items:
-            if int(frappe.__version__.split(".", 1)[0]) == 16 and pos_invoice_doc.item_wise_tax_details:
+def get_tax_wise_detail(sales_invoice_doc):
+    if int(frappe.__version__.split(".", 1)[0]) == 16 and pos_invoice_doc.item_wise_tax_details:
                 tax_rate = float(f"{pos_invoice_doc.item_wise_tax_details[0].rate:.1f}")
                 tax_amount = pos_invoice_doc.item_wise_tax_details[0].amount
 
@@ -284,8 +281,15 @@ def item_data(invoice, pos_invoice_doc):
                 tax_json = json.dumps({
                     single_item.item_code: [tax_rate, float(tax_amount)]
                 })
-            else:
-                tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
+    else:
+        tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
+    return tax_json
+
+def item_data(invoice, pos_invoice_doc):
+    """Function for item data"""
+    try:
+        for single_item in pos_invoice_doc.items:
+            tax_json = get_tax_wise_detail(pos_invoice_doc)
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
                 tax_json, single_item.item_code
             )
