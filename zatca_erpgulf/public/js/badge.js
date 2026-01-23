@@ -123,7 +123,7 @@ frappe.ui.form.on('Sales Invoice', {
                 // ✅ Check if the response starts with "Error"
                 if (ztcaresponse.trim().toUpperCase().startsWith("ERROR")) {
                     console.log("Error detected in ZATCA response. Displaying Failed badge.");
-                    let badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 215px;"></div>';
+                    let badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="100" style="margin-top: -5px; margin-left: 215px;"></div>';
                     frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
                     frm.refresh_field('custom_zatca_status_notification');
                     return; // Exit since it's an error
@@ -180,7 +180,7 @@ frappe.ui.form.on('Sales Invoice', {
                 // 🔴 FAILED Condition (only if real errors remain)
                 else if (status === 'FAILED' && errors.length > 0) {
                     console.log('FAILED (real errors)');
-                    badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 215px;"></div>';
+                    badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="100" style="margin-top: -5px; margin-left: 215px;"></div>';
                 }
 
                 // Set Badge or Clear if None
