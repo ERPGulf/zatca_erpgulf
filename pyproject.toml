@@ -9,7 +9,6 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     "asn1~=2.7.0",
-    "qrcode",
     "pikepdf"
     # "frappe~=15.0.0" # Installed and managed by bench.
 ]
