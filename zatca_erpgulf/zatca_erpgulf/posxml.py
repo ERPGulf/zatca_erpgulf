@@ -947,7 +947,7 @@ def get_tax_wise_detail(pos_invoice_doc):
                     single_item.item_code: [tax_rate, float(tax_amount)]
                 })
     else:
-        tax_json = pos_invoice_doc.taxes[0].
+        tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
     return tax_json 
 
 def get_tax_total_from_items(pos_invoice_doc):
