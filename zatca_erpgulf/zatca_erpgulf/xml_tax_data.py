@@ -71,6 +71,7 @@ def get_tax_for_item(full_string, item):
         return None
 
 def get_tax_wise_detail(sales_invoice_doc):
+    """getting item wise tax"""
     if int(frappe.__version__.split(".", 1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
         tax_rate = float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
         tax_amount = sales_invoice_doc.item_wise_tax_details[0].amount
