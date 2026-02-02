@@ -734,7 +734,7 @@ def item_data(invoice, sales_invoice_doc):
                                 round(
                                     single_item.rate
                                     / (1 + sales_invoice_doc.taxes[0].rate / 100),
-                                    2,
+                                    4,
                                 )
                             )
                         )
