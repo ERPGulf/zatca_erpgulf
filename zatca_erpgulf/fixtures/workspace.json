@@ -14,8 +14,9 @@
   "docstatus": 0,
   "doctype": "Workspace",
   "for_user": "",
+  "type":"Workspace",
   "hide_custom": 1,
-  "icon": "",
+  "icon": "quality",
   "indicator_color": "",
   "is_hidden": 0,
   "label": "ZATCA ERPGulf",
@@ -259,7 +260,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2025-12-22 05:38:40.303091",
+  "modified": "2026-02-03 18:27:19.084212",
   "module": "Zatca Erpgulf",
   "name": "ZATCA ERPGulf",
   "number_cards": [
@@ -301,7 +302,7 @@
     "parent": "ZATCA ERPGulf",
     "parentfield": "quick_lists",
     "parenttype": "Workspace",
-    "quick_list_filter": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\",false],[\"Sales Invoice\",\"custom_zatca_status\",\"in\",[\"CLEARED\",\"REPORTED\"],false]]"
+    "quick_list_filter": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\"],[\"Sales Invoice\",\"custom_zatca_status\",\"in\",[\"CLEARED\",\"REPORTED\"]]]"
    }
   ],
   "restrict_to_domain": null,

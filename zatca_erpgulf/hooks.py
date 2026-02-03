@@ -302,25 +302,25 @@ doctype_list_js = {
 
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
 fixtures = [
-    {
-        "dt": "Number Card",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Cleared This Month",
-                    "Not Submitted This Month",
-                    "Reported This Month",
-                    "503 Service Unavailable This Month",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Dashboard Chart",
-        "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
-    },
+    # {
+    #     "dt": "Number Card",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             [
+    #                 "Cleared This Month",
+    #                 "Not Submitted This Month",
+    #                 "Reported This Month",
+    #                 "503 Service Unavailable This Month",
+    #             ],
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "dt": "Dashboard Chart",
+    #     "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
+    # },
     {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
     {
         "dt": "Workspace",
