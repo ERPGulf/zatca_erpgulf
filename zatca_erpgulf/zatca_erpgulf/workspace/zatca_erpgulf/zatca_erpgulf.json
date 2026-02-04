@@ -5,13 +5,12 @@
    "label": "Monthly Invoices Reported to ZATCA"
   }
  ],
- "content": "[{\"id\":\"AKT9aTatxp\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ZATCA ERPGulf</span>\",\"col\":12}},{\"id\":\"toI42v5BQz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"M9_4dICc9C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZATCA Detailed Dashboard\",\"col\":3}},{\"id\":\"h-WpFvrVrz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"FbzQ2ktrhH\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Cleared This Month\",\"col\":3}},{\"id\":\"fFwuBcwbN1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Reported This Month\",\"col\":3}},{\"id\":\"j_G3qIB5WM\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Not Submitted This Month\",\"col\":3}},{\"id\":\"MGV-xKY9ji\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"503 Service Unavailable This \",\"col\":3}},{\"id\":\"W2sWtADeQt\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Monthly Invoices Reported to ZATCA\",\"col\":12}},{\"id\":\"9ZhiRTDXf1\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"New Invoices\",\"col\":4}},{\"id\":\"J0fUqzkJsz\",\"type\":\"card\",\"data\":{\"card_name\":\"Shortcuts\",\"col\":4}},{\"id\":\"4YDRFLK7gC\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":4}}]",
+ "content": "[{\"id\":\"AKT9aTatxp\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ZATCA ERPGulf</span>\",\"col\":12}},{\"id\":\"toI42v5BQz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"M9_4dICc9C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZATCA Detailed Dashboard\",\"col\":5}},{\"id\":\"h-WpFvrVrz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"FbzQ2ktrhH\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Cleared This Month\",\"col\":3}},{\"id\":\"fFwuBcwbN1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Reported This Month\",\"col\":3}},{\"id\":\"j_G3qIB5WM\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Not Submitted This Month\",\"col\":3}},{\"id\":\"MGV-xKY9ji\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"503 Service Unavailable This \",\"col\":3}},{\"id\":\"W2sWtADeQt\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Monthly Invoices Reported to ZATCA\",\"col\":12}},{\"id\":\"9ZhiRTDXf1\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"New Invoices\",\"col\":4}},{\"id\":\"J0fUqzkJsz\",\"type\":\"card\",\"data\":{\"card_name\":\"Shortcuts\",\"col\":4}},{\"id\":\"4YDRFLK7gC\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":4}}]",
  "creation": "2026-01-05 12:50:47.879685",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
- "type":"Workspace",
  "hide_custom": 1,
  "icon": "quality",
  "idx": 0,
@@ -158,7 +157,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-02-04 12:19:07.312543",
+ "modified": "2026-02-04 13:59:24.011045",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "ZATCA ERPGulf",
