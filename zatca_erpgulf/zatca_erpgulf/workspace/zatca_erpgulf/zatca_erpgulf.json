@@ -11,7 +11,6 @@
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
- "type":"Workspace",
  "hide_custom": 1,
  "icon": "quality",
  "idx": 0,
@@ -158,7 +157,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-02-04 09:01:12.858708",
+ "modified": "2026-02-04 12:19:07.312543",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "ZATCA ERPGulf",
