@@ -321,12 +321,12 @@ fixtures = [
     #     "dt": "Dashboard Chart",
     #     "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
     # },
-    {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
-    {
-        "dt": "Workspace",
-        "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
-    },
-    {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
+    # {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
+    # {
+    #     "dt": "Workspace",
+    #     "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
+    # },
+    # {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
     {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
     {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
     {
