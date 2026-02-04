@@ -6,7 +6,7 @@
  "doctype": "Number Card",
  "document_type": "Sales Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\",false],[\"Sales Invoice\",\"custom_b2c\",\"=\",0,false]]",
+ "filters_json": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\"],[\"Sales Invoice\",\"custom_b2c\",\"=\",0]]",
  "function": "Sum",
  "idx": 8,
  "is_public": 1,

@@ -8,7 +8,7 @@
  "doctype": "Dashboard Chart",
  "document_type": "Sales Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\",false]]",
+ "filters_json": "[[\"Sales Invoice\",\"docstatus\",\"=\",\"1\"]]",
  "group_by_based_on": "custom_zatca_tax_category",
  "group_by_type": "Count",
  "idx": 7,

@@ -6,7 +6,7 @@
  "doctype": "Number Card",
  "document_type": "Sales Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Sales Invoice\",\"custom_zatca_status\",\"=\",\"503 Service Unavailable\",false]]",
+ "filters_json": "[[\"Sales Invoice\",\"custom_zatca_status\",\"=\",\"503 Service Unavailable\"]]",
  "function": "Count",
  "idx": 18,
  "is_public": 1,
