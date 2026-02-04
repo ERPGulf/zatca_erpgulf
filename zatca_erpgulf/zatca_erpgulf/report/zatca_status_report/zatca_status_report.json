@@ -11,7 +11,7 @@
  "javascript": "frappe.query_reports[\"Zatca Status Report\"] = {\r\n    \"filters\": [\r\n        {\r\n            fieldname: \"company\",\r\n            label: __(\"Company\"),\r\n            fieldtype: \"Link\",\r\n            options: \"Company\",\r\n            default: frappe.defaults.get_user_default(\"Company\"),\r\n            reqd: 1\r\n        },\r\n        {\r\n            fieldname: \"dt_from\",\r\n            label: __(\"From\"),\r\n            fieldtype: \"Date\",\r\n            default: frappe.datetime.add_months(frappe.datetime.get_today(), -12)\r\n        },\r\n        {\r\n            fieldname: \"dt_to\",\r\n            label: __(\"To\"),\r\n            fieldtype: \"Date\",\r\n            default: frappe.datetime.get_today()\r\n        },\r\n        {\r\n            fieldname: \"status\",\r\n            label: __(\"Status\"),\r\n            fieldtype: \"Select\",\r\n            options: \"\\nReported\\nCleared\\n503 Service Unavailable\\nIntra-company transfer\\nNot Submitted\",\r\n            default: \"Reported\"\r\n        }\r\n    ],\r\n\r\n    onload: function(report) {\r\n        // onload code if needed\r\n    }\r\n};\r\n",
  "letter_head": "Sample letterhead",
  "letterhead": null,
- "modified": "2026-02-04 13:36:56.461587",
+ "modified": "2026-02-04 13:49:07.709031",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "Zatca Status Report",
