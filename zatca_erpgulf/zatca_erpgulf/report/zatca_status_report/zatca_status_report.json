@@ -1,0 +1,36 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2026-02-04 12:40:08.587635",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "javascript": "frappe.query_reports[\"Zatca Status Report\"] = {\r\n    \"filters\": [\r\n        {\r\n            fieldname: \"company\",\r\n            label: __(\"Company\"),\r\n            fieldtype: \"Link\",\r\n            options: \"Company\",\r\n            default: frappe.defaults.get_user_default(\"Company\"),\r\n            reqd: 1\r\n        },\r\n        {\r\n            fieldname: \"dt_from\",\r\n            label: __(\"From\"),\r\n            fieldtype: \"Date\",\r\n            default: frappe.datetime.add_months(frappe.datetime.get_today(), -12)\r\n        },\r\n        {\r\n            fieldname: \"dt_to\",\r\n            label: __(\"To\"),\r\n            fieldtype: \"Date\",\r\n            default: frappe.datetime.get_today()\r\n        },\r\n        {\r\n            fieldname: \"status\",\r\n            label: __(\"Status\"),\r\n            fieldtype: \"Select\",\r\n            options: \"\\nReported\\nCleared\\n503 Service Unavailable\\nIntra-company transfer\\nNot Submitted\",\r\n            default: \"Reported\"\r\n        }\r\n    ],\r\n\r\n    onload: function(report) {\r\n        // onload code if needed\r\n    }\r\n};\r\n",
+ "letter_head": "Sample letterhead",
+ "letterhead": null,
+ "modified": "2026-02-04 13:36:56.461587",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "Zatca Status Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "",
+ "ref_doctype": "Sales Invoice",
+ "report_name": "Zatca Status Report",
+ "report_script": "def get_columns():\r\n    return [\r\n        {'fieldname': 'name', 'label': _('Inv.Number'), 'fieldtype': 'Link', 'options': 'Sales Invoice', 'width': 220},\r\n        {'fieldname': 'posting_date', 'label': _('Date'), 'fieldtype': 'Date', 'width': 160},\r\n        {'fieldname': 'customer_name', 'label': _('Customer'), 'fieldtype': 'Data', 'width': 220},\r\n        {'fieldname': 'grand_total', 'label': _('Total'), 'fieldtype': 'Currency', 'width': 160},\r\n        {'fieldname': 'custom_zatca_status', 'label': _('Status'), 'fieldtype': 'Data', 'width': 180}\r\n    ]\r\n\r\n\r\ndef get_data_and_chart(filters):\r\n    dt_from = filters.get('dt_from')\r\n    dt_to = filters.get('dt_to')\r\n    status = filters.get('status')\r\n    company = filters.get('company')\r\n\r\n    conditions = [\"1=1\"]\r\n    values = {}\r\n\r\n    if company:\r\n        conditions.append(\"company = %(company)s\")\r\n        values['company'] = company\r\n\r\n    if dt_from and dt_to:\r\n        conditions.append(\"posting_date BETWEEN %(dt_from)s AND %(dt_to)s\")\r\n        values['dt_from'] = dt_from\r\n        values['dt_to'] = dt_to\r\n    elif dt_from:\r\n        conditions.append(\"posting_date >= %(dt_from)s\")\r\n        values['dt_from'] = dt_from\r\n    elif dt_to:\r\n        conditions.append(\"posting_date <= %(dt_to)s\")\r\n        values['dt_to'] = dt_to\r\n\r\n    if status and status != \"Not Submitted\":\r\n        conditions.append(\"custom_zatca_status = %(status)s\")\r\n        values['status'] = status\r\n\r\n    where_clause = \" AND \".join(conditions)\r\n\r\n    query = f\"\"\"\r\n        SELECT \r\n            name,\r\n            customer_name,\r\n            posting_date,\r\n            grand_total,\r\n            custom_zatca_status,\r\n            docstatus\r\n        FROM `tabSales Invoice`\r\n        WHERE {where_clause}\r\n        ORDER BY posting_date DESC\r\n    \"\"\"\r\n\r\n    invoices = frappe.db.sql(query, values, as_dict=True)\r\n\r\n    # Apply 'Not Submitted' filter\r\n    if status == \"Not Submitted\":\r\n        invoices = [inv for inv in invoices if inv.get(\"docstatus\") == 0 or not inv.get(\"custom_zatca_status\")]\r\n\r\n    return invoices\r\n\r\n\r\n# Run report\r\ncolumns = get_columns()\r\ndata = get_data_and_chart(filters)\r\ndata = columns, data, None, None\r\n",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Sales User"
+  }
+ ]
+}
