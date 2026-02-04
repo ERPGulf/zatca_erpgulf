@@ -4,11 +4,11 @@ app_publisher = "ERPGulf"
 app_description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
 app_email = "support@ERPGulf.com"
 app_license = "mit"
+app_home = "zatca_erpgulf"
 
 from frappe import _
 
 from . import __version__ as app_version
-
 
 add_to_apps_screen = [
     {
