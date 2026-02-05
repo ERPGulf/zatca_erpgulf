@@ -4,7 +4,7 @@ app_publisher = "ERPGulf"
 app_description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
 app_email = "support@ERPGulf.com"
 app_license = "mit"
-app_home = "zatca-erpgulf"
+app_home = "/app/zatca-erpgulf"
 
 from frappe import _
 
