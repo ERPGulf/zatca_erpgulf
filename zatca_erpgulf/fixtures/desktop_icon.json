@@ -1,0 +1,24 @@
+[
+ {
+  "app": null,
+  "bg_color": "blue",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon": null,
+  "icon_image": null,
+  "icon_type": "Link",
+  "label": "ZATCA ERPGULF",
+  "link": null,
+  "link_to": "ZATCA ERPGulf",
+  "link_type": "Workspace Sidebar",
+  "logo_url": "/assets/zatca_erpgulf/images/ERPGulf.png",
+  "modified": "2026-02-09 15:24:00.373696",
+  "name": "ZATCA ERPGULF",
+  "parent_icon": null,
+  "restrict_removal": 0,
+  "roles": [],
+  "sidebar": null,
+  "standard": 0
+ }
+]

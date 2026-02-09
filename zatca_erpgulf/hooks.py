@@ -13,9 +13,9 @@ from . import __version__ as app_version
 add_to_apps_screen = [
     {
         "name": app_name,
-        "logo": "/assets/zatca_erpgulf/images/erpgulf.svg",
+        "logo": "/assets/zatca_erpgulf/images/ERPGulf.png",
         "title": app_title,
-        "route": "zatca_erpgulf",
+        "route": "zatca-erpgulf",
         # "has_permission": "zatca_erpgulf.check_app_permission",
     }
 ]
@@ -358,3 +358,11 @@ fixtures = [
 
 app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"
 app_include_js = "/assets/zatca_erpgulf/js/tooltip.js"
+fixtures = [
+    {
+        "dt": "Desktop Icon",
+        "filters": [
+            ["label", "=", "ZATCA ERPGulf"]
+        ]
+    }
+]

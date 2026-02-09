@@ -70,7 +70,7 @@ def get_tax_for_item(full_string, item):
         frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
 
-def get_tax_wise_detail(sales_invoice_doc):
+def get_tax_wise_detail(sales_invoice_doc,single_item):
     """getting item wise tax"""
     if int(frappe.__version__.split(".", 1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
         tax_rate = float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
@@ -89,7 +89,7 @@ def get_tax_total_from_items(sales_invoice_doc):
     try:
         total_tax = 0
         for single_item in sales_invoice_doc.items:
-            tax_json = get_tax_wise_detail(sales_invoice_doc)
+            tax_json = get_tax_wise_detail(sales_invoice_doc,single_item)
             _item_tax_amount, tax_percent = get_tax_for_item(
                 tax_json , single_item.item_code
             )
