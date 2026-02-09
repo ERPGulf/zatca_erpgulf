@@ -18,7 +18,7 @@ frappe.ui.form.on('POS Invoice', {
                 let badgeHtml = `
                     <div class="zatca-badge-container">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
-                             alt="Failed" class="zatca-badge" width="110" height="36"
+                             alt="Failed" class="zatca-badge" width="110" height="100"
                              style="margin-top: -5px; margin-left: 380px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
@@ -32,7 +32,7 @@ frappe.ui.form.on('POS Invoice', {
                 let badgeHtml = `
                     <div class="zatca-badge-container">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
-                             alt="Failed" class="zatca-badge" width="110" height="36"
+                             alt="Failed" class="zatca-badge" width="110" height="100"
                              style="margin-top: -5px; margin-left: 380px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
@@ -59,7 +59,7 @@ frappe.ui.form.on('POS Invoice', {
                 let badgeHtml = `
                     <div class="zatca-badge-container">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-duplicated.png"
-                             alt="Duplicate" class="zatca-badge" width="110" height="36"
+                             alt="Duplicate" class="zatca-badge" width="110" height="100"
                              style="margin-top: -5px; margin-left: 380px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
@@ -87,7 +87,7 @@ frappe.ui.form.on('POS Invoice', {
                 badgeHtml = `
                     <div class="zatca-badge-container">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
-                             alt="Failed" class="zatca-badge" width="110" height="36"
+                             alt="Failed" class="zatca-badge" width="110" height="100"
                              style="margin-top: -5px; margin-left: 380px;">
                     </div>`;
             }
@@ -98,14 +98,14 @@ frappe.ui.form.on('POS Invoice', {
                     badgeHtml = `
                         <div class="zatca-badge-container">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-cleared-warning.png"
-                                 alt="Cleared with Warning" class="zatca-badge" width="110" height="36"
+                                 alt="Cleared with Warning" class="zatca-badge" width="110" height="100"
                                  style="margin-top: -5px; margin-left: 380px;">
                         </div>`;
                 } else if (reportingStatus === 'REPORTED') {
                     badgeHtml = `
                         <div class="zatca-badge-container">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-reported-warning.png"
-                                 alt="Reported with Warning" class="zatca-badge" width="110" height="36"
+                                 alt="Reported with Warning" class="zatca-badge" width="110" height="100"
                                  style="margin-top: -5px; margin-left: 380px;">
                         </div>`;
                 }
@@ -117,14 +117,14 @@ frappe.ui.form.on('POS Invoice', {
                     badgeHtml = `
                         <div class="zatca-badge-container">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-cleared.png"
-                                 alt="Cleared" class="zatca-badge" width="110" height="36"
+                                 alt="Cleared" class="zatca-badge" width="110" height="100"
                                  style="margin-top: -5px; margin-left: 380px;">
                         </div>`;
                 } else if (reportingStatus === 'REPORTED') {
                     badgeHtml = `
                         <div class="zatca-badge-container">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png"
-                                 alt="Reported" class="zatca-badge" width="110" height="36"
+                                 alt="Reported" class="zatca-badge" width="110" height="100"
                                  style="margin-top: -5px; margin-left: 380px;">
                         </div>`;
                 }

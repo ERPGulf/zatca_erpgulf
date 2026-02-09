@@ -4,12 +4,21 @@ app_publisher = "ERPGulf"
 app_description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
 app_email = "support@ERPGulf.com"
 app_license = "mit"
+app_home = "/app/zatca-erpgulf"
 
 from frappe import _
 
 from . import __version__ as app_version
 
-
+add_to_apps_screen = [
+    {
+        "name": app_name,
+        "logo": "/assets/zatca_erpgulf/images/ERPGulf.png",
+        "title": app_title,
+        "route": "zatca-erpgulf",
+        # "has_permission": "zatca_erpgulf.check_app_permission",
+    }
+]
 # required_apps = []
 
 # Includes in <head>
@@ -302,33 +311,33 @@ doctype_list_js = {
 
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
 fixtures = [
-    {
-        "dt": "Number Card",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Cleared This Month",
-                    "Not Submitted This Month",
-                    "Reported This Month",
-                    "503 Service Unavailable This Month",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Dashboard Chart",
-        "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
-    },
-    {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
-    {
-        "dt": "Workspace",
-        "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
-    },
-    {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
+    # {
+    #     "dt": "Number Card",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             [
+    #                 "Cleared This Month",
+    #                 "Not Submitted This Month",
+    #                 "Reported This Month",
+    #                 "503 Service Unavailable This Month",
+    #             ],
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "dt": "Dashboard Chart",
+    #     "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
+    # },
+    # {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
+    # {
+    #     "dt": "Workspace",
+    #     "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
+    # },
+    # {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
     {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
-    {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
+    # {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
     {
         "dt": "Report",
         "filters": [
@@ -349,3 +358,11 @@ fixtures = [
 
 app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"
 app_include_js = "/assets/zatca_erpgulf/js/tooltip.js"
+fixtures = [
+    {
+        "dt": "Desktop Icon",
+        "filters": [
+            ["label", "=", "ZATCA ERPGulf"]
+        ]
+    }
+]

@@ -64,6 +64,7 @@ def embed_file_in_pdf_1(input_pdf, xml_file, output_pdf):
             )
             metadata["dc:date"] = datetime.now().isoformat()
 
+
         # Create XMP metadata
         xmp_metadata = f"""<?xpacket begin='' id='W5M0MpCehiHzreSzNTczkc9d'?>
         <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP toolkit 2.9.1-13, framework 1.6">
