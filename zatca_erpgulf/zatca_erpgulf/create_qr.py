@@ -7,6 +7,7 @@ which includes:
 3. Time Stamp
 4. Invoice Amount
 5. VAT Amount
+
 The QR code generation follows these steps:
 - Verify if the document is relevant for Saudi Arabia based on the company region.
 - Check if the required "ksa_einv_qr" field exists in the document. 
