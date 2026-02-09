@@ -10,15 +10,15 @@ from frappe import _
 
 from . import __version__ as app_version
 
-add_to_apps_screen = [
-    {
-        "name": app_name,
-        "logo": "/assets/zatca_erpgulf/images/erpgulf.svg",
-        "title": app_title,
-        "route": "zatca_erpgulf",
-        # "has_permission": "zatca_erpgulf.check_app_permission",
-    }
-]
+# add_to_apps_screen = [
+#     {
+#         "name": app_name,
+#         "logo": "/assets/zatca_erpgulf/images/erpgulf.svg",
+#         "title": app_title,
+#         "route": "zatca_erpgulf",
+#         # "has_permission": "zatca_erpgulf.check_app_permission",
+#     }
+# ]
 # required_apps = []
 
 # Includes in <head>
