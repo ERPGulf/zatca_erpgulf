@@ -936,6 +936,19 @@ def get_exemption_reason_map():
         ),
     }
 
+def get_tax_wise_detail(pos_invoice_doc):
+    """getting item wise tax"""
+    if int(frappe.__version__.split(".", 1)[0]) == 16 and pos_invoice_doc.item_wise_tax_details:
+        tax_rate = float(f"{pos_invoice_doc.item_wise_tax_details[0].rate:.1f}")
+        tax_amount = pos_invoice_doc.item_wise_tax_details[0].amount
+
+        # build JSON exactly like v15
+        tax_json = json.dumps({
+            single_item.item_code: [tax_rate, float(tax_amount)]
+        })
+    else:
+        tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
+    return tax_json 
 
 def get_tax_total_from_items(pos_invoice_doc):
     """function for get tax total from items"""
@@ -943,8 +956,9 @@ def get_tax_total_from_items(pos_invoice_doc):
         total_tax = 0
         for single_item in pos_invoice_doc.items:
             # _ = item_tax_amount
+            tax_json = get_tax_wise_detail(pos_invoice_doc)
             _item_tax_amount, tax_percent = get_tax_for_item(
-                pos_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
+                tax_json, single_item.item_code
             )
             total_tax = total_tax + (single_item.net_amount * (tax_percent / 100))
         return total_tax
