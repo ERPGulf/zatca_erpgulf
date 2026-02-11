@@ -15,22 +15,29 @@ jobs:
       contents: read
       
     steps:
-      - name: Checkout Code
+      # 1. Checkout your App code (like zatca_erpgulf)
+      - name: Checkout App Code
         uses: actions/checkout@v4
 
-      - name: Clone Frappe Rules
-        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-rules
+      # 2. Get the Frappe Rules (This is what you saw in their repo)
+      - name: Checkout Frappe Rules
+        uses: actions/checkout@v4
+        with:
+          repository: frappe/semgrep-rules
+          path: frappe-rules
 
+      # 3. Run Semgrep (This automatically handles the 'pip install' for you)
       - name: Run Semgrep
-        run: |
-          semgrep scan \
-            --config ./frappe-rules/rules \
-            --config auto \
-            --sarif --output semgrep.sarif \
-            --error
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            ./frappe-rules/rules
+            auto
+          generateSarif: "1"
 
+      # 4. Upload to the Security Tab (v4 is the latest)
       - name: Upload Results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
         if: always()
