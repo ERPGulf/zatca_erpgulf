@@ -1161,18 +1161,25 @@ def update_qr_toxml(final_xml_string,qrcodeb64, company_abbr):
             _(f"Error in saving TLV data to XML for company {company_abbr}: " + str(e))
         )
 
-
-def structuring_signedxml(invoice_number,updated_xml_string):
-    """structuring the signed xml"""
+def structuring_signedxml(invoice_number, updated_xml_string):
     try:
-        # with open(
-        #     f"{frappe.local.site}/private/files/final_xml_after_sign_{invoice_number}.xml",
-        #     "r",
-        #     encoding="utf-8",
-        # ) as file:
-        #     xml_content = file.readlines()
-
-        # update_xml_string=xml_content
+        file_name = f"final_xml_after_indent_{invoice_number}.xml"
+        frappe.db.delete("File", {
+            "file_name": file_name,
+            "attached_to_name": invoice_number
+        })
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": file_name,
+            "attached_to_doctype": "Sales Invoice",
+            "attached_to_name": invoice_number,
+            "is_private": 1,
+            "content": updated_xml_string,
+        })
+        file_doc.insert(ignore_permissions=True)
+        return file_doc.file_url
+    except Exception as e:
+        frappe.throw(_("Error in structuring signed xml: " + str(e)))
         indentations = {
             29: [
                 '<xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="signature">',
