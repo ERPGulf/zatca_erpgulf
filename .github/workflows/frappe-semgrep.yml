@@ -1,0 +1,36 @@
+name: Frappe Security Scan
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  semgrep:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Clone Frappe Rules
+        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-rules
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config ./frappe-rules/rules \
+            --config auto \
+            --sarif --output semgrep.sarif \
+            --error
+
+      - name: Upload Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        if: always()
