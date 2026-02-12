@@ -221,8 +221,8 @@ def debug_call(
             updated_xml_string = update_qr_toxml(final_xml_string, qrcodeb64, company_abbr)
             signed_xmlfile_name = structuring_signedxml(invoice_number,updated_xml_string)
             # Step 8: Save & attach final XML
-            
-            signed_xmlfile_name = f"{frappe.local.site}/private/files/final_xml_after_indent_{invoice_number}.xml"
+            safe_invoice_number = invoice_number.replace("/", "-")
+            signed_xmlfile_name = f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml"
             debug_filename = f"DEBUG_INVOICE_{invoice_doc.name}.xml"
             with open(signed_xmlfile_name, "r", encoding="utf-8") as f:
                 xml_data = f.read()

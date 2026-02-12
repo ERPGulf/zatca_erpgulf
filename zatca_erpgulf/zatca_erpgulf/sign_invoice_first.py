@@ -1217,9 +1217,9 @@ def structuring_signedxml(invoice_number,updated_xml_string):
         adjusted_xml_content = [
         adjust_indentation(line) for line in updated_xml_string.splitlines(keepends=True)
         ]
-
+        safe_invoice_number = invoice_number.replace("/", "-")
         with open(
-            f"{frappe.local.site}/private/files/final_xml_after_indent_{invoice_number}.xml",
+            f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml",
             "w",
             encoding="utf-8",
         ) as file:
@@ -1234,7 +1234,7 @@ def structuring_signedxml(invoice_number,updated_xml_string):
         # ) as file:
         #     file.writelines(adjusted_xml_content)
         signed_xmlfile_name = (
-            f"{frappe.local.site}/private/files/final_xml_after_indent_{invoice_number}.xml"
+            f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml"
         )
         return signed_xmlfile_name
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:

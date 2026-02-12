@@ -930,19 +930,21 @@ def structuring_signedxml(invoice_number,updated_xml_string):
                         return " " * (col - 1) + line.lstrip()
             return line
 
+        safe_invoice_number = invoice_number.replace("/", "-")
         # adjusted_xml_content = [adjust_indentation(line) for line in xml_content]
         adjusted_xml_content = [
         adjust_indentation(line) for line in updated_xml_string.splitlines(keepends=True)
         ]
+
         with open(
-            f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{invoice_number}.xml",
+            f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{safe_invoice_number}.xml",
             "w",
             encoding="utf-8",
         ) as file:
             file.writelines(adjusted_xml_content)
     
         signed_xmlfile_name = (
-            f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{invoice_number}.xml"
+            f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{safe_invoice_number}.xml"
         )
         return signed_xmlfile_name
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
