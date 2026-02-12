@@ -187,6 +187,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
         cleared_xml_file_name = f"Cleared xml file {safe_invoice_name}.xml"
         reported_xml_file_name = f"Reported xml file {safe_invoice_name}.xml"
 
+
         attachments = frappe.get_all(
             "File",
             filters={"attached_to_name": invoice_name},
