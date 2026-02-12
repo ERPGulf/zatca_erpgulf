@@ -33,10 +33,10 @@ def generate_invoice_pdf(invoice, language, letterhead=None, print_format=None):
 
     # Generate PDF content from the HTML
     pdf_content = get_pdf(html)
-
+    safe_invoice_name = invoice_name.replace("/", "-")
     # Set the path for saving the generated PDF
     site_path = frappe.local.site  # Get the site path
-    file_name = f"{invoice_name}.pdf"
+    file_name = f"{safe_invoice_name}.pdf"
     file_path = os.path.join(site_path, "private", "files", file_name)
 
     # Write the PDF content to the file
@@ -182,26 +182,49 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
         invoice_number = frappe.get_doc("Sales Invoice", invoice_name)
 
         xml_file = None
-        cleared_xml_file_name = "Cleared xml file " + invoice_name + ".xml"
-        reported_xml_file_name = "Reported xml file " + invoice_name + ".xml"
+        safe_invoice_name = invoice_name.replace("/", "")
+
+        cleared_xml_file_name = f"Cleared xml file {safe_invoice_name}.xml"
+        reported_xml_file_name = f"Reported xml file {safe_invoice_name}.xml"
+
         attachments = frappe.get_all(
-            "File", filters={"attached_to_name": invoice_name}, fields=["file_name"]
+            "File",
+            filters={"attached_to_name": invoice_name},
+            fields=["file_name", "file_url"]
         )
 
-        # Find the XML file attachment
-        for attachment in attachments:
-            file_name = attachment.get("file_name", None)
-            if file_name == cleared_xml_file_name:
-                xml_file = os.path.join(
-                    frappe.local.site, "private", "files", file_name
-                )
-                break
-            elif file_name == reported_xml_file_name:
-                xml_file = os.path.join(
-                    frappe.local.site, "private", "files", file_name
-                )
+        print("Safe Invoice:", safe_invoice_name)
+        print("Looking for:")
+        print("-", cleared_xml_file_name)
+        print("-", reported_xml_file_name)
+        print("Attachments:", attachments)
+
+        xml_file = None
+
+        for att in attachments:
+            file_name = att["file_name"]
+
+            if file_name == cleared_xml_file_name or file_name == reported_xml_file_name:
+                xml_file = os.path.join(frappe.local.site_path, "private", "files", file_name)
                 break
 
+        if not xml_file:
+            frappe.throw(f"No XML file found for the invoice {invoice_name}!")
+            
+        # Find the XML file attachment
+        # for attachment in attachments:
+        #     file_name = attachment.get("file_name", None)
+        #     if file_name == cleared_xml_file_name:
+        #         xml_file = os.path.join(
+        #             frappe.local.site, "private", "files", file_name
+        #         )
+        #         break
+        #     elif file_name == reported_xml_file_name:
+        #         xml_file = os.path.join(
+        #             frappe.local.site, "private", "files", file_name
+        #         )
+        #         break
+        # frappe.throw(str(attachments))
         if not xml_file:
             frappe.throw(f"No XML file found for the invoice {invoice_name}!")
         input_pdf = generate_invoice_pdf(
@@ -213,7 +236,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
 
         # final_pdf = frappe.local.site + "/private/files/" + invoice_name + "output.pdf"
         final_pdf = (
-            frappe.local.site + "/private/files/PDF-A3 " + invoice_name + " output.pdf"
+            frappe.local.site + "/private/files/PDF-A3 " + safe_invoice_name + " output.pdf"
         )
         # frappe.msgprint(f"Embedding XML into: {input_pdf}")
         with pikepdf.Pdf.open(input_pdf, allow_overwriting_input=True) as pdf:
@@ -225,7 +248,7 @@ def embed_file_in_pdf(invoice_name, print_format=None, letterhead=None, language
             file_doc = frappe.get_doc(
                 {
                     "doctype": "File",
-                    "file_url": "/private/files/PDF-A3 " + invoice_name + " output.pdf",
+                    "file_url": "/private/files/PDF-A3 " + safe_invoice_name + " output.pdf",
                     "attached_to_doctype": "Sales Invoice",
                     "attached_to_name": invoice_name,
                     "is_private": 1,  # Make the file private
