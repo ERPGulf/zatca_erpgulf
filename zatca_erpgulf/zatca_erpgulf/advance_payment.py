@@ -674,11 +674,11 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
             if sales_invoice_doc.paid_from_account_currency == "SAR":
                 # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 # Tax is not included in print rate
-                cbc_lineextensionamount_1.text = str(abs(single_item.base_amount))
+                cbc_lineextensionamount_1.text = str(abs(round(single_item.base_amount,2)))
 
             else:
 
-                cbc_lineextensionamount_1.text = str(abs(single_item.amount))
+                cbc_lineextensionamount_1.text = str(abs(round(single_item.amount,2)))
 
             cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
             cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
@@ -727,7 +727,7 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
             )
 
             # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            cbc_priceamount.text = str(abs(single_item.rate))
+            cbc_priceamount.text = str(abs(round(single_item.rate,2)))
         return invoice
     except (ValueError, KeyError, TypeError) as e:
         frappe.throw(_(f"Error occurred in item data processing: {str(e)}"))

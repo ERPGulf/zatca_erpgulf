@@ -637,7 +637,7 @@ def item_data(invoice, sales_invoice_doc):
             if sales_invoice_doc.currency == "SAR":
                 if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                     # Tax is not included in print rate
-                    cbc_lineextensionamount_1.text = str(abs(single_item.base_amount))
+                    cbc_lineextensionamount_1.text = str(abs(round(single_item.base_amount,2)))
                 elif sales_invoice_doc.taxes[0].included_in_print_rate == 1:
                     # Tax is included in print rate
                     cbc_lineextensionamount_1.text = str(
@@ -653,7 +653,7 @@ def item_data(invoice, sales_invoice_doc):
             else:
                 # For other currencies
                 if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-                    cbc_lineextensionamount_1.text = str(abs(single_item.amount))
+                    cbc_lineextensionamount_1.text = str(abs(round(single_item.amount,2)))
                 else:
 
                     cbc_lineextensionamount_1.text = str(
@@ -825,7 +825,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
                     base_amt / (1 + sales_invoice_doc.taxes[0].rate / 100), 2
                 )
 
-            line_ext_amount.text = str(abs(base_amt))
+            line_ext_amount.text = str(abs(round(base_amt,2)))
 
             # === Tax Total ===
             tax_total = ET.SubElement(line, "cac:TaxTotal")
@@ -929,14 +929,25 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
                 ).text = "0"
 
                 subtotal = ET.SubElement(tax_total, "cac:TaxSubtotal")
+
+                # Added by TEAMPRO
+                taxable_amount = abs(round(sales_invoice_doc.custom_advances_copy[0].advance_amount / (1 + item_tax_percentage / 100), 2))
                 ET.SubElement(
                     subtotal, "cbc:TaxableAmount", currencyID=sales_invoice_doc.currency
-                ).text = str(abs(single_item.amount))
+                ).text = str(taxable_amount)
                 ET.SubElement(
                     subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
                 ).text = str(
-                    abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                    abs(round(taxable_amount * item_tax_percentage / 100, 2))
                 )
+                # ET.SubElement(
+                #     subtotal, "cbc:TaxableAmount", currencyID=sales_invoice_doc.currency
+                # ).text = str(abs(round(single_item.amount, 2)))
+                # ET.SubElement(
+                #     subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
+                # ).text = str(
+                #     abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                # )
 
                 tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
                 ET.SubElement(tax_cat, "cbc:ID").text = get_tax_code(
@@ -1046,7 +1057,7 @@ def item_data_with_template(invoice, sales_invoice_doc):
                 cac_invoiceline, "cbc:LineExtensionAmount"
             )
             cbc_lineextensionamount_1.set("currencyID", sales_invoice_doc.currency)
-            cbc_lineextensionamount_1.text = str(abs(single_item.amount))
+            cbc_lineextensionamount_1.text = str(abs(round(single_item.amount,2)))
 
             cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
             cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
@@ -1151,7 +1162,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                 cac_invoiceline, "cbc:LineExtensionAmount"
             )
             cbc_lineextensionamount_1.set("currencyID", sales_invoice_doc.currency)
-            cbc_lineextensionamount_1.text = str(abs(single_item.amount))
+            cbc_lineextensionamount_1.text = str(abs(round(single_item.amount,2)))
 
             cac_taxtotal_2 = ET.SubElement(cac_invoiceline, CAC_TAX_TOTAL)
             cbc_taxamount_3 = ET.SubElement(cac_taxtotal_2, CBC_TAX_AMOUNT)
@@ -1300,7 +1311,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                         subtotal,
                         "cbc:TaxableAmount",
                         currencyID=sales_invoice_doc.currency,
-                    ).text = str(abs(single_item.amount))
+                    ).text = str(abs(round(single_item.amount,2)))
                     ET.SubElement(
                         subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
                     ).text = str(
