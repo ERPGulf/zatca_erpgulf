@@ -741,7 +741,7 @@ def customer_data(invoice, sales_invoice_doc):
         #     cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
         #     cbc_company_id.text = customer_doc.tax_id
          # Only add CompanyID if custom_buyer_id is not set
-        if not customer_doc.custom_buyer_id:
+        if not customer_doc.custom_buyer_id or customer_doc.tax_id:
             cbc_company_id = ET.SubElement(cac_partytaxscheme_1, "cbc:CompanyID")
             cbc_company_id.text = customer_doc.tax_id 
 
