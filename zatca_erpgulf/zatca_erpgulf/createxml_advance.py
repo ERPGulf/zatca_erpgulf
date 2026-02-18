@@ -935,7 +935,6 @@ def structuring_signedxml(invoice_number,updated_xml_string):
         adjusted_xml_content = [
         adjust_indentation(line) for line in updated_xml_string.splitlines(keepends=True)
         ]
-
         with open(
             f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{safe_invoice_number}.xml",
             "w",
