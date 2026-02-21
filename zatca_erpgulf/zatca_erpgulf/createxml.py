@@ -537,9 +537,9 @@ def get_address(sales_invoice_doc, company_doc):
         )
 
         if not address_list:
-            frappe.throw(
+            frappe.throw(_(
                 f"ZATCA requires a proper address. Please add an address for Cost Center: {cost_center_doc.name}."
-            )
+            ))
 
         return address_list[0]  # Return the Cost Center's address
 
@@ -974,12 +974,12 @@ def add_document_level_discount_with_tax_template(invoice, sales_invoice_doc):
         elif vat_category_code == "Services outside scope of tax / Not subject to VAT":
             cbc_id.text = "O"
         else:
-            frappe.throw(
-                "Invalid or missing ZATCA VAT category in the Item Tax Template " 
-                "linked to Sales Invoice Item. Ensure each Item Tax Template " 
-                "includes one of the following categories: "
+            frappe.throw(_(
+                "Invalid or missing ZATCA VAT category in the Item Tax Template" 
+                "linked to Sales Invoice Item. Ensure each Item Tax Template" 
+                "includes one of the following categories:"
                 "'Standard', 'Zero Rated', 'Exempted', or 'Services outside scope of tax / Not subject to VAT'."
-            )
+            ))
 
         cbc_percent = ET.SubElement(cac_tax_category, "cbc:Percent")
         cbc_percent.text = f"{tax_percentage:.2f}"

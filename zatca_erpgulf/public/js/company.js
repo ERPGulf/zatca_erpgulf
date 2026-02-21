@@ -151,7 +151,7 @@ frappe.ui.form.on("Company", {
                 if (!r.exc && r.message) {
                     // Set the returned CSR configuration string into a custom field
                     frm.set_value("custom_csr_config", r.message);
-                    frappe.msgprint("CSR Configuration generated successfully.");
+                    frappe.msgprint(_("CSR Configuration generated successfully."));
                     frm.save();
                 }
             },

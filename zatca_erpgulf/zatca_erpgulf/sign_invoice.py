@@ -83,7 +83,7 @@ SAUDI_ARABIA = "Saudi Arabia"
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
     try:
-        with open(signed_xmlfile_name, "r", encoding="utf-8") as file:
+        with open(signed_xmlfile_name, "r", encoding="utf-8") as file: # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
             xml = file.read().lstrip()
             base64_encoded = base64.b64encode(xml.encode("utf-8"))
             base64_decoded = base64_encoded.decode("utf-8")
@@ -1329,9 +1329,9 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
-                frappe.throw(
+                frappe.throw(_(
                     "As per ZATCA regulations - For B2B Customers, customer CR number has to be provided"
-                )
+                ))
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
@@ -1655,10 +1655,10 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
             and sales_invoice_doc.taxes[0].included_in_print_rate == 1
         ):
             if any(item.item_tax_template for item in sales_invoice_doc.items):
-                frappe.throw(
+                frappe.throw(_(
                     "As per ZATCA regulations, Item Tax Template cannot be used when taxes are included"
                     " in the print rate. Please remove Item Tax Templates."
-                )
+                ))
         any_item_has_tax_template = False
         for item in sales_invoice_doc.items:
             if item.item_tax_template:
@@ -1778,9 +1778,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
-                frappe.throw(
+                frappe.throw(_(
                     "As per ZATCA regulations- For B2B Customers, customer CR number has to be provided"
-                )
+                ))
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:

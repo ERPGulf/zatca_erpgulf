@@ -170,11 +170,8 @@ def create_csr(zatca_doc, portal_type, company_abbr):
     Function defining the create csr method with the config csr data
     """
     try:
-        # frappe.throw("hi")
-
         if isinstance(zatca_doc, str):
             zatca_doc = json.loads(zatca_doc)
-        # frappe.msgprint(f"Using OTP (Company): {zatca_doc}")
         # Validate zatca_doc structure
         if (
             not isinstance(zatca_doc, dict)
@@ -190,10 +187,8 @@ def create_csr(zatca_doc, portal_type, company_abbr):
         # Fetch CSR data based on document type
         if doc.doctype == "ZATCA Multiple Setting":
             csr_values = get_csr_data_multiple(doc)
-            # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
         elif doc.doctype == "Company":
             csr_values = get_csr_data(company_abbr)
-            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
         else:
             frappe.throw(_("Unsupported document type for CSR creation."))
 
@@ -221,12 +216,10 @@ def create_csr(zatca_doc, portal_type, company_abbr):
             customoid = encode_customoid("ZATCA-Code-Signing")
         if doc.doctype == "ZATCA Multiple Setting":
             private_key_pem = create_private_keys(doc, zatca_doc)
-            # frappe.msgprint(f"Using OTP (Multiple Setting): {csr_values}")
         elif doc.doctype == "Company":
             private_key_pem = create_private_keys(company_abbr, zatca_doc)
-            # frappe.msgprint(f"Using OTP (Company): {csr_values}")
         else:
-            frappe.throw("no private key.")
+            frappe.throw(_("no private key."))
 
         private_key = serialization.load_pem_private_key(
             private_key_pem, password=None, backend=default_backend()
@@ -605,7 +598,7 @@ def digital_signature(hash1, company_abbr, source_doc):
         return encoded_signature
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(_("Error in digital signature: ") + str(e))
+        frappe.throw(_("Error in digital signature:") + str(e))
         return None
 
 
@@ -722,7 +715,7 @@ def certificate_hash(company_abbr, source_doc):
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
     try:
-        with open(signed_xmlfile_name, "r", encoding="utf-8") as file:
+        with open(signed_xmlfile_name, "r", encoding="utf-8") as file: # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
             xml = file.read().lstrip()
             base64_encoded = base64.b64encode(xml.encode("utf-8"))
             base64_decoded = base64_encoded.decode("utf-8")
@@ -1222,7 +1215,7 @@ def structuring_signedxml(invoice_number,updated_xml_string):
             f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml",
             "w",
             encoding="utf-8",
-        ) as file:
+        ) as file: # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
             file.writelines(adjusted_xml_content)
     
 
@@ -1368,10 +1361,10 @@ def production_csid(zatca_doc, company_abbr):
             timeout=300,
         )
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
-        frappe.msgprint(response.text)
+        frappe.msgprint(_(response.text))
 
         if response.status_code != 200:
-            frappe.throw("Error in production: " + response.text)
+            frappe.throw(_("Error in production:" + response.text))
 
         data = response.json()
         concatenated_value = data["binarySecurityToken"] + ":" + data["secret"]

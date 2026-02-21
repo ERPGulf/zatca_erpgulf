@@ -705,7 +705,7 @@ def zatca_call(
     try:
 
         if not frappe.db.exists("POS Invoice", invoice_number):
-            frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
+            frappe.throw(_("Invoice Number is NOT Valid:" + str(invoice_number)))
 
         invoice = xml_tags()
         invoice, uuid1, pos_invoice_doc = salesinvoice_data(invoice, invoice_number)
@@ -841,7 +841,7 @@ def zatca_call_compliance(
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
 
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
 
@@ -860,7 +860,7 @@ def zatca_call_compliance(
             compliance_type = "6"
         # Validate the invoice number
         if not frappe.db.exists("POS Invoice", invoice_number):
-            frappe.throw("Invoice Number is NOT Valid1: " + str(invoice_number))
+            frappe.throw(_("Invoice Number is NOT Valid1:" + str(invoice_number)))
 
         # Fetch and process the sales invoice data
         invoice = xml_tags()
@@ -872,7 +872,7 @@ def zatca_call_compliance(
         if any_item_has_tax_template and not all(
             item.item_tax_template for item in pos_invoice_doc.items
         ):
-            frappe.throw(ITEM_TAX_TEMPLATE_WARNING)
+            frappe.throw(_(ITEM_TAX_TEMPLATE_WARNING))
 
         invoice = invoice_typecode_compliance(invoice, compliance_type)
         invoice = doc_reference_compliance(
@@ -1040,9 +1040,9 @@ def zatca_background_(invoice_number, source_doc, bypass_background_check=False)
         customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
-                frappe.throw(
+                frappe.throw(_(
                     "As per ZATCA regulation- For B2B Customers, customer CR number has to be provided"
-                )
+                ))
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
                 if pos_invoice_doc.customer_address:
@@ -1396,9 +1396,9 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
         customer_doc = frappe.get_doc("Customer", pos_invoice_doc.customer)
         if customer_doc.custom_b2c == 0:
             if not customer_doc.custom_buyer_id:
-                frappe.throw(
+                frappe.throw(_(
                     "As per ZATCA regulation- For B2B Customers, customer CR number has to be provided"
-                )
+                ))
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
                 if pos_invoice_doc.customer_address:

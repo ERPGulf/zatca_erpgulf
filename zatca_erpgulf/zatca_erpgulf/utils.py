@@ -45,7 +45,7 @@ from io import BytesIO
 
 def generate_qr_and_attach_doctype(doctype, docname, url, file_field=None):
     if not url:
-        frappe.throw("QR URL is required")
+        frappe.throw(_("QR URL is required"))
 
     doc = frappe.get_doc(doctype, docname)
 

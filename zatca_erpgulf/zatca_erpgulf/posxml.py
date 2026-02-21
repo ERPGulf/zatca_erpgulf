@@ -350,7 +350,7 @@ def get_pih_for_company(pih_data, company_name):
         for entry in pih_data.get("data", []):
             if entry.get("company") == company_name:
                 return entry.get("pih")
-        frappe.throw(_("Error while retrieving  PIH of company for production:  "))
+        frappe.throw(_("Error while retrieving  PIH of company for production:"))
     except (KeyError, AttributeError, ValueError) as e:
         frappe.throw(
             _(f"Error in getting PIH of company '{company_name}' for production: {e}")
@@ -522,7 +522,7 @@ def get_address(pos_invoice_doc, company_doc):
                 filters=[["name", "=", cost_center_doc.custom_zatca_branch_address]],
             )
             if not address_list:
-                frappe.throw("ZATCA requires a proper address. Please add")
+                frappe.throw(_("ZATCA requires a proper address. Please add"))
             if address_list:
                 return address_list[0]
 
@@ -558,7 +558,7 @@ def company_data(invoice, pos_invoice_doc):
 
         # If Company requires Cost Center but it's missing, throw an error
         if company_doc.custom_costcenter == 1 and not pos_invoice_doc.cost_center:
-            frappe.throw(_(" No Cost Center is set in the POS invoice.Give the feild"))
+            frappe.throw(_("No Cost Center is set in the POS invoice.Give the feild"))
 
         # Determine whether to fetch data from Cost Center or Company
         if company_doc.custom_costcenter == 1:
@@ -834,12 +834,12 @@ def add_document_level_discount_with_tax_template(invoice, pos_invoice_doc):
         elif vat_category == "Services outside scope of tax / Not subject to VAT":
             cbc_id.text = "O"
         else:
-            frappe.throw(
-                "Invalid or missing ZATCA VAT category in the Item Tax Template " 
-                "linked to Sales Invoice Item. Ensure each Item Tax Template " 
-                "includes one of the following categories: "
+            frappe.throw(_(
+                "Invalid or missing ZATCA VAT category in the Item Tax Template" 
+                "linked to Sales Invoice Item. Ensure each Item Tax Template" 
+                "includes one of the following categories:"
                 "'Standard', 'Zero Rated', 'Exempted', or 'Services outside scope of tax / Not subject to VAT'."
-            )
+            ))
 
         cbc_percent = ET.SubElement(cac_taxcategory, "cbc:Percent")
         cbc_percent.text = f"{tax_percentage:.2f}"
