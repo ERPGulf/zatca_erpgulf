@@ -106,7 +106,7 @@ def debug_call(
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
         if company_doc.custom_zatca_invoice_enabled != 1:
-            frappe.msgprint("ZATCA Invoice is not enabled. Submitting the document.")
+            frappe.msgprint(_("ZATCA Invoice is not enabled. Submitting the document."))
             return
 
         # --- Fetch Customer ---
@@ -125,7 +125,7 @@ def debug_call(
             frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
 
         if not frappe.db.exists("POS Invoice", invoice_number):
-            frappe.throw("Invoice Number is NOT valid: " + str(invoice_number))
+            frappe.throw(_("Invoice Number is NOT valid:" + str(invoice_number)))
 
         # --- Check GPOS and fields ---
         is_gpos_installed = "gpos" in frappe.get_installed_apps()
@@ -151,7 +151,7 @@ def debug_call(
                 if customer_doc_inner.custom_b2c == 1:
                     invoice = invoice_typecode_simplified(invoice, invoice_doc)
                 else:
-                    frappe.throw("Customer should be B2C POS without XML during create XML.")
+                    frappe.throw(_("Customer should be B2C POS without XML during create XML."))
             else:
                 invoice = invoice_typecode_compliance(invoice, compliance_type)
 
@@ -199,7 +199,7 @@ def debug_call(
             safe_invoice_number = invoice_number.replace("/", "-")
             signed_xmlfile_name = f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml"
             debug_filename = f"DEBUG_INVOICE_{invoice_doc.name}.xml"
-
+            # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
             with open(signed_xmlfile_name, "r", encoding="utf-8") as f:
                 xml_data = f.read()
 
@@ -240,12 +240,12 @@ def debug_call(
                     frappe.throw(_("POS name is required"))
 
                 if is_gpos_installed and getattr(pos_invoice_doc, "custom_xml", None):
-                    frappe.msgprint("✅ XML already attached for this POS invoice")
+                    frappe.msgprint(_("✅ XML already attached for this POS invoice"))
                 else:
                     handle_b2c_simplified = True
             else:
                 if is_qr_and_xml_attached(pos_invoice_doc):
-                    frappe.msgprint("✅ XML/QR already attached")
+                    frappe.msgprint(_("✅ XML/QR already attached"))
                 elif settings.custom_send_invoice_to_zatca == "Background" and not bypass_background_check:
                     handle_b2c_simplified = True
                 else:

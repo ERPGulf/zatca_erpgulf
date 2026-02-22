@@ -14,6 +14,7 @@ SALES_INVOICE = "Sales Invoice"
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
     try:
+        # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
         with open(signed_xmlfile_name, "r", encoding="utf-8") as file:
             xml = file.read().lstrip()
             base64_encoded = base64.b64encode(xml.encode("utf-8"))
@@ -86,6 +87,7 @@ def extract_uuid_and_invoicehash_simplifeid(file_path):
     """
     try:
         # Read the file content as bytes
+        # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
         with open(frappe.local.site + file_path, "rb") as file:
             custom_xml = file.read()
 

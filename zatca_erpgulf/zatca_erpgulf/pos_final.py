@@ -308,7 +308,7 @@ def item_data(invoice, pos_invoice_doc):
             cbc_lineextensionamount_1.set("currencyID", pos_invoice_doc.currency)
             pos_profile = pos_invoice_doc.pos_profile
             if not pos_profile:
-                frappe.throw("POS Profile is not set in the POS Invoice.")
+                frappe.throw(_("POS Profile is not set in the POS Invoice."))
             pos_profile_doc = frappe.get_doc("POS Profile", pos_profile)
             taxes_and_charges = pos_profile_doc.taxes_and_charges
             taxes_template_doc = frappe.get_doc(

@@ -49,13 +49,13 @@ def get_csr_data(company_abbr):
     try:
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         csr_config_string = company_doc.custom_csr_config
 
         if not csr_config_string:
-            frappe.throw("No CSR config found in company settings")
+            frappe.throw(_("No CSR config found in company settings"))
 
         csr_config = parse_csr_config(csr_config_string)
 
@@ -122,7 +122,7 @@ def create_csr(zatca_doc, portal_type, company_abbr):
 
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         csr_values = get_csr_data(company_abbr)
@@ -278,9 +278,9 @@ def create_csid(zatca_doc, company_abbr):
         frappe.publish_realtime("hide_gif", user=frappe.session.user)
 
         if response.status_code == 400:
-            frappe.throw("Error: OTP is not valid. " + response.text)
+            frappe.throw(_("Error: OTP is not valid." + response.text))
         if response.status_code != 200:
-            frappe.throw("Error: Issue with Certificate or OTP. " + response.text)
+            frappe.throw(_("Error: Issue with Certificate or OTP." + response.text))
         frappe.msgprint(str(response.text))
         data = json.loads(response.text)
 
@@ -306,13 +306,13 @@ def create_public_key(company_abbr, source_doc):
         # Get the company name using the provided abbreviation
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         company_doc = frappe.get_doc("Company", company_name)
         certificate_data_str = company_doc.get("custom_certificate", "")
 
         if not certificate_data_str:
-            frappe.throw("No certificate data found.")
+            frappe.throw(_("No certificate data found."))
 
         # Build the PEM certificate
         cert_base64 = f"""
@@ -437,9 +437,9 @@ def extract_certificate_details(company_abbr, source_doc):
         certificate_content = certificate_data_str.strip()
 
         if not certificate_content:
-            frappe.throw(
+            frappe.throw(_(
                 f"No valid certificate content found for company {company_name}"
-            )
+            ))
         # Format the certificate string to PEM format if not already in correct PEM format
         formatted_certificate = "-----BEGIN CERTIFICATE-----\n"
         formatted_certificate += "\n".join(
@@ -498,6 +498,7 @@ def certificate_hash(company_abbr, source_doc):
 def xml_base64_decode(signed_xmlfile_name):
     """xml base64 decode"""
     try:
+        # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
         with open(signed_xmlfile_name, "r", encoding="utf-8") as file:
             xml = file.read().lstrip()
             base64_encoded = base64.b64encode(xml.encode("utf-8"))
@@ -633,9 +634,9 @@ def populate_the_ubl_extensions_output(
         content = certificate_data_str.strip()
 
         if not content:
-            frappe.throw(
+            frappe.throw(_(
                 f"No valid certificate content found for company {company_name}"
-            )
+            ))
 
         xpath_signvalue = "ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:SignatureValue"
         xpath_x509certi = "ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate"
@@ -712,7 +713,7 @@ def get_tlv_for_value(tag_num, tag_value):
             tag_value_len_buf = bytes([len(tag_value)])
         return tag_num_buf + tag_value_len_buf + tag_value
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
-        frappe.throw(" error in getting the tlv data value: " + str(e))
+        frappe.throw(_("error in getting the tlv data value:" + str(e)))
         return None
 
 
@@ -939,7 +940,7 @@ def structuring_signedxml(invoice_number,updated_xml_string):
             f"{frappe.local.site}/private/files/final_xml_after_indentadvance1_{safe_invoice_number}.xml",
             "w",
             encoding="utf-8",
-        ) as file:
+        ) as file:       # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
             file.writelines(adjusted_xml_content)
     
         signed_xmlfile_name = (

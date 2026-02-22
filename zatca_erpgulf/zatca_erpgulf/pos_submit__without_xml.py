@@ -68,7 +68,7 @@ def zatca_call_pos_without_xml(
     try:
 
         if not frappe.db.exists(POS_INVOICE, invoice_number):
-            frappe.throw("Invoice Number is NOT Valid: " + str(invoice_number))
+            frappe.throw(_("Invoice Number is NOT Valid:" + str(invoice_number)))
 
         invoice = xml_tags()
         invoice, uuid1, pos_invoice_doc = salesinvoice_data(invoice, invoice_number)
@@ -84,9 +84,9 @@ def zatca_call_pos_without_xml(
             if customer_doc.custom_b2c == 1:
                 invoice = invoice_typecode_simplified(invoice, pos_invoice_doc)
             else:
-                frappe.throw(
-                    "customer should be B2C pos without xml during create xml "
-                )
+                frappe.throw(_(
+                    "customer should be B2C pos without xml during create xml"
+                ))
         else:
             invoice = invoice_typecode_compliance(invoice, compliance_type)
 
@@ -172,7 +172,7 @@ def zatca_call_pos_without_xml(
             else:
                 frappe.throw(
                     _(
-                        "B2B is not supported for POS Invoices,customer should be B2C pos without xml "
+                        "B2B is not supported for POS Invoices,customer should be B2C pos without xml during create xml"
                     )
                 )
         else:

@@ -23,9 +23,9 @@ def validate_sales_invoice_taxes(doc, event=None):
 
     if is_gpos_installed and field_exists:
         if doc.custom_unique_id and not doc.custom_zatca_pos_name:
-            frappe.throw(
+            frappe.throw(_(
                 "ZATCA POS Machine name is missing for invoice, Add ZATCA POS machine name"
-            )
+            ))
     customer_doc = frappe.get_doc("Customer", doc.customer)
     # if customer_doc.custom_b2c != 1:
     #     frappe.throw("This customer should be B2C for Background")
@@ -48,10 +48,10 @@ def validate_sales_invoice_taxes(doc, event=None):
 
         # Validation: doc.company and linked company must be the same
         if linked_company_doc.name != doc.company:
-            frappe.throw(
+            frappe.throw(_(
                 f"Company mismatch: Document company '{doc.company}' "
                 f"does not match linked ZATCA company '{linked_company_doc.name}of machine setting'."
-            )
+            ))
     if company_doc.custom_costcenter == 1:
         if not doc.cost_center:
             frappe.throw(_("This company requires a Cost Center"))

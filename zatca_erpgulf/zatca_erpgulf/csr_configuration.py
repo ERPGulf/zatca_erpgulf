@@ -15,7 +15,7 @@ def get_csr_config(company_abbr):
             "Company", {"abbr": company_abbr}, "name"
         )
         if not company_name_val:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
         company_doc = frappe.get_doc("Company", company_name_val)
         tax_id = company_doc.tax_id
         location = company_doc.custom_zatca__location_for_csr_configuratoin
@@ -57,10 +57,10 @@ def get_csr_config(company_abbr):
             f"csr.industry.business.category={business_category}"
         )
 
-        frappe.msgprint(
+        frappe.msgprint(_(
             msg=f"<div style='font-size: 12px; white-space: pre-wrap;'>{config}</div>",
             title="Thank You! Successfully completed CSR configuration",
-        )
+        ))
         return config
     except Exception as e:
         frappe.throw(_(str(e)))
