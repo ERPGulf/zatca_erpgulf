@@ -19,12 +19,7 @@ add_to_apps_screen = [
         # "has_permission": "zatca_erpgulf.check_app_permission",
     }
 ]
-required_apps = [
-    {
-        "name": "frappe",
-        "version": ">=14.0.0 <17.0.0"
-    }
-]
+
 
 # Includes in <head>
 # ------------------
