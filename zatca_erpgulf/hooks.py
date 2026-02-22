@@ -22,7 +22,7 @@ add_to_apps_screen = [
 required_apps = [
     {
         "name": "frappe",
-        "version": ">=14.0.0 <16.0.0"
+        "version": ">=14.0.0 <17.0.0"
     }
 ]
 
