@@ -11,7 +11,7 @@ dynamic = ["version"]
 dependencies = [
     "asn1~=2.7.0",
     "pikepdf" ,
-    "frappe>=14.0.0" # Installed and managed by bench.
+    "frappe>=14.0.0,<16.0.0"
 ]
 
 [build-system]
