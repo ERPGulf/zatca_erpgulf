@@ -161,7 +161,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			],
 			primary_action_label: __("Start"),
 		},
-		
+
 		//   {
 		// 	name: "select_company",
 		// 	title: __("Select Company"),
@@ -250,7 +250,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						const isOffline = this.get_value(); // Get checkbox value
 						slideData["select_company_is_offline_pos"] = isOffline
 						const selectMachineField = this.layout.fields_dict.select_machine;
-		
+
 						if (selectMachineField) {
 							const isOffline = this.get_value(); // Get checkbox value
 							selectMachineField.df.hidden = !isOffline; // Toggle hidden property
@@ -308,7 +308,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 									fieldname: "custom_select",
 									value: selectedIntegrationType,
 								},
-								
+
 							});
 						} else if (!selected_company) {
 							frappe.msgprint({
@@ -330,7 +330,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 					});
 					return;
 				}
-		
+
 				// Proceed to the next slide
 				slideData[slides_settings[current_slide_index].name] = values;
 				current_slide_index++;
@@ -339,7 +339,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				console.log("Selected Integration Type:", values.integration_type);
 			},
 		},
-		
+
 
 		{
 			name: "company_details",
@@ -394,19 +394,19 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							frappe.msgprint(__("Please select a company before creating CSR."));
 							return;
 						}
-					
+
 						const isOfflinePOS = slideData["select_company_is_offline_pos"];
-    					console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
-						const selectedMachine = slideData["selected_machine"] ;
-						if (isOfflinePOS==1) {
-        					console.log("Selected Machine in Create CSR:", selectedMachine); 
-						
+						console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
+						const selectedMachine = slideData["selected_machine"];
+						if (isOfflinePOS == 1) {
+							console.log("Selected Machine in Create CSR:", selectedMachine);
+
 							if (!selectedMachine) {
 								frappe.msgprint(__("Please select a machine for offline POS."));
 								return;
 							}
 						}
-						
+
 						frappe.call({
 							method: "frappe.client.get_value",
 							args: {
@@ -431,19 +431,20 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 										const doctype = isOfflinePOS
 											? "ZATCA Multiple Setting"
 											: "Company";
-											
+
 										const name = isOfflinePOS
 											? selectedMachine
 											: selected_company;
-										
-											
+
+
 										frappe.call({
 											method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
-											args: {  
+											args: {
 												zatca_doc: {
 													doctype: doctype,
 													name: name,
-												},portal_type, company_abbr },
+												}, portal_type, company_abbr
+											},
 											callback: function (response) {
 												if (response && response.message) {
 													const encodedString = response.message.trim();
@@ -510,11 +511,11 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							return;
 						}
 						const isOfflinePOS = slideData["select_company_is_offline_pos"];
-    					console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
-						const selectedMachine = slideData["selected_machine"] ;
-						if (isOfflinePOS==1) {
-        					console.log("Selected Machine in Create CSR:", selectedMachine); 
-						
+						console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
+						const selectedMachine = slideData["selected_machine"];
+						if (isOfflinePOS == 1) {
+							console.log("Selected Machine in Create CSR:", selectedMachine);
+
 							if (!selectedMachine) {
 								frappe.msgprint(__("Please select a machine for offline POS."));
 								return;
@@ -522,7 +523,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						}
 						// Step 1: Save the OTP in the company document
 						const doctype = isOfflinePOS ? "ZATCA Multiple Setting" : "Company";
-                		const name = isOfflinePOS ? selectedMachine : selected_company;
+						const name = isOfflinePOS ? selectedMachine : selected_company;
 						frappe.call({
 							method: "frappe.client.set_value",
 							args: {
@@ -533,7 +534,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							},
 							callback: function (response) {
 								if (response && response.message) {
-									
+
 									frappe.call({
 										method: "frappe.client.get_value",
 										args: {
@@ -558,23 +559,25 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 												if (portal_type && company_abbr) {
 													const doctype = isOfflinePOS
-													? "ZATCA Multiple Setting"
-													: "Company";
-												const name = isOfflinePOS
-													? selectedMachine
-													: selected_company;
+														? "ZATCA Multiple Setting"
+														: "Company";
+													const name = isOfflinePOS
+														? selectedMachine
+														: selected_company;
 													// Step 3: Generate CSID
 													frappe.call({
 														method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
-														args: { zatca_doc: {
-															doctype: doctype,
-															name: name,
-														},portal_type, company_abbr },
+														args: {
+															zatca_doc: {
+																doctype: doctype,
+																name: name,
+															}, portal_type, company_abbr
+														},
 														callback: function (response) {
 															if (response && response.message) {
-															
+
 																const encodedString = response.message.trim();
-																
+
 																if (current_dialog) {
 																	current_dialog.set_value("basic_auth_from_csid", encodedString);
 																	current_dialog.refresh();
@@ -614,7 +617,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 			],
 			primary_action_label: __("Next"),
 		},
-		
+
 		{
 			name: "zatca_compliance_check",
 			title: __("ZATCA Compliance Check"),
@@ -658,11 +661,11 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 								return;
 							}
 							const isOfflinePOS = slideData["select_company_is_offline_pos"];
-							const selectedMachine = slideData["selected_machine"] ;
-							const doctype = isOfflinePOS? "ZATCA Multiple Setting": "Company";
-							const name = isOfflinePOS? selectedMachine: selected_company;
-							
-		
+							const selectedMachine = slideData["selected_machine"];
+							const doctype = isOfflinePOS ? "ZATCA Multiple Setting" : "Company";
+							const name = isOfflinePOS ? selectedMachine : selected_company;
+
+
 							// Fetch company abbreviation
 							frappe.call({
 								method: "frappe.client.get_value",
@@ -674,25 +677,25 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 								callback: function (res) {
 									if (res && res.message) {
 										const company_abbr = res.message.abbr;
-		
+
 										// Determine the button clicked based on the condition
 										const buttonClicked = `${condition.fieldname}_button`;
-		
+
 										// Call the wizard_button Python function
 										frappe.call({
 											method: "zatca_erpgulf.zatca_erpgulf.wizardbutton.wizard_button",
 											args: {
 												company_abbr: company_abbr,
-												button: buttonClicked, 
-												pos:doctype,
-												machine:name
+												button: buttonClicked,
+												pos: doctype,
+												machine: name
 												// Pass the corresponding button ID
 											},
 											callback: function (response) {
 												if (response && response.message) {
 													const reportingStatus = response.message.reportingStatus;
 													const clearanceStatus = response.message.clearanceStatus;
-		
+
 													// Check the checkbox if either status is "REPORTED" or " sCLEARED"
 													if (
 														reportingStatus === "REPORTED" ||
@@ -708,13 +711,13 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 															0
 														);
 													}
-		
+
 													frappe.msgprint(
-														__(`${condition.label}: ${JSON.stringify(response.message, null, 4)}`)
+														__(condition.label + ": " + JSON.stringify(response.message, null, 4))
 													);
 												} else {
 													frappe.msgprint(
-														__(`${condition.label}: No response or unknown error from the API.`)
+														__(condition.label + ": " + "No response or unknown error from the API.")
 													);
 													current_dialog.set_value(`${condition.fieldname}_checkbox`, 0);
 												}
@@ -730,10 +733,10 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 				]),
 			],
 			primary_action_label: __("Next"),
-			
+
 		},
-		
-		
+
+
 		{
 			name: "final_csid_generation",
 			title: __("Final CSID Generation"),
@@ -749,11 +752,11 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							return;
 						}
 						const isOfflinePOS = slideData["select_company_is_offline_pos"];
-    					console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
-						const selectedMachine = slideData["selected_machine"] ;
-						if (isOfflinePOS==1) {
-        					console.log("Selected Machine in Create CSR:", selectedMachine); 
-						
+						console.log("Retrieved Offline POS Value in Create CSR:", isOfflinePOS);
+						const selectedMachine = slideData["selected_machine"];
+						if (isOfflinePOS == 1) {
+							console.log("Selected Machine in Create CSR:", selectedMachine);
+
 							if (!selectedMachine) {
 								frappe.msgprint(__("Please select a machine for offline POS."));
 								return;
@@ -775,27 +778,29 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 
 									if (company_abbr) {
 										const doctype = isOfflinePOS
-										? "ZATCA Multiple Setting"
-										: "Company";
-									const name = isOfflinePOS
-										? selectedMachine
-										: selected_company;
+											? "ZATCA Multiple Setting"
+											: "Company";
+										const name = isOfflinePOS
+											? selectedMachine
+											: selected_company;
 
 										frappe.call({
 											method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
-											args: { zatca_doc: {
-												doctype: doctype,
-												name: name,
-											},company_abbr },
+											args: {
+												zatca_doc: {
+													doctype: doctype,
+													name: name,
+												}, company_abbr
+											},
 											callback: function (response) {
 												if (response && response.message) {
 
 													const encodedString = response.message.trim();
-													
+
 													if (current_dialog) {
 														current_dialog.set_value("final_auth_csid", encodedString);
 														current_dialog.refresh();
-												
+
 													} else {
 														frappe.msgprint(__("Dialog reference not found."));
 													}
@@ -868,19 +873,19 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							} else {
 								frappe.msgprint(__("⚠️ Failed to enable 'ZATCA Invoice'. Please check logs."));
 							}
-			
+
 							// Proceed to next slide after setting the value
-			
+
 						}
 					});
-				} 
-			
+				}
+
 				// ✅ Helper function to move to the next slide
-				
-				
+
+
 				if (slide.name === "zatca_compliance_check") {
 					console.log("Starting validation for compliance checks..."); // Debug log
-	
+
 					let allChecked = true;
 					const conditions = [
 						"simplified_invoice",
@@ -890,15 +895,15 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						"simplified_debit_note",
 						"standard_debit_note",
 					];
-	
+
 					// ✅ Loop through each checkbox and verify if all are checked (value == 1)
 					conditions.forEach((condition) => {
 						const fieldname = `${condition}_checkbox`;
 						const checkboxValue = dialog.get_value(fieldname); // Use dialog.get_value()
-	
+
 						// Debug logs for each checkbox
 						console.log(`Checking field: ${fieldname} | Value: ${checkboxValue}`);
-	
+
 						if (checkboxValue !== 1) {
 							allChecked = false;
 							console.log(`❌ ${fieldname} is not checked.`);
@@ -906,14 +911,14 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							console.log(`✅ ${fieldname} is checked.`);
 						}
 					});
-	
+
 					// ✅ Block Next if any checkbox is not checked
 					if (!allChecked) {
 						console.log("❌ Validation failed: Not all checkboxes are checked.");
 						frappe.msgprint(__("⚠️ Please complete all compliance checks before proceeding."));
 						return;
 					}
-	
+
 					// ✅ Allow Next if all checkboxes are checked
 					console.log("✅ All checkboxes are checked. Proceeding to the next page...");
 					// frappe.msgprint(__("✅ All compliance checks passed. Proceeding to the next page..."));
@@ -939,7 +944,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 					}
 					fetch_company_details(values.company);
 				}
-				
+
 				if (slide.name === "company_details") {
 					const savedData = slideData[slide.name];
 					dialog.set_values(savedData);
@@ -959,7 +964,11 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 						frappe.msgprint({
 							title: __("Mandatory Fields Missing"),
 							indicator: "red",
-							message: __(`The following field(s) are required: ${missing_fields.join(", ")}. Please fill them to proceed.`),
+							message: __(
+								"The following field(s) are required: " +
+								missing_fields.join(", ") +
+								". Please fill them to proceed."
+							),
 						});
 
 						return;
@@ -982,7 +991,7 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 							}
 						}
 					});
-				
+
 
 					generate_csr_config(values);
 				}
@@ -1062,33 +1071,33 @@ frappe.pages["setup-zatca-phase-2"].on_page_load = function (wrapper) {
 		});
 		if (slide.name === "create_csr") {
 			const doctype = slideData["select_company_is_offline_pos"] ? "ZATCA Multiple Setting" : "Company";
-    		const name = slideData["select_company_is_offline_pos"] ? slideData["selected_machine"] : selected_company;
+			const name = slideData["select_company_is_offline_pos"] ? slideData["selected_machine"] : selected_company;
 			dialog.set_value("csr_config_box", csr_config.replace(/^\s+|\s+$/gm, ""));
 
 			// dialog.set_value("created_csr_config",JSON.stringify(response, null, 2))
-		
 
-		
-		if (name) {
-			frappe.call({
-				method: "frappe.client.set_value",
-				args: {
-					doctype: doctype,
-					name: name,
-					fieldname: "custom_csr_config",
-					value: csr_config.replace(/^\s+|\s+$/gm, ""),
-				},
-				callback: function (response) {
 
-				},
-			});
+
+			if (name) {
+				frappe.call({
+					method: "frappe.client.set_value",
+					args: {
+						doctype: doctype,
+						name: name,
+						fieldname: "custom_csr_config",
+						value: csr_config.replace(/^\s+|\s+$/gm, ""),
+					},
+					callback: function (response) {
+
+					},
+				});
+			}
+
+
+
+
 		}
-		
 
-
-
-	}
-	
 
 	}
 

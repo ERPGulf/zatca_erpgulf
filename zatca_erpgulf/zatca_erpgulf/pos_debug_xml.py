@@ -87,11 +87,11 @@ def is_qr_and_xml_attached(pos_invoice_doc):
 
 @frappe.whitelist(allow_guest=False)
 def debug_call(
-    invoice_number,
-    compliance_type="0",
-    any_item_has_tax_template=False,
-    company_abbr=None,
-    source_doc=None,
+    invoice_number :str,
+    compliance_type :str="0",
+    any_item_has_tax_template : bool =False,
+    company_abbr:str | None =None,
+    source_doc:dict | None =None,
 ):
 
     """Function for ZATCA debug XML generation and attachment"""
