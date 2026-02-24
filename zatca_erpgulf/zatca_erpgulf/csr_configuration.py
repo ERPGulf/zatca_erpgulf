@@ -6,7 +6,7 @@ from frappe import _
 
 
 @frappe.whitelist()
-def get_csr_config(company_abbr):
+def get_csr_config(company_abbr:str):
     """
     Retrieve and generate CSR configuration data for a company based on its abbreviation.
     """
@@ -57,10 +57,11 @@ def get_csr_config(company_abbr):
             f"csr.industry.business.category={business_category}"
         )
 
-        frappe.msgprint(_(
+        frappe.msgprint(
             msg=f"<div style='font-size: 12px; white-space: pre-wrap;'>{config}</div>",
-            title="Thank You! Successfully completed CSR configuration",
-        ))
+            title=_("Thank You! Successfully completed CSR configuration"),
+        )
+        
         return config
     except Exception as e:
         frappe.throw(_(str(e)))

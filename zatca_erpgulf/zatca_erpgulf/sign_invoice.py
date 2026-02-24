@@ -1035,11 +1035,11 @@ def zatca_call(
 
 @frappe.whitelist(allow_guest=False)
 def zatca_call_compliance(
-    invoice_number,
-    company_abbr,
-    source_doc,
-    compliance_type="0",
-    any_item_has_tax_template=False,
+    invoice_number:str,
+    company_abbr:str,
+    source_doc:str=None,
+    compliance_type:str="0",
+    any_item_has_tax_template:bool=False,
 ):
     """zatca call compliance"""
 
@@ -2015,7 +2015,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
 
 
 @frappe.whitelist()
-def resubmit_invoices(invoice_numbers, bypass_background_check=False):
+def resubmit_invoices(invoice_numbers:str, bypass_background_check:bool=False):
     """
     Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'.
     If the invoice is already submitted, call `zatca_background_on_submit`.

@@ -82,12 +82,12 @@ def is_qr_and_xml_attached(sales_invoice_doc):
     
 @frappe.whitelist(allow_guest=False)
 def debug_call(
-    invoice_number,
-    compliance_type="0",
-    any_item_has_tax_template=False,
-    company_abbr=None,
-    source_doc=None,
-    bypass_background_check=False
+    invoice_number: str,
+    compliance_type :str="0",
+    any_item_has_tax_template : bool =False,
+    company_abbr:str | None =None,
+    source_doc:dict | None =None,
+    bypass_background_check:bool=False
 ):
     """
     Generate ZATCA-compliant debug XML for a Sales Invoice and attach as a private file.

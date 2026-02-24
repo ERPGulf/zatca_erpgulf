@@ -693,7 +693,7 @@ def clearance_api(
         return None
 
 
-@frappe.whitelist(allow_guest=False)
+# @frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
     compliance_type="0",
@@ -826,7 +826,7 @@ def zatca_call(
         )
 
 
-@frappe.whitelist(allow_guest=False)
+# @frappe.whitelist(allow_guest=False)
 def zatca_call_compliance(
     invoice_number,
     company_abbr,
@@ -960,7 +960,7 @@ def zatca_call_compliance(
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_(invoice_number, source_doc, bypass_background_check=False):
+def zatca_background_(invoice_number:str, source_doc:str=None, bypass_background_check:bool=False):
     """Function for zatca background"""
     try:
         if source_doc:
@@ -1293,7 +1293,7 @@ def is_qr_and_xml_attached(sales_invoice_doc):
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
+def zatca_background_on_submit(doc, _method:  str | None = None, bypass_background_check=False):# doc can be JSON string or dict
     """Function for zatca background on submit"""
 
     try:
@@ -1638,7 +1638,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
 
 
 @frappe.whitelist()
-def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
+def resubmit_invoices_pos(invoice_numbers:str, bypass_background_check:bool=False):
     """
     Resubmit invoices where custom_zatca_full_response contains 'RemoteDisconnected'.
     If the invoice is already submitted, call `zatca_background_on_submit`.
@@ -1666,7 +1666,7 @@ def resubmit_invoices_pos(invoice_numbers, bypass_background_check=False):
 
             # elif company_doc.custom_submit_or_not == 1:
             elif (
-                sales_invoice_doc.docstatus == 0
+                pos_invoice_doc.docstatus == 0
                 and company_doc.custom_submit_or_not == 1
                 and customer_doc.custom_b2c == 1
             ):
