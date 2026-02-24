@@ -11,7 +11,6 @@
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
- "type":"Workspace",
  "hide_custom": 1,
  "icon": "quality",
  "idx": 0,
@@ -82,7 +81,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Shortcuts",
-   "link_count": 7,
+   "link_count": 8,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -156,9 +155,19 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ZATCA Duplicate UUID Invoices",
+   "link_count": 0,
+   "link_to": "ZATCA Duplicate UUID Invoices",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-02-04 13:59:24.011045",
+ "modified": "2026-02-24 09:08:39.646577",
  "modified_by": "Administrator",
  "module": "Zatca Erpgulf",
  "name": "ZATCA ERPGulf",

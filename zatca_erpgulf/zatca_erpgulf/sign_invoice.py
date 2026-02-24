@@ -872,7 +872,7 @@ def is_qr_and_xml_attached(sales_invoice_doc):
     return is_file_attached(qr_code) and is_file_attached(xml_file)
 
 
-@frappe.whitelist(allow_guest=False)
+# @frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
     compliance_type="0",
@@ -1173,7 +1173,7 @@ def zatca_call_compliance(
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background(invoice_number, source_doc, bypass_background_check=False):
+def zatca_background(invoice_number: str, source_doc:str|dict=None, bypass_background_check:bool=False):
     """defines the zatca bacground"""
     try:
         # frappe.throw("DEBUG: Country found in address: ")
@@ -1578,7 +1578,7 @@ def zatca_background(invoice_number, source_doc, bypass_background_check=False):
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
+def zatca_background_on_submit(doc: "str|dict", _method: str = None, bypass_background_check: bool = False):
     """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
     try:
         source_doc = doc

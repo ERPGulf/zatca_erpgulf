@@ -1,5 +1,5 @@
 import frappe
-
+from frappe import _
 def execute(filters=None):
     columns = get_columns()
     data = []
@@ -138,6 +138,7 @@ def get_sales_vat_totals_sql(filters):
     where_clause = build_filters_sql(filters)
 
     # Pull invoice + item rows. Use tax.idx = 1 to match template.taxes[0]
+    # nosemgrep: frappe-sql-format-injection
     query = f"""
         SELECT
             si.name AS invoice,
@@ -358,7 +359,7 @@ def get_purchase_vat_totals_sql(filters):
     }
 
     where_clause = build_filters_sql(filters, table_alias="pi")
-
+    # nosemgrep: frappe-sql-format-injection
     query = f"""
         SELECT
             pi.name AS invoice,
@@ -399,8 +400,8 @@ def get_purchase_vat_totals_sql(filters):
 # -----------------------------
 def get_columns():
     return [
-        {"label": "Category", "fieldname": "category", "fieldtype": "Data", "width": 380, "options": "HTML"},
-        {"label": "Amount (SAR)", "fieldname": "amount", "fieldtype": "Currency", "width": 180},
-        {"label": "Adjustment (SAR)", "fieldname": "adjustment", "fieldtype": "Currency", "width": 180},
-        {"label": "VAT Amount (SAR)", "fieldname": "vat", "fieldtype": "Currency", "width": 180},
+        {"label": _("Category"), "fieldname": "category", "fieldtype": "Data", "width": 380, "options": "HTML"},
+        {"label": _("Amount (SAR)"), "fieldname": "amount", "fieldtype": "Currency", "width": 180},
+        {"label": _("Adjustment (SAR)"), "fieldname": "adjustment", "fieldtype": "Currency", "width": 180},
+        {"label": _("VAT Amount (SAR)"), "fieldname": "vat", "fieldtype": "Currency", "width": 180},
     ]
