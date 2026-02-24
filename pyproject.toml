@@ -12,7 +12,8 @@ dependencies = [
     "asn1~=2.7.0",
     "pikepdf" ,
     "frappe>=14.0.0,<17.0.0",
-    "pypika @ git+https://github.com/frappe/pypika@2c50e6142b2d61d2d243e466fdd5dc03b3d918f2"
+    "pypika @ git+https://github.com/frappe/pypika@2c50e6142b2d61d2d243e466fdd5dc03b3d918f2",
+    "gunicorn @ git+https://github.com/frappe/gunicorn@bb554053bb87218120d76ab6676af7015680e8b6"
 ]
 
 [build-system]
