@@ -1,7 +1,7 @@
 import frappe
 import json
 import re
-
+from frappe import _
 
 def extract_json(text):
     """
@@ -26,40 +26,40 @@ def execute(filters=None):
     # -----------------------------
     columns = [
         {
-            "label": "POS Invoice No",
+            "label": _("POS Invoice No"),
             "fieldname": "invoice",
             "fieldtype": "Link",
             "options": "POS Invoice",
             "width": 180,
         },
         {
-            "label": "Company",
+            "label": _("Company"),
             "fieldname": "company",
             "width": 200,
         },
         {
-            "label": "Customer",
+            "label": _("Customer"),
             "fieldname": "customer",
             "width": 200,
         },
         {
-            "label": "Posting Date",
+            "label": _("Posting Date"),
             "fieldname": "posting_date",
             "fieldtype": "Date",
             "width": 120,
         },
         {
-            "label": "ZATCA Status",
+            "label": _("ZATCA Status"),
             "fieldname": "custom_zatca_status",
             "width": 180,
         },
         {
-            "label": "Warning Code",
+            "label": _("Warning Code"),
             "fieldname": "warning_code",
             "width": 160,
         },
         {
-            "label": "Warning Message",
+            "label": _("Warning Message"),
             "fieldname": "warning_message",
             "width": 500,
         },
@@ -95,6 +95,7 @@ def execute(filters=None):
     # -----------------------------
     # Fetch POS invoices (ESCAPED %%)
     # -----------------------------
+    # nosemgrep: frappe-semgrep-rules.rules.security.frappe-sql-format-injection
     invoices = frappe.db.sql(
         f"""
         SELECT

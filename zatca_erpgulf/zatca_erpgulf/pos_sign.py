@@ -1293,7 +1293,7 @@ def is_qr_and_xml_attached(sales_invoice_doc):
 
 
 @frappe.whitelist(allow_guest=False)
-def zatca_background_on_submit(doc, _method:  str | None = None, bypass_background_check=False):# doc can be JSON string or dict
+def zatca_background_on_submit(doc: "dict | str", _method:  str | None = None, bypass_background_check:bool =False):
     """Function for zatca background on submit"""
 
     try:

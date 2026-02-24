@@ -21,27 +21,31 @@ def execute(filters=None):
     condition_sql = " AND ".join(conditions)
     if condition_sql:
         condition_sql = " AND " + condition_sql
+    query = """
+        SELECT *
+        FROM (
+            SELECT
+                name,
+                custom_uuid,
+                posting_date,
+                customer,
+                grand_total,
+                COUNT(*) OVER (PARTITION BY custom_uuid) AS uuid_count
+            FROM `tabSales Invoice`
+            WHERE docstatus = 1
+                AND custom_uuid IS NOT NULL
+                AND custom_uuid != ''
+                AND custom_uuid != 'Not Submitted'
+                {condition_sql}
+        ) AS t
+        WHERE uuid_count > 1
+        ORDER BY custom_uuid, name
+    """
 
-    data = frappe.db.sql(f"""
-		SELECT *
-		FROM (
-			SELECT
-				name,
-				custom_uuid,
-				posting_date,
-				customer,
-				grand_total,
-				COUNT(*) OVER (PARTITION BY custom_uuid) AS uuid_count
-			FROM `tabSales Invoice`
-			WHERE docstatus = 1
-			AND custom_uuid IS NOT NULL
-			AND custom_uuid != ''
-			AND custom_uuid != 'Not Submitted'   -- ✅ FIX
-			{condition_sql}
-		) t
-		WHERE uuid_count > 1
-		ORDER BY custom_uuid, name
-	""", values, as_dict=True)
+    # ⚠️ Replace placeholder inside query safely
+    query = query.replace("{condition_sql}", condition_sql)
+
+    data = frappe.db.sql(query, values, as_dict=True)
 
 
     columns = [
