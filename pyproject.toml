@@ -11,18 +11,14 @@ dynamic = ["version"]
 dependencies = [
     "asn1~=2.7.0",
     "pikepdf" ,
-    "frappe>=14.0.0,<17.0.0"
+    "frappe>=14.0.0,<17.0.0",
+    "pypika @ git+https://github.com/frappe/pypika@2c50e6142b2d61d2d243e466fdd5dc03b3d918f2"
 ]
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.uv]
-allow-direct-references = true
-
-[tool.uv.sources]
-pypika = { git = "https://github.com/frappe/pypika", rev = "2c50e6142b2d61d2d243e466fdd5dc03b3d918f2" }
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
