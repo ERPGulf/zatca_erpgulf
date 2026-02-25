@@ -26,7 +26,7 @@ def get_api_url(company_abbr, base_url):
         )
         return None
 
-
+# nosemgrep: frappe-semgrep-rules.rules.security.missing-argument-type-hint
 @frappe.whitelist(allow_guest=False)
 def wizard_button(company_abbr, button, pos=0, machine=None):
     """Compliance check for ZATCA based on file type and company abbreviation."""

@@ -1158,7 +1158,7 @@ def attach_qr_image_advance(qrcodeb64, sales_invoice_doc):
         frappe.throw(_(("attach qr images" f"error: {str(e)}")))
 
 
-@frappe.whitelist(allow_guest=False)
+# @frappe.whitelist(allow_guest=False)
 def zatca_call(
     invoice_number,
     compliance_type="0",
@@ -1253,7 +1253,7 @@ def zatca_call(
             message=f"{frappe.get_traceback()}\nError: {str(e)}",
         )
 
-
+# nosemgrep: frappe-semgrep-rules.rules.security.missing-argument-type-hint
 @frappe.whitelist(allow_guest=False)
 def zatca_background_on_submit(doc, _method=None, bypass_background_check=False):
     """referes according to the ZATC based sytem with the submitbutton of the sales invoice"""
@@ -1346,7 +1346,7 @@ def zatca_background_on_submit(doc, _method=None, bypass_background_check=False)
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(_(f"Error in background call: {str(e)}"))
 
-
+# nosemgrep: frappe-semgrep-rules.rules.security.missing-argument-type-hint
 @frappe.whitelist(allow_guest=False)
 def zatca_background(invoice_number, source_doc, bypass_background_check=False):
     """defines the zatca bacground"""

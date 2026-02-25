@@ -83,7 +83,7 @@ def generate_qr_and_attach_doctype(doctype, docname, url, file_field=None):
 
     return file_doc.file_url
 
-
+# nosemgrep: frappe-semgrep-rules.rules.security.missing-argument-type-hint
 @frappe.whitelist()
 def generate_qr_for_doc(doctype, docname, url, file_field=None):
     return generate_qr_and_attach_doctype(

@@ -165,7 +165,7 @@ def create_private_keys(company_abbr, zatca_doc):
 
 
 @frappe.whitelist(allow_guest=False)
-def create_csr(zatca_doc, portal_type, company_abbr):
+def create_csr(zatca_doc:dict | str, portal_type:str, company_abbr:str):
     """
     Function defining the create csr method with the config csr data
     """
@@ -309,7 +309,7 @@ def get_api_url(company_abbr, base_url):
 
 
 @frappe.whitelist(allow_guest=False)
-def create_csid(zatca_doc, company_abbr):
+def create_csid(zatca_doc: dict | str, company_abbr:str):
     """creating csid"""
     try:
         if isinstance(zatca_doc, str):
@@ -1211,11 +1211,12 @@ def structuring_signedxml(invoice_number,updated_xml_string):
         adjust_indentation(line) for line in updated_xml_string.splitlines(keepends=True)
         ]
         safe_invoice_number = invoice_number.replace("/", "-")
+        # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
         with open(
             f"{frappe.local.site}/private/files/final_xml_after_indent_{safe_invoice_number}.xml",
             "w",
             encoding="utf-8",
-        ) as file: # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
+        ) as file: 
             file.writelines(adjusted_xml_content)
     
 
@@ -1305,7 +1306,7 @@ def compliance_api_call(
 
 
 @frappe.whitelist(allow_guest=False)
-def production_csid(zatca_doc, company_abbr):
+def production_csid(zatca_doc: dict | str, company_abbr:str):
     """production csid button and api"""
     try:
 

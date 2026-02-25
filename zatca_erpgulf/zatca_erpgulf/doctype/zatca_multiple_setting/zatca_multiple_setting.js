@@ -11,7 +11,7 @@
 //         // Refresh logic if any
 //     },
 //     custom_generate_production_csids: function (frm) {
-        
+
 //         frappe.call({
 //             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
 //             args: {
@@ -25,7 +25,7 @@
 //         });
 //     },
 //     custom_generate_compliance_csid: function (frm) {
-        
+
 //         frappe.call({
 //             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
 //             args: {
@@ -40,7 +40,7 @@
 //         });
 //     },
 //     custom_create_csr: function (frm) {
-        
+
 //         frappe.call({
 //             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
 //             args: {
@@ -69,7 +69,7 @@
 //                 }
 //             },
 //         });
-        
+
 //     }
 // });
 frappe.ui.form.on("ZATCA Multiple Setting", {
@@ -93,10 +93,10 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
                     frappe.call({
                         method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.production_csid",
                         args: {
-                                "zatca_doc": {
-                                    "doctype": frm.doc.doctype,
-                                    "name": frm.doc.name
-                                },
+                            "zatca_doc": {
+                                "doctype": frm.doc.doctype,
+                                "name": frm.doc.name
+                            },
                             "company_abbr": data.message.abbr
                         },
                         callback: function (r) {
@@ -149,7 +149,7 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
             frappe.msgprint(__('Please select a linked doctype.'));
             return;
         }
-    
+
         frappe.call({
             method: "frappe.client.get",
             args: {
@@ -185,7 +185,7 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
                 console.log("Error fetching company data:", error);
             }
         });
-    } ,
+    },
     custom_check_compliance: function (frm) {
         if (!frm.doc.custom_linked_doctype) {
             frappe.msgprint(__('Please select a linked doctype.'));
