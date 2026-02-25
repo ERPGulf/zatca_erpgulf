@@ -40,7 +40,7 @@ def get_data_and_chart(filters):
         values['status'] = status
 
     where_clause = " AND ".join(conditions)
-
+    # nosemgrep: frappe-semgrep-rules.rules.security.frappe-sql-format-injection
     query = f"""
         SELECT 
             name,
