@@ -262,3 +262,39 @@ def embed_file_in_pdf(invoice_name :str, print_format :str | None = None, letter
         frappe.msgprint(_(f"File not found: {e}"))
     except IOError as e:
         frappe.msgprint(_(f"I/O error: {e}"))  # Step 1: Embed the XML into the input
+
+
+
+
+
+def call_embed_pdf_on_submit(doc, method=None):
+    """Run on Sales Invoice submit only if Company setting is enabled"""
+
+    company_doc = frappe.get_doc("Company", doc.company)
+
+    # Check if auto PDF-A3 creation is enabled
+    if not company_doc.custom_auto_create_pdfa3:
+        return
+
+    print_format = company_doc.custom_print_format
+    letterhead = company_doc.custom_letterhead
+    language = company_doc.custom_language
+
+    # Validate required fields
+    if not print_format:
+        frappe.msgprint(_("Company Print Format is not set. PDF-A3 creation skipped."))
+        return
+
+    if not language:
+        frappe.msgprint(_("Company Language is not set. PDF-A3 creation skipped."))
+        return
+
+    try:
+        embed_file_in_pdf(
+            invoice_name=doc.name,
+            print_format=print_format,
+            letterhead=letterhead,
+            language=language
+        )
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "PDF-A3 XML Embed Error")

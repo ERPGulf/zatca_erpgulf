@@ -75,7 +75,9 @@ from zatca_erpgulf.zatca_erpgulf.submit_xml_qr_notmultiple import (
 from zatca_erpgulf.zatca_erpgulf.zatca_background_sched import (
     zatca_call_scheduler_background,
 )
-
+from zatca_erpgulf.zatca_erpgulf.pdf_a3 import (
+    call_embed_pdf_on_submit
+)
 REPORTED_XML = "%Reported xml file%"
 SAUDI_ARABIA = "Saudi Arabia"
 
@@ -2009,6 +2011,8 @@ def zatca_background_on_submit(doc: "str|dict", _method: str = None, bypass_back
 
         else:
             create_qr_code(sales_invoice_doc, method=None)
+        call_embed_pdf_on_submit(sales_invoice_doc,method=None)
+        
         doc.reload()
     except (ValueError, TypeError, KeyError, frappe.ValidationError) as e:
         frappe.throw(_(f"Error in background call on submit: {str(e)}"))
