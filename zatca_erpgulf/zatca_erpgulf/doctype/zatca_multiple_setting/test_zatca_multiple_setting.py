@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestZatcaMultipleSetting(FrappeTestCase):
+class TestZATCAMultipleSetting(FrappeTestCase):
 	pass

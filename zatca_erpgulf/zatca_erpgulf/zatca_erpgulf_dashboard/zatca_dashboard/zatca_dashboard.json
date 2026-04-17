@@ -1,0 +1,130 @@
+{
+ "cards": [
+  {
+   "card": "Cleared"
+  },
+  {
+   "card": "Reported"
+  },
+  {
+   "card": "Not Submitted"
+  },
+  {
+   "card": "503 Service Unavailable"
+  },
+  {
+   "card": "Cleared This Month"
+  },
+  {
+   "card": "Reported This Month"
+  },
+  {
+   "card": "Not Submitted This Month"
+  },
+  {
+   "card": "503 Service Unavailable This Month"
+  },
+  {
+   "card": "Total Sales"
+  },
+  {
+   "card": "Reported Sales"
+  },
+  {
+   "card": "B2B Sales"
+  },
+  {
+   "card": "B2C Sales"
+  },
+  {
+   "card": "Total Sales This Month"
+  },
+  {
+   "card": "Reported Sales This Month"
+  },
+  {
+   "card": "B2B Sales This Month"
+  },
+  {
+   "card": "B2C Sales This Month"
+  },
+  {
+   "card": "Output VAT"
+  },
+  {
+   "card": "Reported VAT"
+  },
+  {
+   "card": "B2B VAT"
+  },
+  {
+   "card": "B2C VAT"
+  },
+  {
+   "card": "Output VAT This Month"
+  },
+  {
+   "card": "Reported VAT This Month"
+  },
+  {
+   "card": "B2B VAT This Month"
+  },
+  {
+   "card": "B2C VAT This Month"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Monthly Invoices Reported to ZATCA",
+   "width": "Full"
+  },
+  {
+   "chart": "Monthly Output VAT Reported to ZATCA",
+   "width": "Full"
+  },
+  {
+   "chart": "Monthly B2B Output VAT Reported to ZATCA",
+   "width": "Full"
+  },
+  {
+   "chart": "Monthly B2C Output VAT Reported to ZATCA",
+   "width": "Full"
+  },
+  {
+   "chart": "Invoice Status Breakdown",
+   "width": "Half"
+  },
+  {
+   "chart": "VAT Breakdown By Reporting Status",
+   "width": "Half"
+  },
+  {
+   "chart": "Invoice Type Breakdown",
+   "width": "Half"
+  },
+  {
+   "chart": "Invoices VS Credit Notes",
+   "width": "Half"
+  },
+  {
+   "chart": "Tax Category Breakdown",
+   "width": "Half"
+  },
+  {
+   "chart": "Exemption Reasons Breakdown",
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-01-05 12:50:46.916505",
+ "dashboard_name": "ZATCA Dashboard",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-02-04 08:59:42.051409",
+ "modified_by": "Administrator",
+ "module": "Zatca Erpgulf",
+ "name": "ZATCA Dashboard",
+ "owner": "Administrator"
+}

@@ -45,7 +45,7 @@ function extend_listview_event(doctype, event, callback) {
 // Extend the "onload" event for Sales Invoice
 extend_listview_event("Sales Invoice", "onload", function (listview) {
     // Add the "Resubmit failed invoices" action to the menu
-    listview.page.add_action_item(__("Send Invoices to Zatca"), () => {
+    listview.page.add_action_item(__("Send Invoices to ZATCA"), () => {
         const selected = listview.get_checked_items();
         if (selected.length === 0) {
             frappe.msgprint(__('Please select at least one Sales Invoice.'));

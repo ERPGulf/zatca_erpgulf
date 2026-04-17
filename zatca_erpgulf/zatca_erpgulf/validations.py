@@ -1,12 +1,13 @@
 """
 ZATCA Compliance Hooks for Frappe
 
-This file contains hook functions related to ZATCA (Zakat, Tax, and Customs Authority) 
-compliance for invoice processing in the Frappe system. The hooks ensure that invoices 
+This file contains hook functions related to ZATCA (Zakat, Tax, and Customs Authority)
+compliance for invoice processing in the Frappe system. The hooks ensure that invoices
 are properly submitted, validated, and duplicated according to ZATCA requirements.
 
 """
 
+from frappe import _
 import frappe
 from erpnext import get_region
 
@@ -21,7 +22,7 @@ def zatca_done_or_not(doc, method=None):  # pylint: disable=unused-argument
         return
 
     if doc.custom_zatca_status not in ("REPORTED", "CLEARED"):
-        frappe.throw("Please send this invoice to ZATCA, before submitting")
+        frappe.throw(_("Please send this invoice to ZATCA, before submitting"))
 
 
 def before_save(doc, method=None):  # pylint: disable=unused-argument
@@ -35,7 +36,9 @@ def before_save(doc, method=None):  # pylint: disable=unused-argument
 
     if doc.custom_zatca_status in ("REPORTED", "CLEARED"):
         frappe.throw(
-            "This invoice is already submitted to ZATCA. You cannot edit, cancel or save it."
+            _(
+                "This invoice is already submitted to ZATCA. You cannot edit, cancel or save it."
+            )
         )
 
 
@@ -50,7 +53,7 @@ def duplicating_invoice(doc, method=None):  # pylint: disable=unused-argument
         return
 
     if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
-        frappe.msgprint("Duplicating invoice")
+        frappe.msgprint(_("Duplicating invoice"))
         doc.custom_uuid = "Not submitted"
         doc.custom_zatca_status = "Not Submitted"
         doc.save()
@@ -65,4 +68,4 @@ def test_save_validate(doc, method=None):  # pylint: disable=unused-argument
     if region not in ["Saudi Arabia"]:
         return
 
-    frappe.msgprint("Test save validated and stopped it here")
+    frappe.msgprint(_("Test save validated and stopped it here"))

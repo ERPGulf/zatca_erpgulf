@@ -4,13 +4,22 @@ app_publisher = "ERPGulf"
 app_description = "Implementaiton of Saudi E-Invoicing Phase-2 on Frappe ERPNext"
 app_email = "support@ERPGulf.com"
 app_license = "mit"
+app_home = "/app/zatca-erpgulf"
 
 from frappe import _
 
 from . import __version__ as app_version
 
+add_to_apps_screen = [
+    {
+        "name": app_name,
+        "logo": "/assets/zatca_erpgulf/images/ERPGulf.png",
+        "title": app_title,
+        "route": "zatca-erpgulf",
+        # "has_permission": "zatca_erpgulf.check_app_permission",
+    }
+]
 
-# required_apps = []
 
 # Includes in <head>
 # ------------------
@@ -224,7 +233,7 @@ from . import __version__ as app_version
 # schedule for every 10 minutes every day 24 hours
 scheduler_events = {
     "cron": {
-        "*/10 * * * *": [
+        "*/30 * * * *": [
             "zatca_erpgulf.zatca_erpgulf.scheduler_event.submit_invoices_to_zatca_background_process"
         ]
     }
@@ -239,14 +248,18 @@ scheduler_events = {
 #         ]
 #     }
 # }
-
 doc_events = {
     "Sales Invoice": {
+        # "before_insert":"zatca_erpgulf.zatca_erpgulf.sales_invoice_hooks.set_draft_series",
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
         "before_submit": "zatca_erpgulf.zatca_erpgulf.tax_error.validate_sales_invoice_taxes",
         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
         "on_update": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit",
         "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit",
+        "on_submit": [
+            # "zatca_erpgulf.zatca_erpgulf.sales_invoice_hooks.rename_invoice_on_submit",
+             "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit"
+            ]
     },
     "POS Invoice": {
         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
@@ -255,11 +268,38 @@ doc_events = {
         "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_background_on_submit",
     },
 }
+
+
+
+
+jinja = {
+    "methods": [
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_money_in_words",
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_number"
+    ]
+}
+
+# doc_events = {
+#     "Sales Invoice": {
+#         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+#         "before_submit": "zatca_erpgulf.zatca_erpgulf.tax_error.validate_sales_invoice_taxes",
+#         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
+#         "on_submit": "zatca_erpgulf.zatca_erpgulf.sign_invoice.zatca_background_on_submit",
+#     },
+#     "POS Invoice": {
+#         "before_cancel": "zatca_erpgulf.zatca_erpgulf.validations.before_save",
+#         "before_submit": "zatca_erpgulf.zatca_erpgulf.tax_error.validate_sales_invoice_taxes",
+#         "after_insert": "zatca_erpgulf.zatca_erpgulf.validations.duplicating_invoice",
+#         "on_submit": "zatca_erpgulf.zatca_erpgulf.pos_sign.zatca_background_on_submit",
+#     },
+# }
 doctype_js = {
     "Sales Invoice": [
+        # "public/js/draft.js",
         "public/js/our_sales_invoice.js",
         "public/js/print.js",
-        "public/js/badge.js",
+        "public/js/badge.js"
+       
     ],
     "Company": "public/js/company.js",
     "POS Invoice": ["public/js/our_pos_invoice.js", "public/js/badge_pos.js"],
@@ -272,12 +312,78 @@ doctype_list_js = {
 
 
 # fixtures = [ {"dt": "Custom Field","filters": [["module", "=", "Zatca Erpgulf"]] }]
-fixtures = [
-    {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Custom Field", "filters": {"module": "Zatca Erpgulf"}},
-    {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
-    #    {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}}
-]
+
+# fixtures = [
+#     # {
+#     #     "dt": "Number Card",
+#     #     "filters": [
+#     #         [
+#     #             "name",
+#     #             "in",
+#     #             [
+#     #                 "Cleared This Month",
+#     #                 "Not Submitted This Month",
+#     #                 "Reported This Month",
+#     #                 "503 Service Unavailable This Month",
+#     #             ],
+#     #         ]
+#     #     ],
+#     # },
+#     # {
+#     #     "dt": "Dashboard Chart",
+#     #     "filters": [["name", "=", "Monthly Invoices Reported to ZATCA"]],
+#     # },
+#     # {"dt": "Dashboard", "filters": [["name", "=", "ZATCA Dashboard"]]},
+#     # {
+#     #     "dt": "Workspace",
+#     #     "filters": [["name", "=", "ZATCA ERPGulf"]],  # Use actual Workspace name here
+#     # },
+#     # {"dt": "Workspace", "filters": {"module": "Zatca Erpgulf"}},
+#     {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
+#     # {"dt": "Report", "filters": {"module": "Zatca Erpgulf"}},
+#     {
+#         "dt": "Report",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in",
+#                 [
+#                     "Item-wise Sales Register",
+#                     "Item-wise Purchase Register",
+#                     "Zatca Status Report",
+#                 ],
+#             ]
+#         ],
+#     },
+#     # {"dt": "Page", "filters": [["name", "in", ["setup-zatca-phase-2"]]]},
+#     # {"dt": "Page", "filters": {"module": "Zatca Erpgulf"}},
+# ]
 
 app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"
 app_include_js = "/assets/zatca_erpgulf/js/tooltip.js"
+fixtures = [
+    {
+        "dt": "Desktop Icon",
+        "filters": [
+            ["label", "=", "ZATCA ERPGulf"]
+        ]
+    }
+]
+fixtures = [
+    {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
+
+    {
+        "dt": "Report",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Item-wise Sales Register",
+                    "Item-wise Purchase Register",
+                    "Zatca Status Report",
+                ],
+            ]
+        ],
+    },
+]

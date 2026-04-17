@@ -59,7 +59,7 @@ def submit_invoices_to_zatca_background():
             ]
         )
 
-        frappe.log_error(title="ZATCA Companies Debug", message=company_summary)
+        # frappe.log_error(title="ZATCA Companies Debug", message=company_summary)
 
         any_company_in_range = False
 
@@ -104,25 +104,35 @@ def submit_invoices_to_zatca_background():
                     "custom_zatca_status",
                     "in",
                     ["Not Submitted", "503 Service Unavailable"],
+                
                 ],
             ],
-            fields=["name", "docstatus", "company"],
+            fields=["name", "docstatus", "company", "customer"],
         )
 
         for invoice in not_submitted_invoices:
             try:
                 sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice["name"])
                 company_doc = frappe.get_doc("Company", sales_invoice_doc.company)
+                if company_doc.custom_phase_1_or_2 == "Phase-1":
+                    # frappe.log_error(f"Skipping invoice {invoice['name']} because company is Phase-1", "ZATCA Background Debug")
+                    continue
                 if sales_invoice_doc.docstatus == 1:
                     zatca_background_on_submit(
                         sales_invoice_doc, bypass_background_check=True
                     )
+                else:
+                    customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
 
-                elif company_doc.custom_submit_or_not == 1:
-                    sales_invoice_doc.submit()
-                    zatca_background_on_submit(
-                        sales_invoice_doc, bypass_background_check=True
-                    )
+                    if (
+                        company_doc.custom_submit_or_not == 1
+                        and customer_doc.custom_b2c == 1
+                    ):
+                # elif company_doc.custom_submit_or_not == 1:
+                        sales_invoice_doc.submit()
+                        zatca_background_on_submit(
+                            sales_invoice_doc, bypass_background_check=True
+                        )
 
                 frappe.db.commit()
             except Exception as e:
@@ -148,6 +158,7 @@ def submit_invoices_to_zatca_background_process():
                     "custom_zatca_status",
                     "in",
                     ["Not Submitted", "503 Service Unavailable"],
+                    
                 ],
             ],
             fields=["name"],
@@ -164,7 +175,7 @@ def submit_invoices_to_zatca_background_process():
                     "custom_zatca_status",
                     "in",
                     ["Not Submitted", "503 Service Unavailable"],
-                ],
+                ], 
             ],
             fields=["name"],
         )

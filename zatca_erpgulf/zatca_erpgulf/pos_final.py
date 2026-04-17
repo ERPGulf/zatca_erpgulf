@@ -1,18 +1,20 @@
 """
-This module contains functions to generate, structure, and 
+This module contains functions to generate, structure, and
 manage ZATCA-compliant UBL XML invoices . functions to handle company,
-customer, tax, line items, discounts, delivery, and payment information. 
+customer, tax, line items, discounts, delivery, and payment information.
 The XML is generated according to ZATCA (Zakat, Tax, and Customs Authority)
 requirements for VAT compliance in Saudi Arabia.
 The primary goal of this module is to produce a UBL-compliant
- XML file for invoices, debit notes, and credit notes. 
+ XML file for invoices, debit notes, and credit notes.
 The file also handles compliance with e-invoicing and clearance rules
 for ZATCA and provides support for multiple currencies (SAR and USD).
 """
 
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from frappe import _
 import frappe
+import json
 from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_exemption_reason_map,
     get_tax_for_item,
@@ -267,15 +269,30 @@ def tax_data_with_template(invoice, pos_invoice_doc):
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in tax data with template: {str(e)}")
+        frappe.throw(_(f"Data processing error in tax data with template: {str(e)}"))
 
+
+def get_tax_wise_detail(pos_invoice_doc,single_item):
+    """getting item wise tax"""
+    if int(frappe.__version__.split(".", 1)[0]) == 16 and pos_invoice_doc.item_wise_tax_details:
+        tax_rate = float(f"{pos_invoice_doc.item_wise_tax_details[0].rate:.1f}")
+        tax_amount = pos_invoice_doc.item_wise_tax_details[0].amount
+
+        # build JSON exactly like v15
+        tax_json = json.dumps({
+            single_item.item_code: [tax_rate, float(tax_amount)]
+        })
+    else:
+        tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
+    return tax_json
 
 def item_data(invoice, pos_invoice_doc):
     """Function for item data"""
     try:
         for single_item in pos_invoice_doc.items:
+            tax_json = get_tax_wise_detail(pos_invoice_doc,single_item)
             _item_tax_amount, item_tax_percentage = get_tax_for_item(
-                pos_invoice_doc.taxes[0].item_wise_tax_detail, single_item.item_code
+                tax_json, single_item.item_code
             )
             cac_invoiceline = ET.SubElement(invoice, "cac:InvoiceLine")
             cbc_id_10 = ET.SubElement(cac_invoiceline, "cbc:ID")
@@ -291,7 +308,7 @@ def item_data(invoice, pos_invoice_doc):
             cbc_lineextensionamount_1.set("currencyID", pos_invoice_doc.currency)
             pos_profile = pos_invoice_doc.pos_profile
             if not pos_profile:
-                frappe.throw("POS Profile is not set in the POS Invoice.")
+                frappe.throw(_("POS Profile is not set in the POS Invoice."))
             pos_profile_doc = frappe.get_doc("POS Profile", pos_profile)
             taxes_and_charges = pos_profile_doc.taxes_and_charges
             taxes_template_doc = frappe.get_doc(
@@ -338,7 +355,7 @@ def item_data(invoice, pos_invoice_doc):
             cbc_roundingamount.text = str(round(lineextensionamount + taxamount, 2))
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
             )
@@ -411,7 +428,7 @@ def item_data(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in item data: {str(e)}")
+        frappe.throw(_(f"Data processing error in item data: {str(e)}"))
 
 
 def item_data_with_template(invoice, pos_invoice_doc):
@@ -459,7 +476,7 @@ def item_data_with_template(invoice, pos_invoice_doc):
 
             cac_item = ET.SubElement(cac_invoiceline, "cac:Item")
             cbc_name = ET.SubElement(cac_item, "cbc:Name")
-            cbc_name.text =  f"{single_item.item_code}:{single_item.item_name}"
+            cbc_name.text = f"{single_item.item_code}:{single_item.item_name}"
 
             cac_classifiedtaxcategory = ET.SubElement(
                 cac_item, "cac:ClassifiedTaxCategory"
@@ -501,43 +518,49 @@ def item_data_with_template(invoice, pos_invoice_doc):
 
         return invoice
     except (AttributeError, KeyError, ValueError, TypeError) as e:
-        frappe.throw(f"Data processing error in item tax with template data: {str(e)}")
+        frappe.throw(
+            _(f"Data processing error in item tax with template data: {str(e)}")
+        )
 
 
 def xml_structuring(invoice):
     """function for xml structuring"""
     try:
 
-        xml_file_path = frappe.local.site + "/private/files/xml_files.xml"
+        # xml_file_path = f"{frappe.local.site}/private/files/xml_files_{invoice_number}.xml"
         tree = ET.ElementTree(invoice)
-        with open(xml_file_path, "wb") as file:
-            tree.write(file, encoding="utf-8", xml_declaration=True)
-        with open(xml_file_path, "r", encoding="utf-8") as file:
-            xml_string = file.read()
+        xml_string = ET.tostring(invoice, encoding="utf-8", method="xml")
         xml_dom = minidom.parseString(xml_string)
         pretty_xml_string = xml_dom.toprettyxml(
             indent="  "
         )  # created xml into formatted xml form
-        final_xml_path = frappe.local.site + "/private/files/finalzatcaxml.xml"
-        with open(final_xml_path, "w", encoding="utf-8") as file:
-            file.write(pretty_xml_string)
+        # final_xml_path = f"{frappe.local.site}/private/files/finalzatcaxml_{invoice_number}.xml"
+        # with open(final_xml_path, "w", encoding="utf-8") as file:
+        #     file.write(pretty_xml_string)
+        return pretty_xml_string
     except (FileNotFoundError, IOError):
         frappe.throw(
-            "File operation error occurred while structuring the XML. "
-            "Please contact your system administrator."
+            _(
+                "File operation error occurred while structuring the XML. "
+                "Please contact your system administrator."
+            )
         )
         return None
 
     except ET.ParseError:
         frappe.throw(
-            "Error occurred in XML parsing or formatting. "
-            "Please check the XML structure for errors. "
-            "If the problem persists, contact your system administrator."
+            _(
+                "Error occurred in XML parsing or formatting. "
+                "Please check the XML structure for errors. "
+                "If the problem persists, contact your system administrator."
+            )
         )
         return None
     except UnicodeDecodeError:
         frappe.throw(
-            "Encoding error occurred while processing the XML file. "
-            "Please contact your system administrator."
+            _(
+                "Encoding error occurred while processing the XML file. "
+                "Please contact your system administrator."
+            )
         )
         return None

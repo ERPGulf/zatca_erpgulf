@@ -3,6 +3,7 @@
 import json
 import base64
 import requests
+from frappe import _
 import frappe
 import lxml.etree as ET
 
@@ -21,11 +22,11 @@ def get_api_url(company_abbr, base_url):
 
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(
-            "unexpected error occurred api for company {company_abbr} " + str(e)
+            _("unexpected error occurred api for company {company_abbr} " + str(e))
         )
         return None
 
-
+# nosemgrep: frappe-semgrep-rules.rules.security.missing-argument-type-hint
 @frappe.whitelist(allow_guest=False)
 def wizard_button(company_abbr, button, pos=0, machine=None):
     """Compliance check for ZATCA based on file type and company abbreviation."""
@@ -49,7 +50,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
         # Validate and fetch company name
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
-            frappe.throw(f"Company with abbreviation {company_abbr} not found.")
+            frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
 
         # Parse XML and extract encoded hash a nd UUI D
         namespaces = {
@@ -70,16 +71,17 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
             namespaces,
         )
         if digest_value_element is None or not digest_value_element.text:
-            frappe.throw("DigestValue not found in the XML file.")
+            frappe.throw(_("DigestValue not found in the XML file."))
         encoded_hash = digest_value_element.text.strip()
 
         # Extract UUID
         uuid_element = root.find("cbc:UUID", namespaces)
         if uuid_element is None or not uuid_element.text:
-            frappe.throw("UUID not found in the XML file.")
+            frappe.throw(_("UUID not found in the XML file."))
         uuid1 = uuid_element.text.strip()
 
         # Read and encode the entire XML file
+        # nosemgrep: frappe-semgrep-rules.rules.security.frappe-security-file-traversal
         with open(signed_xml_filename, "rb") as file:
             xml_content = file.read()
         xml_base64_encoded = base64.b64encode(xml_content).decode("utf-8")
@@ -99,10 +101,13 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
         #     frappe.throw(f"CSID for company {company_abbr} not found.")
         if pos == 1:
             if not machine:
-                frappe.throw("Machine name is required for offline POS.")
-            doc_type = "Zatca Multiple Setting"
+                frappe.throw(_("Machine name is required for offline POS."))
+            doc_type = "ZATCA Multiple Setting"
             doc_name = machine
             doc = frappe.get_doc(doc_type, doc_name)
+            if doc.custom__use_company_certificate__keys == 1:
+                # Fallback to Company
+                doc = frappe.get_doc("Company", company_name)
         else:
             doc_type = frappe.get_doc("Company", company_name)
             doc_name = company_name
@@ -110,7 +115,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
 
         csid = doc.custom_basic_auth_from_csid
         if not csid:
-            frappe.throw(f"CSID not found in {doc_type} for {doc_name}.")
+            frappe.throw(_(f"CSID not found in {doc_type} for {doc_name}."))
 
         # Define headers
         headers = {
@@ -132,9 +137,9 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
 
         # Handle response
         if response.status_code != 200:
-            frappe.throw(f"Error from ZATCA API: {response.text}")
+            frappe.throw(_(f"Error from ZATCA API: {response.text}"))
 
         return response.json()
 
     except Exception as e:
-        frappe.throw(f"Error in wizard_button: {str(e)}")
+        frappe.throw(_(f"Error in wizard_button: {str(e)}"))

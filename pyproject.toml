@@ -1,5 +1,6 @@
 [project]
 name = "zatca_erpgulf"
+#version = "3.0.0"
 authors = [
     { name = "ERPGulf", email = "support@ERPGulf.com"}
 ]
@@ -9,14 +10,22 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     "asn1~=2.7.0",
-    "pikepdf"
-    # "frappe~=15.0.0" # Installed and managed by bench.
+    "pikepdf" ,
+    "frappe>=14.0.0,<17.0.0",
+    "pypika @ git+https://github.com/frappe/pypika@2c50e6142b2d61d2d243e466fdd5dc03b3d918f2",
+    "gunicorn @ git+https://github.com/frappe/gunicorn@bb554053bb87218120d76ab6676af7015680e8b6"
 ]
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
+
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
 # package_name = "~=1.1.0"
+
+
+
+[tool.bench.frappe-dependencies]
+frappe = ">=14.0.0,<17.0.0"
