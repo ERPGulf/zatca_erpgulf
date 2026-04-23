@@ -58,8 +58,13 @@ def get_data_and_chart(filters):
 
     # Apply 'Not Submitted' filter
     if status == "Not Submitted":
-        invoices = [inv for inv in invoices if inv.get("docstatus") == 0 or not inv.get("custom_zatca_status")]
-
+        invoices = [
+            inv for inv in invoices
+            if inv.get("docstatus") == 1 and (
+                not inv.get("custom_zatca_status")
+                or inv.get("custom_zatca_status") in [ "Not Submitted"]
+            )
+        ]
     return invoices
 
 
