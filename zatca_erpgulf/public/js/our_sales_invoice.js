@@ -129,7 +129,7 @@ frappe.ui.form.on("Sales Invoice", {
                     }
                 });
         }
-   
+
 
         frm.page.add_menu_item(__('Print PDF-A3'), function () {
             // Create a dialog box with fields for Print Format, Letterhead, and Language
@@ -445,10 +445,10 @@ frappe.ui.form.on('Sales Invoice', {
 
 
 frappe.ui.form.on('Sales Invoice', {
-    refresh: function(frm) {
+    refresh: function (frm) {
         if (!frm.is_new()) {
             // Add menu item like Print PDF-A3
-            frm.page.add_menu_item(__('Create XML for Debug'), function() {
+            frm.page.add_menu_item(__('Create XML for Debug'), function () {
                 frappe.call({
                     method: "zatca_erpgulf.zatca_erpgulf.debug_xml.debug_call",
                     args: {
@@ -456,7 +456,7 @@ frappe.ui.form.on('Sales Invoice', {
                     },
                     freeze: true,
                     freeze_message: __("Generating Debug XML..."),
-                    callback: function(r) {
+                    callback: function (r) {
                         if (r.message && r.message.status === "success") {
                             frappe.msgprint(__('✅ Debug XML attached successfully!'));
                             frm.reload_doc();
