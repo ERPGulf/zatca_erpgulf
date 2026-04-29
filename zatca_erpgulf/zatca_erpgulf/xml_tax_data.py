@@ -379,8 +379,8 @@ def tax_data(invoice, sales_invoice_doc):
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
-        cbc_allowancetotalamount.text = str(
-            abs(sales_invoice_doc.get("discount_amount", 0.0))
+        cbc_allowancetotalamount.text = "{:.2f}".format(
+            round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
         )
         if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             total_amount = round(

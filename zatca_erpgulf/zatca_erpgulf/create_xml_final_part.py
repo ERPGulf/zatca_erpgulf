@@ -516,11 +516,11 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         )
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
         if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
-            cbc_allowancetotalamount.text = str(round(abs(sales_invoice_doc.total), 2))
+            cbc_allowancetotalamount.text = "{:.2f}".format(round(abs(sales_invoice_doc.total), 2))
         else:
 
             if difference == 0.01:
-                cbc_allowancetotalamount.text = str(total_line_extension)
+                cbc_allowancetotalamount.text = "{:.2f}".format(round(abs(total_line_extension), 2))
             else:
                 cbc_allowancetotalamount.text = "{:.2f}".format(
                     round(abs(sales_invoice_doc.discount_amount), 2)

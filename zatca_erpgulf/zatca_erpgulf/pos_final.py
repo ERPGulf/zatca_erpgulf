@@ -253,7 +253,7 @@ def tax_data_with_template(invoice, pos_invoice_doc):
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
         cbc_allowancetotalamount.set("currencyID", pos_invoice_doc.currency)
-        cbc_allowancetotalamount.text = str(
+        cbc_allowancetotalamount.text = "{:.2f}".format(
             round(abs(pos_invoice_doc.get("discount_amount", 0.0)), 2)
         )
 
