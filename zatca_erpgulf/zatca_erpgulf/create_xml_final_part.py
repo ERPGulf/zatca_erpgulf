@@ -234,7 +234,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
         )
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
 
-        cbc_allowancetotalamount.text = str(round(abs(sales_invoice_doc.total), 2))
+        cbc_allowancetotalamount.text = "{:.2f}".format(round(abs(sales_invoice_doc.total), 2))
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
@@ -522,7 +522,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             if difference == 0.01:
                 cbc_allowancetotalamount.text = str(total_line_extension)
             else:
-                cbc_allowancetotalamount.text = str(
+                cbc_allowancetotalamount.text = "{:.2f}".format(
                     round(abs(sales_invoice_doc.discount_amount), 2)
                 )
 
