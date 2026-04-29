@@ -1199,8 +1199,12 @@ def tax_data(invoice, pos_invoice_doc):
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
         cbc_allowancetotalamount.set("currencyID", pos_invoice_doc.currency)
-        cbc_allowancetotalamount.text = str(
-            abs(pos_invoice_doc.get("discount_amount", 0.0))
+
+        cbc_allowancetotalamount.text = "{:.2f}".format(
+            round(
+                abs(pos_invoice_doc.get("discount_amount", 0.0)),
+                2,
+            )
         )
 
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
