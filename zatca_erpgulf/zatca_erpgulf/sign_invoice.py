@@ -1416,6 +1416,19 @@ def zatca_background(invoice_number: str, source_doc:str|dict=None, bypass_backg
                             "As per ZATCA regulations, Customer Tax ID must start with 3 and end with 3."
                         )
                     )
+        tax_id = (customer_doc.tax_id or "").strip()
+
+        if tax_id:  # :white_check_mark: Only validate if value exists (not None / empty)
+            if (
+                not tax_id.isdigit()
+                or len(tax_id) != 15
+                or not (tax_id.startswith("3") and tax_id.endswith("3"))
+            ):
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulations, Customer Tax ID must be exactly 15 digits and start with 3 and end with 3."
+                    )
+                )
         if not customer_doc.custom_buyer_id_type and customer_doc.custom_buyer_id:
             frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
         if "claudion4saudi" in frappe.get_installed_apps():
@@ -1862,6 +1875,19 @@ def zatca_background_on_submit(doc: "str|dict", _method: str = None, bypass_back
                             "As per ZATCA regulations, Customer Tax ID must start with 3 and end with 3."
                         )
                     )
+        tax_id = (customer_doc.tax_id or "").strip()
+
+        if tax_id:  # :white_check_mark: Only validate if value exists (not None / empty)
+            if (
+                not tax_id.isdigit()
+                or len(tax_id) != 15
+                or not (tax_id.startswith("3") and tax_id.endswith("3"))
+            ):
+                frappe.throw(
+                    _(
+                        "As per ZATCA regulations, Customer Tax ID must be exactly 15 digits and start with 3 and end with 3."
+                    )
+                )
         if not customer_doc.custom_buyer_id_type and customer_doc.custom_buyer_id:
             frappe.throw(_("Buyer ID must be blank if Buyer ID Type is not set."))
         if "claudion4saudi" in frappe.get_installed_apps():
