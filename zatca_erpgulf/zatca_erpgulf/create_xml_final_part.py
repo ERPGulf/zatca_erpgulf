@@ -578,7 +578,13 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
         cbc_amount = ET.SubElement(
             cac_allowance_charge, "cbc:Amount", currencyID=sales_invoice_doc.currency
         )
-        cbc_amount.text = str(abs(single_item.discount_amount))
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 1:
+            tax_rate = abs(float(sales_invoice_doc.taxes[0].rate or 0))
+            divisor = 1 + (tax_rate / 100.0)
+
+            cbc_amount.text = f"{round(abs(float(single_item.discount_amount or 0)) / divisor, 2):.2f}"
+        else:
+            cbc_amount.text = str(abs(single_item.discount_amount))
 
         cbc_base_amount = ET.SubElement(
             cac_allowance_charge,
@@ -588,7 +594,18 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
         # cbc_base_amount.text = str(
         #     abs(single_item.rate) + abs(single_item.discount_amount)
         # )
-        cbc_base_amount.text = f"{abs(single_item.rate) + abs(single_item.discount_amount):.2f}"
+        if sales_invoice_doc.taxes[0].included_in_print_rate == 1:
+            tax_rate = abs(float(sales_invoice_doc.taxes[0].rate or 0))
+            divisor = 1 + (tax_rate / 100.0)
+
+            gross_before_discount = (
+                abs(float(single_item.rate or 0))
+                + abs(float(single_item.discount_amount or 0))
+            )
+
+            cbc_base_amount.text = f"{round(gross_before_discount / divisor, 2):.2f}"
+        else:
+            cbc_base_amount.text = f"{abs(single_item.rate) + abs(single_item.discount_amount):.2f}"
 
         return cac_price
 
