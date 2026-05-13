@@ -15,8 +15,7 @@ add_to_apps_screen = [
         "name": app_name,
         "logo": "/assets/zatca_erpgulf/images/ERPGulf.png",
         "title": app_title,
-        "route": "zatca-erpgulf",
-        # "has_permission": "zatca_erpgulf.check_app_permission",
+        "route": "/app/zatca-erpgulf",  # <-- add leading /app/
     }
 ]
 
