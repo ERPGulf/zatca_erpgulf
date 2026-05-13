@@ -377,8 +377,8 @@ fixtures = [
                 "name",
                 "in",
                 [
-                    "Item-wise Sales Register",
-                    "Item-wise Purchase Register",
+                    # "Item-wise Sales Register",
+                    # "Item-wise Purchase Register",
                     "Zatca Status Report",
                 ],
             ]
