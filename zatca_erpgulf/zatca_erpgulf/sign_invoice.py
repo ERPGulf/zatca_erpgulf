@@ -1519,6 +1519,9 @@ def zatca_background(invoice_number: str, source_doc:str|dict=None, bypass_backg
                     " Please contact your system administrator"
                 )
             )
+        if sales_invoice_doc.custom_zatca_pmm == 1:
+            frappe.throw(_("This invoice is marked as PMM. Skipping ZATCA submission."))
+            
         # if settings.custom_phase_1_or_2 == "Phase-2":
         is_gpos_installed = "gpos" in frappe.get_installed_apps()
 
@@ -1612,7 +1615,8 @@ def zatca_background_on_submit(doc: "str|dict", _method: str = None, bypass_back
         if company_doc.custom_zatca_invoice_enabled != 1:
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return  # Exit the function without further checks
-
+        if sales_invoice_doc.custom_zatca_pmm == 1:
+            return
         # 🚨 Skip ZATCA logic if Company Tax ID = Customer Tax ID
         if company_doc.tax_id and customer_doc.tax_id:
             if company_doc.tax_id.strip() == customer_doc.tax_id.strip():

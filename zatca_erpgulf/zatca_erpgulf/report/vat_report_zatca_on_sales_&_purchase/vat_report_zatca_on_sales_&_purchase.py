@@ -424,16 +424,25 @@ def get_purchase_vat_totals_sql(filters):
         SELECT
             pi.name AS invoice,
             pi.is_return AS is_return,
-            pi.grand_total AS grand_total,
+            pi.base_grand_total AS grand_total,
 
             COALESCE((
-                SELECT SUM(ptc.tax_amount)
+                SELECT SUM(ptc.base_tax_amount)
                 FROM `tabPurchase Taxes and Charges` ptc
                 INNER JOIN `tabAccount` acc
                     ON acc.name = ptc.account_head
                 WHERE ptc.parent = pi.name
                 AND acc.account_type = 'Tax'
             ), 0) AS total_vat_amount,
+
+            COALESCE((
+                SELECT SUM(ptc.base_tax_amount)
+                FROM `tabPurchase Taxes and Charges` ptc
+                INNER JOIN `tabAccount` acc
+                    ON acc.name = ptc.account_head
+                WHERE ptc.parent = pi.name
+                AND acc.account_type != 'Tax'
+            ), 0) AS total_customs_amount,
 
             pi.custom_zatca_tax_category,
             pi.custom_exemption_reason_code,
@@ -454,32 +463,30 @@ def get_purchase_vat_totals_sql(filters):
 
         signed_grand_total = r.get("grand_total") or 0
         signed_vat = r.get("total_vat_amount") or 0
+        signed_customs_vat = r.get("total_customs_amount") or 0
 
         if is_return:
             signed_grand_total = -abs(signed_grand_total)
             signed_vat = -abs(signed_vat)
+            signed_customs_vat = -abs(signed_customs_vat)
 
         # STANDARD
         if r.get("custom_zatca_tax_category") == "Standard":
-
             totals["Standard"][key] += signed_grand_total
             totals["Standard"]["vat"] += signed_vat
 
         # ZERO RATED
         elif r.get("custom_zatca_tax_category") == "Zero Rated":
-
             totals["Zero Rated"][key] += signed_grand_total
 
         # EXEMPT
         elif r.get("custom_zatca_tax_category") == "Exempted":
-
             totals["Exempt"][key] += signed_grand_total
 
-        # IMPORTS
+        # IMPORTS — uses non-Tax charges as the VAT figure
         if int(r.get("custom_zatca_import_invoice") or 0) == 1:
-
             totals["ImportsCustoms"][key] += signed_grand_total
-            totals["ImportsCustoms"]["vat"] += signed_vat
+            totals["ImportsCustoms"]["vat"] += signed_customs_vat
 
     return totals
 

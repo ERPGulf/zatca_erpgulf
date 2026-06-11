@@ -18,6 +18,8 @@ def validate_sales_invoice_taxes(doc, event=None):
     # ✅ Exit early if ZATCA is not enabled
     if not company_doc.custom_zatca_invoice_enabled:
         return
+    if doc.doctype == "Sales Invoice" and doc.custom_zatca_pmm == 1:
+        return
     is_gpos_installed = "gpos" in frappe.get_installed_apps()
     field_exists = frappe.get_meta(doc.doctype).has_field("custom_unique_id")
 
