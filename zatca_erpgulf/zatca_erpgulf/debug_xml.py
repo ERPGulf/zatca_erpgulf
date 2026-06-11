@@ -107,6 +107,9 @@ def debug_call(
         if company_doc.custom_zatca_invoice_enabled != 1:
             frappe.msgprint(_("Zatca Invoice is not enabled. Submitting the document."))
             return
+        if sales_invoice_doc.custom_zatca_pmm == 1:
+            frappe.msgprint(_("ZATCA PMM is enabled for this invoice. Skipping ZATCA XML generation."))
+            return
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
         if company_doc.tax_id and customer_doc.tax_id:
             if company_doc.tax_id.strip() == customer_doc.tax_id.strip():
