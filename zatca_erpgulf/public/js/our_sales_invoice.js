@@ -504,3 +504,18 @@ function toggle_return_against_field(frm) {
         );
     });
 }
+
+frappe.ui.form.on('Sales Invoice', {
+    refresh(frm) {
+        frm.fields_dict.custom_zatca_pmm_warning.$wrapper.html(`
+            <div style="
+                background:#fff3cd;
+                border:1px solid #ffeeba;
+                padding:10px;
+                border-radius:4px;
+                margin-top:5px;">
+                ⚠️ <b>Important:</b> Please consult your auditor or ZATCA account manager before selecting invoice type, to ensure you are fully legally compliant and eligible to use it.
+            </div>
+        `);
+    }
+});
