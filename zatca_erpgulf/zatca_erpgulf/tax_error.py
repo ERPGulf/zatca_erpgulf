@@ -107,7 +107,11 @@ def validate_sales_invoice_taxes(doc, event=None):
                 )
             )
     if doc.is_return == 1 and doc.doctype in ["Sales Invoice", "POS Invoice"]:
-        if not doc.return_against:
+        custom_return_against = getattr(
+            doc, "custom_return_against_for_zatca", None
+        )
+
+        if not doc.return_against and not custom_return_against:
             frappe.throw(
                 _(
                     "As per ZATCA regulation, the Billing Reference ID "
