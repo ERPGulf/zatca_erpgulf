@@ -467,3 +467,40 @@ frappe.ui.form.on('Sales Invoice', {
         }
     }
 });
+
+frappe.ui.form.on("Sales Invoice", {
+    refresh(frm) {
+        toggle_return_against_field(frm);
+    },
+
+    company(frm) {
+        toggle_return_against_field(frm);
+    },
+
+    is_return(frm) {
+        toggle_return_against_field(frm);
+    }
+});
+
+function toggle_return_against_field(frm) {
+    if (!frm.doc.company) {
+        frm.set_df_property("custom_return_against_for_zatca", "hidden", 1);
+        return;
+    }
+
+    frappe.db.get_value(
+        "Company",
+        frm.doc.company,
+        "custom_allow_creditnote_without_original_invoice_in_the_system"
+    ).then((r) => {
+        const show_field =
+            frm.doc.is_return == 1 &&
+            cint(r.message.custom_allow_creditnote_without_original_invoice_in_the_system) == 1;
+
+        frm.set_df_property(
+            "custom_return_against_for_zatca",
+            "hidden",
+            !show_field
+        );
+    });
+}

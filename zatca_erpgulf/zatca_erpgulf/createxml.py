@@ -55,6 +55,7 @@ def billing_reference_for_credit_and_debit_note(invoice, sales_invoice_doc):
         cbc_id13 = ET.SubElement(cac_invoicedocumentreference, CBC_ID)
         cbc_id13.text = (
             sales_invoice_doc.return_against
+            or sales_invoice_doc.custom_return_against_for_zatca
         )  # field from return against invoice.
 
         return invoice
