@@ -251,6 +251,7 @@ frappe.ui.form.on('Sales Invoice', {
                     "https://docs.claudion.com/Claudion-Docs/selfbilled",
                 ],
             },
+            
         ];
         applyTooltips(frm, fieldsWithTooltips);
         const css = `
