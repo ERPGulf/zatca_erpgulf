@@ -251,6 +251,15 @@ frappe.ui.form.on('Sales Invoice', {
                     "https://docs.claudion.com/Claudion-Docs/selfbilled",
                 ],
             },
+            {
+                fieldname: "custom_zatca_pmm",
+                text: `
+                    The invoice is submitted normally in ERPNext but is not transmitted to ZATCA, allowing businesses that trade in eligible second-hand goods to manage PMM transactions separately and comply with ZATCA's Profit Margin Method VAT regulations.
+                `,
+                links: [
+                    "https://docs.claudion.com/Claudion-Docs/PMM",
+                ],
+            },
         ];
         applyTooltips(frm, fieldsWithTooltips);
         const css = `
