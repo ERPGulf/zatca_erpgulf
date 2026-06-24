@@ -2,7 +2,7 @@
 
 import frappe
 from frappe import _
-
+from frappe.utils import cint
 
 def execute(filters=None):
     columns = get_columns()
@@ -691,27 +691,25 @@ def get_purchase_vat_totals_sql(filters):
             signed_vat = -abs(signed_vat)
             signed_customs_vat = -abs(signed_customs_vat)
 
-        # STANDARD
-        if r.get("custom_zatca_tax_category") == "Standard":
-            totals["Standard"][key] += signed_grand_total
-            totals["Standard"]["vat"] += signed_vat
-
-        # ZERO RATED
-        elif r.get("custom_zatca_tax_category") == "Zero Rated":
-            totals["Zero Rated"][key] += signed_grand_total
-
-        # EXEMPT
-        elif r.get("custom_zatca_tax_category") == "Exempted":
-            totals["Exempt"][key] += signed_grand_total
-
-        # IMPORTS — uses non-Tax charges as the VAT figure
-        if int(r.get("custom_zatca_import_invoice") or 0) == 1:
+        # IMPORTS ONLY
+        if cint(r.get("custom_zatca_import_invoice")) == 1:
             totals["ImportsCustoms"][key] += signed_grand_total
             totals["ImportsCustoms"]["vat"] += signed_customs_vat
 
+        # STANDARD ONLY (NON-IMPORTS)
+        elif r.get("custom_zatca_tax_category") == "Standard":
+            totals["Standard"][key] += signed_grand_total
+            totals["Standard"]["vat"] += signed_vat
+
+        # ZERO RATED ONLY (NON-IMPORTS)
+        elif r.get("custom_zatca_tax_category") == "Zero Rated":
+            totals["Zero Rated"][key] += signed_grand_total
+
+        # EXEMPT ONLY (NON-IMPORTS)
+        elif r.get("custom_zatca_tax_category") == "Exempted":
+            totals["Exempt"][key] += signed_grand_total
+
     return totals
-
-
 # =========================================================
 # OTHER INCOME TAX
 # Picks up GL Entries where:
