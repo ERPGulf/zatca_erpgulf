@@ -1241,11 +1241,9 @@ def compliance_api_call(
 ):
     """compliance api call for testing with sandbox"""
     try:
-
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
         if not company_name:
             frappe.throw(_(f"Company with abbreviation {company_abbr} not found."))
-
         company_doc = frappe.get_doc("Company", company_name)
         payload = json.dumps(
             {
@@ -1254,7 +1252,6 @@ def compliance_api_call(
                 "invoice": xml_base64_decode(signed_xmlfile_name),
             }
         )
-
         # csid = company_doc.custom_basic_auth_from_csid
         if (
             hasattr(source_doc, "custom_zatca_pos_name")
@@ -1272,7 +1269,6 @@ def compliance_api_call(
             csid = company_doc.custom_basic_auth_from_csid
         if not csid:
             frappe.throw(_((f"CSID for company {company_abbr} not foundor not found in multpile setting page")))
-
         headers = {
             "accept": "application/json",
             "Accept-Language": "en",
@@ -1288,18 +1284,13 @@ def compliance_api_call(
             data=payload,
             timeout=300,
         )
-        # frappe.throw(response.status_code)
-        frappe.throw(_(response.text))
-        if response.status_code != 200:
+        if response.status_code not in (200, 202):
             frappe.throw(_(f"Error in compliance: {response.text}"))
-        if response.status_code != 202:
-            frappe.throw(_(f"Warning from zatca in compliance: {response.text}"))
 
         return response.text
     except requests.exceptions.RequestException as e:
         frappe.msgprint(_(f"Request exception occurred: {str(e)}"))
         return "error in compliance", "NOT ACCEPTED"
-
     except (ValueError, KeyError, TypeError, frappe.ValidationError) as e:
         frappe.throw(_(f"ERROR in clearance invoice, ZATCA validation: {str(e)}"))
         return None
