@@ -1289,11 +1289,24 @@ def compliance_api_call(
             timeout=300,
         )
         # frappe.throw(response.status_code)
-        frappe.throw(_(response.text))
-        if response.status_code != 200:
-            frappe.throw(_(f"Error in compliance: {response.text}"))
-        if response.status_code != 202:
-            frappe.throw(_(f"Warning from zatca in compliance: {response.text}"))
+        if response.status_code == 200:
+            frappe.msgprint(
+                _("ZATCA Compliance successful:<br>{0}").format(response.text),
+                indicator="green",
+            )
+            return response.text
+        # Accepted with warnings
+        elif response.status_code == 202:
+            frappe.msgprint(
+                _("ZATCA Compliance returned warnings:<br>{0}").format(response.text),
+                indicator="orange",
+            )
+            return response.text
+
+        else:
+            frappe.throw(
+                _("Error in compliance: {0}").format(response.text)
+            )
 
         return response.text
     except requests.exceptions.RequestException as e:
