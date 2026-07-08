@@ -229,7 +229,8 @@ def get_sales_vat_totals_sql(filters):
             ON tax.parent = itt.name
             AND tax.idx = 1
 
-        WHERE
+        WHERE si.docstatus = 1
+        AND
     """ + where_clause
 
     rows = frappe.db.sql(query, filters, as_dict=True)
@@ -429,7 +430,8 @@ def get_purchase_vat_totals_sql(filters):
 
         FROM `tabPurchase Invoice` pi
 
-        WHERE
+        WHERE pi.docstatus = 1
+        AND
     """ + where_clause
 
     rows = frappe.db.sql(query, filters, as_dict=True)
