@@ -525,6 +525,7 @@ def get_other_income_tax(filters):
         AND IFNULL(acc.custom_zatca_account_type, '') IN ('Output Tax', 'Both')
         AND gle.voucher_type NOT IN ('Sales Invoice', 'Purchase Invoice')
         AND gle.is_cancelled = 0
+        AND IFNULL(gle.against, '') <> 'custom_tax_locker__adjustment_tax'
     """
 
     result = frappe.db.sql(query, filters, as_dict=True)
