@@ -80,10 +80,10 @@ app_include_css = "/assets/zatca_erpgulf/css/tooltip.css"
 app_include_js = "/assets/zatca_erpgulf/js/tooltip.js"
 
 fixtures = [
-    {
-        "dt": "Desktop Icon",
-        "filters": [["label", "=", "ZATCA ERPGulf"]]
-    },
+    # {
+    #     "dt": "Desktop Icon",
+    #     "filters": [["label", "=", "ZATCA ERPGulf"]]
+    # },
     {"dt": "Custom Field", "filters": [["module", "=", "Zatca Erpgulf"]]},
 ]
 import zatca_erpgulf.overrides.return_validation
