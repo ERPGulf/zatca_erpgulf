@@ -136,7 +136,7 @@ def wizard_button(company_abbr, button, pos=0, machine=None):
         )
 
         # Handle response
-        if response.status_code != 200:
+        if response.status_code not in (200, 202):  # 202 = accepted with warnings: a success, not an error
             frappe.throw(_(f"Error from ZATCA API: {response.text}"))
 
         return response.json()
