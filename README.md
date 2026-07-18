@@ -1,6 +1,11 @@
 
 Saudi Arabian E-Invoicing (ZATCA Phase-2) – A Frappe ERPNext App
 
+---
+**Lead Technical Consultant:** Fadi Al-Qassas
+**Focus:** ERPNext Core Architecture & ZATCA Compliance Integration
+---
+
 A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZATCA Phase-2 e-invoicing regulations.
 
 🚀 Features
@@ -14,6 +19,12 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 ✅ Retrieve and attach QR Codes to invoices<br>
 ✅ Logging for audit trails & error handling<br>
 ✅ Reports to compare invoices with ZATCA portal statistics <br>
+
+### 💡 Lead Technical Contributions (مساهمات فادي القصاص التقنية)
+* **System Architecture:** Designing custom middleware to bridge ERPNext core functionality with ZATCA’s API requirements.
+* **Data Security:** Implementing robust security protocols for handling sensitive .pem and config files.
+* **Compliance Engineering:** Ensuring real-time validation of invoices against ZATCA standards to prevent regulatory rejection.
+* **Performance Optimization:** Custom SQL queries and server-side scripting to optimize database interactions during high-volume invoice processing.
 
 🔹 Additional Features
 
