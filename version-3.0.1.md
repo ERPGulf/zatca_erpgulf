@@ -1,9 +1,10 @@
-Version 3.0 release notes
+Version 3.0.1 release notes
 
 Highlights:
 
     Optimized XML Handling: In this release, the system now generates and saves only a single XML file per invoice,
     Eliminating the creation of temporary files.
+    Version 16 -Workspace-Icon updated.
 
 Hard Disk Efficiency: 
 
