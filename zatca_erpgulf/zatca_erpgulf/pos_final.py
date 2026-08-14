@@ -14,12 +14,12 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from frappe import _
 import frappe
-import json
 from zatca_erpgulf.zatca_erpgulf.posxml import (
     get_exemption_reason_map,
     get_tax_for_item,
     add_line_item_discount,
 )
+from zatca_erpgulf.zatca_erpgulf.utils import get_tax_wise_detail
 
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
@@ -271,20 +271,6 @@ def tax_data_with_template(invoice, pos_invoice_doc):
     except (AttributeError, KeyError, ValueError, TypeError) as e:
         frappe.throw(_(f"Data processing error in tax data with template: {str(e)}"))
 
-
-def get_tax_wise_detail(pos_invoice_doc,single_item):
-    """getting item wise tax"""
-    if int(frappe.__version__.split(".", 1)[0]) == 16 and pos_invoice_doc.item_wise_tax_details:
-        tax_rate = float(f"{pos_invoice_doc.item_wise_tax_details[0].rate:.1f}")
-        tax_amount = pos_invoice_doc.item_wise_tax_details[0].amount
-
-        # build JSON exactly like v15
-        tax_json = json.dumps({
-            single_item.item_code: [tax_rate, float(tax_amount)]
-        })
-    else:
-        tax_json = pos_invoice_doc.taxes[0].item_wise_tax_detail
-    return tax_json
 
 def item_data(invoice, pos_invoice_doc):
     """Function for item data"""
