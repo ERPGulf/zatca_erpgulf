@@ -728,11 +728,10 @@ def customer_data(invoice, sales_invoice_doc):
                 cac_country_1, "cbc:IdentificationCode"
             )
             # frappe.throw(country_dict[address.country.lower()])
-            if sales_invoice_doc.custom_zatca_export_invoice == 1:
-                if address.country and address.country.lower() in country_dict:
-                    cbc_identificationcode_1.text = country_dict[
-                        address.country.lower()
-                    ]
+            # Use the actual customer country code for any non-Saudi address,
+            # regardless of the export flag.  Domestic Saudi customers still map to SA.
+            if address.country and address.country.lower() in country_dict:
+                cbc_identificationcode_1.text = country_dict[address.country.lower()]
             else:
                 cbc_identificationcode_1.text = "SA"
         cac_partytaxscheme_1 = ET.SubElement(cac_party_2, "cac:PartyTaxScheme")
