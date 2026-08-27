@@ -266,7 +266,11 @@ def tax_data(invoice, sales_invoice_doc):
 
         # Exemption Reason (if applicable)
         exemption_reason_map = get_exemption_reason_map()
-        if sales_invoice_doc.custom_zatca_tax_category != "Standard":
+        if sales_invoice_doc.custom_zatca_tax_category in (
+            "Zero Rated",
+            "Exempted",
+            "Services outside scope of tax / Not subject to VAT",
+        ):
             cbc_taxexemptionreasoncode = ET.SubElement(
                 cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
             )
@@ -378,9 +382,14 @@ def tax_data(invoice, sales_invoice_doc):
             cac_legalmonetarytotal, "cbc:AllowanceTotalAmount"
         )
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
-        cbc_allowancetotalamount.text = "{:.2f}".format(
-            round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
-        )
+        if sales_invoice_doc.currency == "SAR":
+            cbc_allowancetotalamount.text = (
+                f"{abs(sales_invoice_doc.get('base_discount_amount', 0.0)):.2f}"
+            )
+        else:
+            cbc_allowancetotalamount.text = (
+                f"{abs(sales_invoice_doc.get('discount_amount', 0.0)):.2f}"
+            )
         if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
             total_amount = round(
                 abs(
@@ -737,7 +746,11 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             cbc_percent_1 = ET.SubElement(cac_taxcategory_1, "cbc:Percent")
             cbc_percent_1.text = f"{totals['tax_rate']:.2f}"
 
-            if zatca_tax_category != "Standard":
+            if zatca_tax_category in (
+                "Zero Rated",
+                "Exempted",
+                "Services outside scope of tax / Not subject to VAT",
+            ):
                 cbc_taxexemptionreasoncode = ET.SubElement(
                     cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
                 )
@@ -808,9 +821,14 @@ def tax_data_with_template(invoice, sales_invoice_doc):
         )
         cbc_allowancetotalamount.set("currencyID", sales_invoice_doc.currency)
 
-        cbc_allowancetotalamount.text = str(
-            round(abs(sales_invoice_doc.get("discount_amount", 0.0)), 2)
-        )
+        if sales_invoice_doc.currency == "SAR":
+            cbc_allowancetotalamount.text = (
+                f"{abs(sales_invoice_doc.get('base_discount_amount', 0.0)):.2f}"
+            )
+        else:
+            cbc_allowancetotalamount.text = (
+                f"{abs(sales_invoice_doc.get('discount_amount', 0.0)):.2f}"
+            )
         if (
             "claudion4saudi" in frappe.get_installed_apps()
             and hasattr(sales_invoice_doc, "custom_advances_copy")

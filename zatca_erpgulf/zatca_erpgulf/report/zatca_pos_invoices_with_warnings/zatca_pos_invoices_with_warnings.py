@@ -42,6 +42,11 @@ def execute(filters=None):
             "fieldname": "customer",
             "width": 200,
         },
+         {
+            "label": "Customer Name",
+            "fieldname": "customer_name",
+            "width": 200,
+        },
         {
             "label": _("Posting Date"),
             "fieldname": "posting_date",
@@ -102,6 +107,7 @@ def execute(filters=None):
             pi.name,
             pi.company,
             pi.customer,
+            pi.customer_name,
             pi.posting_date,
             pi.custom_zatca_status,
             pi.custom_zatca_full_response
@@ -138,6 +144,7 @@ def execute(filters=None):
                     "invoice": inv.name,
                     "company": inv.company,
                     "customer": inv.customer,
+                    "customer_name": inv.customer_name,
                     "posting_date": inv.posting_date,
                     "custom_zatca_status": inv.custom_zatca_status,
                     "warning_code": w.get("code"),
