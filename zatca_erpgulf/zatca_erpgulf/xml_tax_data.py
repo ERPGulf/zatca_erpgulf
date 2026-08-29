@@ -855,7 +855,17 @@ def tax_data_with_template(invoice, sales_invoice_doc):
                     advance.advance_amount
                     for advance in sales_invoice_doc.custom_advances_copy
                 )
-                payable_amount = round(tax_inclusive_amount - advance_amount, 2)
+                # advance_amount is a plain float: advance_amount is a Currency
+                # field on claudion4saudi's "advance sales invoice table", and
+                # frappe returns Currency values as floats. tax_inclusive_amount
+                # is a Decimal (quantized above), and Decimal - float raises
+                # TypeError, which this function catches and re-raises as
+                # "Data processing error in tax data template". Normalise before
+                # subtracting. The sibling in tax_data() is float-based today and
+                # so is unaffected, but the same guard would not hurt there.
+                payable_amount = round(
+                    tax_inclusive_amount - Decimal(str(advance_amount)), 2
+                )
 
         cbc_payableamount.text = str(payable_amount)
 
