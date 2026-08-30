@@ -1326,15 +1326,19 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
 
                     tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
                     zatca_tax_category = item_tax_template.custom_zatca_tax_category
-                    if zatca_tax_category == "Standard":
-                        cbc_id_12.text = "S"
-                    elif zatca_tax_category == ZERO_RATED:
-                        cbc_id_12.text = "Z"
-                    elif zatca_tax_category == "Exempted":
-                        cbc_id_12.text = "E"
-                    elif zatca_tax_category == OUTSIDE_SCOPE:
-                        cbc_id_12.text = "O"
-                    ET.SubElement(tax_cat, "cbc:ID").text = cbc_id_12.text
+                    # Hold the category code in a local. This used to assign it to
+                    # cbc_id_12, which is not a category element at all: it is the
+                    # cac:TaxScheme/cbc:ID of the *last standard invoice line*,
+                    # created and set to "VAT" at the top of this function. Writing
+                    # "S" into it retroactively corrupted that already-built line,
+                    # leaving <cac:TaxScheme><cbc:ID>S</cbc:ID></cac:TaxScheme>
+                    # where "VAT" belongs. A ClassifiedTaxCategory is only
+                    # identifiable as a VAT category through that scheme id, so the
+                    # standard line lost its BT-151 and ZATCA rejected the invoice
+                    # with BR-CO-04 ("Each Invoice line shall be categorized with an
+                    # Invoiced item VAT category code").
+                    advance_tax_code = get_tax_code(zatca_tax_category)
+                    ET.SubElement(tax_cat, "cbc:ID").text = advance_tax_code
                     ET.SubElement(tax_cat, "cbc:Percent").text = (
                         f"{float(item_tax_percentage):.2f}"
                     )
@@ -1349,7 +1353,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                     tax_cat_adv = ET.SubElement(
                         item_tag_adv, "cac:ClassifiedTaxCategory"
                     )
-                    ET.SubElement(tax_cat_adv, "cbc:ID").text = cbc_id_12.text
+                    ET.SubElement(tax_cat_adv, "cbc:ID").text = advance_tax_code
                     ET.SubElement(tax_cat_adv, "cbc:Percent").text = (
                         f"{float(item_tax_percentage):.2f}"
                     )
