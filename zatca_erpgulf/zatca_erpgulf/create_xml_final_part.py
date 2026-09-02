@@ -86,7 +86,8 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                         if item_tax_template.taxes
                         else 15
                     ),
-                    "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+                    "exemption_reason_code": item.custom_exemption_reason_code,
+                    "tax_exemption_reason": item.custom_tax_exemption_reason,
                 }
             if sales_invoice_doc.currency == "SAR":
                 tax_category_totals[zatca_tax_category]["taxable_amount"] += abs(
@@ -117,7 +118,8 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                         if item_tax_template.taxes
                         else 15
                     ),
-                    "exemption_reason_code": item_tax_template.custom_exemption_reason_code,
+                    "exemption_reason_code": item.custom_exemption_reason_code,
+                    "tax_exemption_reason": item.custom_tax_exemption_reason,
                 }
 
         # Use the same technique for calculating tax amount
@@ -158,7 +160,7 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                 if item_tax_template.taxes
                 else "15.00"
             )
-
+         
             if zatca_tax_category != "Standard":
                 cbc_taxexemptionreasoncode = ET.SubElement(
                     cac_taxcategory_1, "cbc:TaxExemptionReasonCode"
@@ -169,10 +171,16 @@ def tax_data_with_template_nominal(invoice, sales_invoice_doc):
                 )
 
                 exemption_reason_map = get_exemption_reason_map()
-                if totals["exemption_reason_code"] in exemption_reason_map:
-                    cbc_taxexemptionreason.text = exemption_reason_map[
-                        totals["exemption_reason_code"]
-                    ]
+                reason_code = totals["exemption_reason_code"]
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = totals["tax_exemption_reason"]
+                elif reason_code in exemption_reason_map:
+                    cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
+            
+                # if totals["exemption_reason_code"] in exemption_reason_map:
+                #     cbc_taxexemptionreason.text = exemption_reason_map[
+                #         totals["exemption_reason_code"]
+                #     ]
 
             cac_taxscheme = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
             cbc_taxscheme_id = ET.SubElement(cac_taxscheme, "cbc:ID")
@@ -312,8 +320,9 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cbc_taxamount_sar.text = str(
                 round(tax_amount_without_retention_sar, 2)
             )  # Tax amount in SAR
-
-            if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            if sales_invoice_doc.custom_zatca_tax_category == "Services outside scope of tax / Not subject to VAT":
+                taxable_amount = 0.0
+            elif sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 taxable_amount = sales_invoice_doc.base_total
             else:
                 if difference == 0.01:
@@ -332,7 +341,9 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             cac_taxsubtotal = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
             cbc_taxableamount = ET.SubElement(cac_taxsubtotal, CBC_TAXABLE_AMOUNT)
             cbc_taxableamount.set("currencyID", sales_invoice_doc.currency)
-            if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
+            if sales_invoice_doc.custom_zatca_tax_category == "Services outside scope of tax / Not subject to VAT":
+                cbc_taxableamount.text = "0.00"
+            elif sales_invoice_doc.taxes[0].included_in_print_rate == 0:
                 cbc_taxableamount.text = str(
                     abs(round(sales_invoice_doc.base_total, 2))
                 )
@@ -405,7 +416,7 @@ def tax_data_nominal(invoice, sales_invoice_doc):
             )
 
         # Tax Category and Scheme
-
+    
         cac_taxcategory_1 = ET.SubElement(cac_taxsubtotal, "cac:TaxCategory")
         cbc_id_8 = ET.SubElement(cac_taxcategory_1, "cbc:ID")
 
@@ -434,8 +445,13 @@ def tax_data_nominal(invoice, sales_invoice_doc):
                 cac_taxcategory_1, "cbc:TaxExemptionReason"
             )
             reason_code = sales_invoice_doc.custom_exemption_reason_code
-            if reason_code in exemption_reason_map:
+            if reason_code == "VATEX-SA-OOS":
+                cbc_taxexemptionreason.text = (
+                    sales_invoice_doc.custom_tax_exemption_reason
+                )
+            elif reason_code in exemption_reason_map:
                 cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
+            
 
         # Tax Scheme
         cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
@@ -453,7 +469,11 @@ def tax_data_nominal(invoice, sales_invoice_doc):
         cac_taxsubtotal_2 = ET.SubElement(cac_taxtotal, CAC_TAX_SUBTOTAL)
         cbc_taxableamount_2 = ET.SubElement(cac_taxsubtotal_2, CBC_TAXABLE_AMOUNT)
         cbc_taxableamount_2.set("currencyID", "SAR")
-        cbc_taxableamount_2.text = str(-round(taxable_amount, 2))
+        if sales_invoice_doc.custom_zatca_tax_category == "Services outside scope of tax / Not subject to VAT":
+            taxable_amount = "0.00"
+        else:
+            taxable_amount = str(-round(taxable_amount, 2))
+        cbc_taxableamount_2.text = taxable_amount
 
         cbc_taxamount_3 = ET.SubElement(cac_taxsubtotal_2, CBC_TAX_AMOUNT)
         cbc_taxamount_3.set("currencyID", "SAR")
@@ -732,6 +752,35 @@ def item_data(invoice, sales_invoice_doc):
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
+            exemption_reason_map = get_exemption_reason_map()
+            if sales_invoice_doc.custom_zatca_tax_category != "Standard":
+
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReasonCode"
+                )
+
+                cbc_taxexemptionreasoncode.text = (
+                    sales_invoice_doc.custom_exemption_reason_code
+                )
+
+                cbc_taxexemptionreason = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReason"
+                )
+                
+                reason_code = sales_invoice_doc.custom_exemption_reason_code
+
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = (
+                        sales_invoice_doc.custom_tax_exemption_reason
+                    )
+
+                elif reason_code in exemption_reason_map:
+
+                    cbc_taxexemptionreason.text = (
+                        exemption_reason_map[reason_code]
+                    )
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"
@@ -878,6 +927,30 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
             ET.SubElement(tax_category, "cbc:Percent").text = (
                 f"{float(item_tax_percentage):.2f}"
             )
+            exemption_reason_map = get_exemption_reason_map()
+            
+            if sales_invoice_doc.custom_zatca_tax_category != "Standard":
+                reason_code = sales_invoice_doc.custom_exemption_reason_code
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    tax_category,
+                    "cbc:TaxExemptionReasonCode"
+                )
+                cbc_taxexemptionreasoncode.text = reason_code
+
+                cbc_taxexemptionreason = ET.SubElement(
+                    tax_category,
+                    "cbc:TaxExemptionReason"
+                )
+
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = (
+                        sales_invoice_doc.custom_tax_exemption_reason
+                    )
+
+                elif reason_code in exemption_reason_map:
+                    cbc_taxexemptionreason.text = (
+                        exemption_reason_map[reason_code]
+                    )
             ET.SubElement(
                 ET.SubElement(tax_category, "cac:TaxScheme"), "cbc:ID"
             ).text = "VAT"
@@ -1111,7 +1184,28 @@ def item_data_with_template(invoice, sales_invoice_doc):
 
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
+            exemption_reason_map = get_exemption_reason_map()
+            if zatca_tax_category != "Standard":
+                reason_code = single_item.custom_exemption_reason_code
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReasonCode"
+                )
+                cbc_taxexemptionreasoncode.text = reason_code
+                cbc_taxexemptionreason = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReason"
+                )
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = (
+                        single_item.custom_tax_exemption_reason
+                    )
 
+                elif reason_code in exemption_reason_map:
+
+                    cbc_taxexemptionreason.text = (
+                        exemption_reason_map[reason_code]
+                    )
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"
@@ -1204,6 +1298,7 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                 cac_item, "cac:ClassifiedTaxCategory"
             )
             cbc_id_11 = ET.SubElement(cac_classifiedtaxcategory, "cbc:ID")
+            exemption_reason_map = get_exemption_reason_map()
             zatca_tax_category = item_tax_template.custom_zatca_tax_category
             if zatca_tax_category == "Standard":
                 cbc_id_11.text = "S"
@@ -1216,7 +1311,29 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
 
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
+            exemption_reason_map = get_exemption_reason_map()
 
+            if zatca_tax_category != "Standard":
+                reason_code = single_item.custom_exemption_reason_code
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReasonCode"
+                )
+                cbc_taxexemptionreasoncode.text = reason_code
+                cbc_taxexemptionreason = ET.SubElement(
+                    cac_classifiedtaxcategory,
+                    "cbc:TaxExemptionReason"
+                )
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = (
+                        single_item.custom_tax_exemption_reason
+                    )
+
+                elif reason_code in exemption_reason_map:
+
+                    cbc_taxexemptionreason.text = (
+                        exemption_reason_map[reason_code]
+                    )
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"

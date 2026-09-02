@@ -707,7 +707,7 @@ def delivery_and_paymentmeans(invoice, pos_invoice_doc, is_return):
 
         if is_return == 1:
             cbc_instructionnote = ET.SubElement(cac_paymentmeans, "cbc:InstructionNote")
-            cbc_instructionnote.text = "Cancellation"
+            cbc_instructionnote.text = pos_invoice_doc.custom_credit_note_reasoninstruction_note
         return invoice
     except (ET.ParseError, AttributeError, ValueError) as e:
         frappe.throw(_(f"Delivery and payment means failed: {e}"))
@@ -930,9 +930,9 @@ def get_exemption_reason_map():
         "VATEX-SA-EDU": "Private education to citizen.",
         "VATEX-SA-HEA": "Private healthcare to citizen.",
         "VATEX-SA-MLTRY": "Supply of qualified military goods",
-        "VATEX-SA-OOS": (
-            "Not subject to VAT"
-        ),
+        # "VATEX-SA-OOS": (
+        #     "Not subject to VAT"
+        # ),
     }
 
 def get_tax_wise_detail(pos_invoice_doc,single_item):
@@ -1124,8 +1124,14 @@ def tax_data(invoice, pos_invoice_doc):
                 cac_taxcategory_1, "cbc:TaxExemptionReason"
             )
             reason_code = pos_invoice_doc.custom_exemption_reason_code
-            if reason_code in exemption_reason_map:
+            if reason_code == "VATEX-SA-OOS":
+                cbc_taxexemptionreason.text = (
+                    pos_invoice_doc.custom_tax_exemption_reason
+                )
+            elif reason_code in exemption_reason_map:
                 cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
+            # if reason_code in exemption_reason_map:
+            #     cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
 
         # Tax Scheme
         cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
