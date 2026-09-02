@@ -788,7 +788,7 @@ def delivery_and_payment_means(invoice, sales_invoice_doc, is_return):
             cbc_instruction_note = ET.SubElement(
                 cac_payment_means, "cbc:InstructionNote"
             )
-            cbc_instruction_note.text = "Cancellation or Returned"
+            cbc_instruction_note.text = sales_invoice_doc.custom_credit_note_reasoninstruction_note
         
         if sales_invoice_doc.is_debit_note == 1 :
             cbc_instruction_note = ET.SubElement(

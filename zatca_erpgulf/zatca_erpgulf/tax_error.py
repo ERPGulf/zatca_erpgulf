@@ -82,13 +82,37 @@ def validate_sales_invoice_taxes(doc, event=None):
                     "Please update the Cost Center with a valid `custom_zatca__registration_type`."
                 )
             )
-
+        # Validate invoice-level exemption reason when no Item Tax Template is used
+    if not any(item.item_tax_template for item in doc.items):
+        if (
+            getattr(doc, "custom_exemption_reason_code", None)
+            == "VATEX-SA-OOS"
+            and not getattr(doc, "custom_tax_exemption_reason", None)
+        ):
+            frappe.throw(
+                _(
+                    "Tax Exemption Reason is mandatory when the "
+                    "Exemption Reason Code is VATEX-SA-OOS."
+                )
+            )
     for item in doc.items:
         # Check if the item has a valid Item Tax Template
         if item.item_tax_template:
             try:
                 # Ensure the Item Tax Template exists
-                frappe.get_doc("Item Tax Template", item.item_tax_template)
+                item_tax_template =frappe.get_doc("Item Tax Template", item.item_tax_template)
+                if (
+                    item_tax_template.custom_exemption_reason_code
+                    == "VATEX-SA-OOS"
+                    and not item_tax_template.custom_tax_exemption_reason
+                ):
+                    frappe.throw(
+                        _(
+                            "Tax Exemption Reason is mandatory in Item Tax Template "
+                            f"'{item.item_tax_template}' when the Exemption Reason "
+                            "Code is VATEX-SA-OOS."
+                        )
+                    )
                 continue
             except frappe.DoesNotExistError:
                 frappe.throw(

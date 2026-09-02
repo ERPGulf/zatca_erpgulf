@@ -80,7 +80,10 @@ app_include_css = [
     "/assets/zatca_erpgulf/css/saudi_riyal.css",
 ]
 web_include_css = ["/assets/zatca_erpgulf/css/saudi_riyal.css"]
-app_include_js = "/assets/zatca_erpgulf/js/tooltip.js"
+app_include_js = [
+    "/assets/zatca_erpgulf/js/tooltip.js",
+    "/assets/zatca_erpgulf/js/sales_invoice.js",
+]
 
 fixtures = [
     {

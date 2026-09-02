@@ -309,8 +309,14 @@ def tax_data(invoice, sales_invoice_doc):
                 cac_taxcategory_1, "cbc:TaxExemptionReason"
             )
             reason_code = sales_invoice_doc.custom_exemption_reason_code
-            if reason_code in exemption_reason_map:
+            if reason_code == "VATEX-SA-OOS":
+                cbc_taxexemptionreason.text = (
+                    sales_invoice_doc.custom_tax_exemption_reason
+                )
+            elif reason_code in exemption_reason_map:
                 cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
+            # if reason_code in exemption_reason_map:
+            #     cbc_taxexemptionreason.text = exemption_reason_map[reason_code]
 
         # Tax Scheme
         cac_taxscheme_3 = ET.SubElement(cac_taxcategory_1, "cac:TaxScheme")
@@ -716,6 +722,30 @@ def item_data_advance(invoice, sales_invoice_doc, invoice_number):
                 cbc_id_11.text = "O"
             cbc_percent_2 = ET.SubElement(cac_classifiedtaxcategory, "cbc:Percent")
             cbc_percent_2.text = f"{float(item_tax_percentage):.2f}"
+            exemption_reason_map = get_exemption_reason_map()
+            
+            if sales_invoice_doc.custom_zatca_tax_category != "Standard":
+                reason_code = sales_invoice_doc.custom_exemption_reason_code
+                cbc_taxexemptionreasoncode = ET.SubElement(
+                    tax_category,
+                    "cbc:TaxExemptionReasonCode"
+                )
+                cbc_taxexemptionreasoncode.text = reason_code
+
+                cbc_taxexemptionreason = ET.SubElement(
+                    tax_category,
+                    "cbc:TaxExemptionReason"
+                )
+
+                if reason_code == "VATEX-SA-OOS":
+                    cbc_taxexemptionreason.text = (
+                        sales_invoice_doc.custom_tax_exemption_reason
+                    )
+
+                elif reason_code in exemption_reason_map:
+                    cbc_taxexemptionreason.text = (
+                        exemption_reason_map[reason_code]
+                    )
             cac_taxscheme_4 = ET.SubElement(cac_classifiedtaxcategory, "cac:TaxScheme")
             cbc_id_12 = ET.SubElement(cac_taxscheme_4, "cbc:ID")
             cbc_id_12.text = "VAT"
