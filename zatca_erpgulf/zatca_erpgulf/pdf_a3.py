@@ -313,7 +313,7 @@ def embed_file_in_pdf(invoice_name :str, print_format :str | None = None, letter
         # Log and re-raise. Swallowing these returned None to the caller, so
         # both the client and the on_submit hook thought it had succeeded.
         frappe.log_error(frappe.get_traceback(), "PDF-A3 XML Embed Error")
-        frappe.throw(_("Could not build the PDF/A-3: {0}").format(e))
+        frappe.throw(_("Could not build the PDF/A-3: {0}").format(str(e)))
 
 
 
