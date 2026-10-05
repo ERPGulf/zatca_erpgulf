@@ -54,7 +54,8 @@ doc_events = {
 jinja = {
     "methods": [
         "zatca_erpgulf.zatca_erpgulf.utils.arabic_money_in_words",
-        "zatca_erpgulf.zatca_erpgulf.utils.arabic_number"
+        "zatca_erpgulf.zatca_erpgulf.utils.arabic_number",
+        "zatca_erpgulf.zatca_erpgulf.print_utils.saudi_riyal_font_face",
     ]
 }
 
