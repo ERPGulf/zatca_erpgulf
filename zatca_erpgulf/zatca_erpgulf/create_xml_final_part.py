@@ -10,12 +10,12 @@ from datetime import datetime
 from frappe.utils.data import get_time
 from decimal import Decimal, ROUND_HALF_UP
 import frappe
-import json
 from frappe import _
 from zatca_erpgulf.zatca_erpgulf.xml_tax_data import (
     get_tax_for_item,
     get_exemption_reason_map,
 )
+from zatca_erpgulf.zatca_erpgulf.utils import get_tax_wise_detail
 
 
 ITEM_TAX_TEMPLATE = "Item Tax Template"
@@ -632,20 +632,6 @@ def add_line_item_discount(cac_price, single_item, sales_invoice_doc):
     except (ValueError, KeyError, AttributeError) as error:
         frappe.throw(_(f"Error occurred while adding line item discount: {str(error)}"))
         return None
-
-def get_tax_wise_detail(sales_invoice_doc,single_item):
-    """getting item wise tax"""
-    if int(frappe.__version__.split(".", 1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
-                tax_rate = float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
-                tax_amount = sales_invoice_doc.item_wise_tax_details[0].amount
-
-                # build JSON exactly like v15
-                tax_json = json.dumps({
-                    single_item.item_code: [tax_rate, float(tax_amount)]
-                })
-    else:
-        tax_json = sales_invoice_doc.taxes[0].item_wise_tax_detail
-    return tax_json
 
 def item_data(invoice, sales_invoice_doc):
     """
