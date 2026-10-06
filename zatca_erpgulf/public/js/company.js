@@ -104,6 +104,15 @@ frappe.ui.form.on("Company", {
         });
     },
     custom_generate_compliance_csid: function (frm) {
+        if (!frm.doc.custom_select) {
+            frappe.msgprint({
+                title: __("Portal Type Required"),
+                indicator: "orange",
+                message: __("Please select either <b>Sandbox</b>, <b>Simulation</b> or <b>Production</b> from the <b>Select</b> (portal) field first.")
+            });
+            frm.scroll_to_field("custom_select");
+            return;
+        }
 
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
@@ -123,6 +132,15 @@ frappe.ui.form.on("Company", {
         });
     },
     custom_create_csr: function (frm) {
+        if (!frm.doc.custom_select) {
+            frappe.msgprint({
+                title: __("Portal Type Required"),
+                indicator: "orange",
+                message: __("Please select either <b>Sandbox</b>, <b>Simulation</b> or <b>Production</b> from the <b>Select</b> (portal) field before creating the CSR.")
+            });
+            frm.scroll_to_field("custom_select");
+            return;
+        }
 
         frappe.call({
             method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
