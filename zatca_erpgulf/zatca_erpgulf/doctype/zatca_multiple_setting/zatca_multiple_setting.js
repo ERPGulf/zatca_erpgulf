@@ -192,6 +192,15 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
             return;
         }
 
+        // Without this the field is sent as undefined, frappe.call drops it from
+        // the payload entirely, and zatca_call_compliance fails server-side with a
+        // bare "missing 1 required positional argument: 'invoice_number'" that
+        // says nothing about which field was left empty.
+        if (!frm.doc.custom_sample_invoice_number_to_test) {
+            frappe.msgprint(__('Please set a Sample Invoice Number to test.'));
+            return;
+        }
+
         frappe.call({
             method: "frappe.client.get",
             args: {

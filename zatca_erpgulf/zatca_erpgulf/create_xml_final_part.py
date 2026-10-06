@@ -862,6 +862,12 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
     try:
         qty = "cbc:BaseQuantity"
 
+        # Default for the advance block further down, which used to read whatever
+        # this loop left behind - describing the advance line with the LAST
+        # standard item's rate, and raising NameError outright on an invoice with
+        # no standard lines.
+        item_tax_percentage = 15
+
         # Add regular item lines
         for single_item in sales_invoice_doc.items:
             tax_json = get_tax_wise_detail(sales_invoice_doc,single_item)
@@ -982,6 +988,16 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
             advance_invoice = frappe.get_doc("Advance Sales Invoice", reference_name)
 
             for i, single_item in enumerate(advance_invoice.custom_item):
+                # Prefer the advance item's own tax template where it has one.
+                adv_percentage = item_tax_percentage
+                if single_item.get("item_tax_template"):
+                    adv_template = frappe.get_doc(
+                        ITEM_TAX_TEMPLATE, single_item.item_tax_template
+                    )
+                    adv_percentage = (
+                        adv_template.taxes[0].tax_rate if adv_template.taxes else 15
+                    )
+
                 line = ET.SubElement(invoice, "cac:InvoiceLine")
                 ET.SubElement(line, "cbc:ID").text = str(
                     len(sales_invoice_doc.items) + i + 1
@@ -1025,7 +1041,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
                 ET.SubElement(
                     subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
                 ).text = str(
-                    abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                    abs(round(single_item.amount * adv_percentage / 100, 2))
                 )
 
                 tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
@@ -1033,7 +1049,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
                     sales_invoice_doc.custom_zatca_tax_category
                 )
                 ET.SubElement(tax_cat, "cbc:Percent").text = (
-                    f"{float(item_tax_percentage):.2f}"
+                    f"{float(adv_percentage):.2f}"
                 )
                 ET.SubElement(
                     ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID"
@@ -1049,7 +1065,7 @@ def item_data_advance_invoice(invoice, sales_invoice_doc):
                     sales_invoice_doc.custom_zatca_tax_category
                 )
                 ET.SubElement(tax_cat_item, "cbc:Percent").text = (
-                    f"{float(item_tax_percentage):.2f}"
+                    f"{float(adv_percentage):.2f}"
                 )
                 ET.SubElement(
                     ET.SubElement(tax_cat_item, "cac:TaxScheme"), "cbc:ID"
@@ -1242,6 +1258,14 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
     try:
         qty = "cbc:BaseQuantity"
 
+        # Defaults for the advance block further down. It used to read whatever
+        # this loop happened to leave behind in item_tax_template /
+        # item_tax_percentage, which meant an advance line was described by the
+        # LAST standard item's tax template rather than its own, and a Sales
+        # Invoice with no standard lines raised NameError before reaching ZATCA.
+        item_tax_percentage = 15
+        item_tax_template = None
+
         for single_item in sales_invoice_doc.items:
             item_tax_template = frappe.get_doc(
                 ITEM_TAX_TEMPLATE, single_item.item_tax_template
@@ -1373,6 +1397,29 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                     "Advance Sales Invoice", reference_name
                 )
                 for i, single_item in enumerate(advance_invoice.custom_item):
+                    # Describe the advance line from its OWN item tax template
+                    # where it has one, falling back to the invoice-level values
+                    # for advances created before that field existed.
+                    adv_template = None
+                    if single_item.get("item_tax_template"):
+                        adv_template = frappe.get_doc(
+                            ITEM_TAX_TEMPLATE, single_item.item_tax_template
+                        )
+                    if adv_template:
+                        adv_percentage = (
+                            adv_template.taxes[0].tax_rate
+                            if adv_template.taxes
+                            else 15
+                        )
+                        adv_category = adv_template.custom_zatca_tax_category
+                    else:
+                        adv_percentage = item_tax_percentage
+                        adv_category = (
+                            item_tax_template.custom_zatca_tax_category
+                            if item_tax_template
+                            else sales_invoice_doc.custom_zatca_tax_category
+                        )
+
                     adv_line = ET.SubElement(invoice, "cac:InvoiceLine")
                     ET.SubElement(adv_line, "cbc:ID").text = str(advance_line_id + i)
                     ET.SubElement(
@@ -1438,22 +1485,26 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                     ET.SubElement(
                         subtotal, "cbc:TaxAmount", currencyID=sales_invoice_doc.currency
                     ).text = str(
-                        abs(round(single_item.amount * item_tax_percentage / 100, 2))
+                        abs(round(single_item.amount * adv_percentage / 100, 2))
                     )
 
                     tax_cat = ET.SubElement(subtotal, "cac:TaxCategory")
-                    zatca_tax_category = item_tax_template.custom_zatca_tax_category
-                    if zatca_tax_category == "Standard":
-                        cbc_id_12.text = "S"
-                    elif zatca_tax_category == ZERO_RATED:
-                        cbc_id_12.text = "Z"
-                    elif zatca_tax_category == "Exempted":
-                        cbc_id_12.text = "E"
-                    elif zatca_tax_category == OUTSIDE_SCOPE:
-                        cbc_id_12.text = "O"
-                    ET.SubElement(tax_cat, "cbc:ID").text = cbc_id_12.text
+                    zatca_tax_category = adv_category
+                    # Hold the category code in a local. This used to assign it to
+                    # cbc_id_12, which is not a category element at all: it is the
+                    # cac:TaxScheme/cbc:ID of the *last standard invoice line*,
+                    # created and set to "VAT" at the top of this function. Writing
+                    # "S" into it retroactively corrupted that already-built line,
+                    # leaving <cac:TaxScheme><cbc:ID>S</cbc:ID></cac:TaxScheme>
+                    # where "VAT" belongs. A ClassifiedTaxCategory is only
+                    # identifiable as a VAT category through that scheme id, so the
+                    # standard line lost its BT-151 and ZATCA rejected the invoice
+                    # with BR-CO-04 ("Each Invoice line shall be categorized with an
+                    # Invoiced item VAT category code").
+                    advance_tax_code = get_tax_code(zatca_tax_category)
+                    ET.SubElement(tax_cat, "cbc:ID").text = advance_tax_code
                     ET.SubElement(tax_cat, "cbc:Percent").text = (
-                        f"{float(item_tax_percentage):.2f}"
+                        f"{float(adv_percentage):.2f}"
                     )
                     ET.SubElement(
                         ET.SubElement(tax_cat, "cac:TaxScheme"), "cbc:ID"
@@ -1466,9 +1517,9 @@ def item_data_with_template_advance_invoice(invoice, sales_invoice_doc):
                     tax_cat_adv = ET.SubElement(
                         item_tag_adv, "cac:ClassifiedTaxCategory"
                     )
-                    ET.SubElement(tax_cat_adv, "cbc:ID").text = cbc_id_12.text
+                    ET.SubElement(tax_cat_adv, "cbc:ID").text = advance_tax_code
                     ET.SubElement(tax_cat_adv, "cbc:Percent").text = (
-                        f"{float(item_tax_percentage):.2f}"
+                        f"{float(adv_percentage):.2f}"
                     )
                     ET.SubElement(
                         ET.SubElement(tax_cat_adv, "cac:TaxScheme"), "cbc:ID"

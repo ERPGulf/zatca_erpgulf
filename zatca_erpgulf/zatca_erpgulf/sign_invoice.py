@@ -1047,6 +1047,20 @@ def zatca_call_compliance(
     """zatca call compliance"""
 
     try:
+        # frappe.call() omits keys whose value is undefined, so a caller that
+        # passes an empty "sample invoice number" field sends no invoice_number at
+        # all and this endpoint fails with an opaque
+        # "missing 1 required positional argument: 'invoice_number'" TypeError
+        # before any of the checks below run. Fail with something a user can act
+        # on instead.
+        if not invoice_number:
+            frappe.throw(
+                _(
+                    "Sample Invoice Number is required to run a compliance check. "
+                    "Set it on the form before pressing Check Compliance."
+                )
+            )
+
         if source_doc:
             source_doc = frappe.get_doc(json.loads(source_doc))
         company_name = frappe.db.get_value("Company", {"abbr": company_abbr}, "name")
