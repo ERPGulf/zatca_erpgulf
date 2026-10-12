@@ -105,7 +105,7 @@ def debug_call(
         company_abbr = settings.abbr
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
 
-        if company_doc.custom_zatca_invoice_enabled != 1:
+        if company_doc.custom_zatca_invoice_enabled != 1 or company_doc.country != "Saudi Arabia":
             frappe.msgprint(_("ZATCA Invoice is not enabled. Submitting the document."))
             return
 
