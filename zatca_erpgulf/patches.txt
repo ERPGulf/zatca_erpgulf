@@ -1,2 +1,5 @@
 [pre_model_sync]
+# existing patches that were in the file before (old-style = pre-model-sync)
 zatca_erpgulf.patches.fix_workspace_sidebar_title
+
+[post_model_sync]
