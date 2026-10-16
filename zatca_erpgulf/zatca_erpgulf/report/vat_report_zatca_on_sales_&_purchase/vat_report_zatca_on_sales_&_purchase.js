@@ -8,7 +8,12 @@ frappe.query_reports["VAT Report ZATCA on Sales & Purchase"] = {
             fieldtype: "Link",
             options: "Company",
             reqd: 0,  // optional
-            default: frappe.defaults.get_user_default("Company")
+            default: frappe.defaults.get_user_default("Company"),
+            get_query: function () {
+                return {
+                    filters: { country: "Saudi Arabia" }
+                };
+            }
         },
         {
             fieldname: "from_date",

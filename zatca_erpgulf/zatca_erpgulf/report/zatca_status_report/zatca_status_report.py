@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 
+
 def get_columns():
     return [
         {'fieldname': 'name', 'label': _('Inv.Number'), 'fieldtype': 'Link', 'options': 'Sales Invoice', 'width': 220},
@@ -15,8 +16,9 @@ def get_data_and_chart(filters):
     dt_from = filters.get('dt_from')
     dt_to = filters.get('dt_to')
     status = filters.get('status')
-    company = filters.get('company')
-
+    company = filters.get('company') or "Saudi Arabia"
+    if company and frappe.db.get_value("Company", company, "country") != "Saudi Arabia":
+        return []
     conditions = ["1=1"]
     values = {}
 
@@ -42,12 +44,13 @@ def get_data_and_chart(filters):
     where_clause = " AND ".join(conditions)
     # nosemgrep: frappe-semgrep-rules.rules.security.frappe-sql-format-injection
     query = f"""
-        SELECT 
+        SELECT
             name,
             customer_name,
             posting_date,
             grand_total,
             custom_zatca_status,
+            custom_company_country,
             docstatus
         FROM `tabSales Invoice`
         WHERE {where_clause}
@@ -56,15 +59,18 @@ def get_data_and_chart(filters):
 
     invoices = frappe.db.sql(query, values, as_dict=True)
 
-    # Apply 'Not Submitted' filter
+    # Apply 'Not Submitted' filter (only Saudi Arabia companies)
     if status == "Not Submitted":
         invoices = [
             inv for inv in invoices
-            if inv.get("docstatus") == 1 and (
+            if inv.get("docstatus") == 1
+            and inv.get("custom_company_country") == "Saudi Arabia"
+            and (
                 not inv.get("custom_zatca_status")
-                or inv.get("custom_zatca_status") in [ "Not Submitted"]
+                or inv.get("custom_zatca_status") in ["Not Submitted"]
             )
         ]
+
     return invoices
 
 

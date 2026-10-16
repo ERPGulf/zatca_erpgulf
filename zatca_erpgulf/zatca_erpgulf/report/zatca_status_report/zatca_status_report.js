@@ -6,7 +6,12 @@ frappe.query_reports["Zatca Status Report"] = {
             fieldtype: "Link",
             options: "Company",
             default: frappe.defaults.get_user_default("Company"),
-            reqd: 1
+            reqd: 1,
+            get_query: function () {
+                return {
+                    filters: { country: "Saudi Arabia" }
+                };
+            }
         },
         {
             fieldname: "dt_from",
@@ -29,7 +34,7 @@ frappe.query_reports["Zatca Status Report"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // onload code if needed
     }
 };

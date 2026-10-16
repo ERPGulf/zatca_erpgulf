@@ -69,6 +69,7 @@ doctype_js = {
     ],
     "Company": "public/js/company.js",
     "POS Invoice": ["public/js/our_pos_invoice.js", "public/js/badge_pos.js"],
+    "Purchase Invoice": "public/js/purchase_invoice.js",
 }
 
 doctype_list_js = {

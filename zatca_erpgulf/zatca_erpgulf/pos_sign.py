@@ -1189,7 +1189,7 @@ def zatca_background_(invoice_number:str, source_doc:str=None, bypass_background
         if pos_invoice_doc.custom_zatca_status in ["REPORTED", "CLEARED"]:
             frappe.throw(_("Already submitted to Zakat and Tax Authority"))
 
-        if settings.custom_zatca_invoice_enabled != 1:
+        if settings.custom_zatca_invoice_enabled != 1 or company_doc.country != "Saudi Arabia":
             frappe.throw(
                 _(
                     "ZATCA Invoice is not enabled in Company Settings, "
@@ -1311,7 +1311,7 @@ def zatca_background_on_submit(doc: "dict | str", _method:  str | None = None, b
             frappe.throw(
                 _(f"Company abbreviation for {pos_invoice_doc.company} not found.")
             )
-        if company_doc.custom_zatca_invoice_enabled != 1:
+        if company_doc.custom_zatca_invoice_enabled != 1 or company_doc.country != "Saudi Arabia":
             # frappe.msgprint("Zatca Invoice is not enabled. Submitting the document.")
             return 
         
@@ -1522,7 +1522,7 @@ def zatca_background_on_submit(doc: "dict | str", _method:  str | None = None, b
             )
         # Check if Zatca Invoice is enabled in the Company document
 
-        if company_doc.custom_zatca_invoice_enabled != 1:
+        if company_doc.custom_zatca_invoice_enabled != 1 or company_doc.country != "Saudi Arabia":
             frappe.throw(
                 _(
                     "ZATCA Invoice is not enabled in the Company settings,"
