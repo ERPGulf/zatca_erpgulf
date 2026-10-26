@@ -1,6 +1,7 @@
 // Copyright (c) ERPGulf (https://erpgulf.com). All rights reserved.
-// ERPGulf credits for Help → About: "<App title> from ERPGulf.com" (with link).
+// ERPGulf credits for Help → About: "<App title> … from ERPGulf.com" (with link).
 // Same file in every ERPGulf app: the app is detected from this script's path.
+// Works with the Frappe v15 and v16 About dialogs.
 (function () {
     const CREDIT_TEXT = "ERPGulf.com";
     const CREDIT_URL = "https://erpgulf.com";
@@ -15,21 +16,40 @@
     if (window.erpgulf_credit_started) return;
     window.erpgulf_credit_started = true;
 
+    function make_credit() {
+        const credit = document.createElement("span");
+        credit.className = "erpgulf-credit";
+        credit.innerHTML =
+            ` <span class="text-muted">from</span> ` +
+            `<a href="${CREDIT_URL}" target="_blank" rel="noopener noreferrer">${CREDIT_TEXT}</a>`;
+        // v16: clicking the row copies the version; let the link open instead
+        credit.querySelector("a").addEventListener("click", (e) => e.stopPropagation());
+        return credit;
+    }
+
     function add_credits() {
         const list = document.getElementById("about-app-versions");
         if (!list) return;
-        window.erpgulf_credit_apps.forEach((app) => {
-            const name = list.querySelector(`.about-app-row[title^="${app}:"] .about-app-name`);
-            if (!name || name.querySelector(".erpgulf-credit")) return;
 
-            const credit = document.createElement("span");
-            credit.className = "erpgulf-credit";
-            credit.innerHTML =
-                ` <span class="text-muted">from</span> ` +
-                `<a href="${CREDIT_URL}" target="_blank" rel="noopener noreferrer">${CREDIT_TEXT}</a>`;
-            // clicking the row copies the version; let the link open instead
-            credit.querySelector("a").addEventListener("click", (e) => e.stopPropagation());
-            name.appendChild(credit);
+        window.erpgulf_credit_apps.forEach((app) => {
+            // Frappe v16: one row per app, title attribute "<app>: <version>"
+            const row = list.querySelector(`.about-app-row[title^="${app}:"]`);
+            if (row) {
+                const name = row.querySelector(".about-app-name");
+                if (name && !name.querySelector(".erpgulf-credit")) name.appendChild(make_credit());
+                return;
+            }
+
+            // Frappe v15: one line per app, "<b>App Title:</b> vX (branch)"
+            const versions = window.frappe && frappe.versions;
+            const title = versions && versions[app] && versions[app].title;
+            if (!title) return;
+            list.querySelectorAll("p").forEach((p) => {
+                const b = p.querySelector("b");
+                if (b && b.textContent.trim() === `${title}:` && !p.querySelector(".erpgulf-credit")) {
+                    p.insertBefore(make_credit(), p.querySelector("br"));
+                }
+            });
         });
     }
 
