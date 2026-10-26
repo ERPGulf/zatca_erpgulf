@@ -1,10 +1,11 @@
-// Copyright (c) ERPGulf (https://erpgulf.com). All rights reserved.
-// ERPGulf credits for Help → About: "<App title> … from ERPGulf.com" (with link).
-// Same file in every ERPGulf app: the app is detected from this script's path.
-// Works with the Frappe v15 and v16 About dialogs.
 (function () {
     const CREDIT_TEXT = "ERPGulf.com";
     const CREDIT_URL = "https://erpgulf.com";
+    // ERPGulf brand colours: maroon to purple, as on erpgulf.com
+    const CREDIT_STYLE =
+        "font-weight:600;text-decoration:none;color:#8b2335;" +
+        "background:linear-gradient(90deg,#a3262a,#5c1a5b);" +
+        "-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
 
     const src = (document.currentScript && document.currentScript.src) || "";
     const match = src.match(/\/assets\/([^/]+)\//);
@@ -20,9 +21,9 @@
         const credit = document.createElement("span");
         credit.className = "erpgulf-credit";
         credit.innerHTML =
-            ` <span class="text-muted">from</span> ` +
-            `<a href="${CREDIT_URL}" target="_blank" rel="noopener noreferrer">${CREDIT_TEXT}</a>`;
-        // v16: clicking the row copies the version; let the link open instead
+            ` <span class="text-muted">by</span> ` +
+            `<a href="${CREDIT_URL}" target="_blank" rel="noopener noreferrer" style="${CREDIT_STYLE}">${CREDIT_TEXT}</a>`;
+        // clicking the row copies the version; let the link open instead
         credit.querySelector("a").addEventListener("click", (e) => e.stopPropagation());
         return credit;
     }
@@ -32,7 +33,7 @@
         if (!list) return;
 
         window.erpgulf_credit_apps.forEach((app) => {
-            // Frappe v16: one row per app, title attribute "<app>: <version>"
+            // Frappe v16 (newer): one row per app, title attribute "<app>: <version>"
             const row = list.querySelector(`.about-app-row[title^="${app}:"]`);
             if (row) {
                 const name = row.querySelector(".about-app-name");
@@ -40,7 +41,7 @@
                 return;
             }
 
-            // Frappe v15: one line per app, "<b>App Title:</b> vX (branch)"
+            // Frappe v15 / early v16: one line per app, "<b>App Title:</b> vX (branch)"
             const versions = window.frappe && frappe.versions;
             const title = versions && versions[app] && versions[app].title;
             if (!title) return;
