@@ -656,12 +656,14 @@ def customer_data(invoice, sales_invoice_doc):
         )
         cac_party_2 = ET.SubElement(cac_accountingcustomerparty, "cac:Party")
         
-        # Only add PartyIdentification if NOT B2C or if the field custom_buyer_id is not empty, otherwise ZATCA gives BR-KSA-F-08 warning for empty tag
-        if not customer_doc.custom_b2c or (customer_doc.custom_b2c and customer_doc.custom_buyer_id):
-            cac_partyidentification_1 = ET.SubElement(cac_party_2, "cac:PartyIdentification")
+        # BR-KSA-81: BT-46 must contain both a scheme and an identifier.
+        if customer_doc.custom_buyer_id and customer_doc.custom_buyer_id_type:
+            cac_partyidentification_1 = ET.SubElement(
+                cac_party_2, "cac:PartyIdentification"
+            )
             cbc_id_4 = ET.SubElement(cac_partyidentification_1, CBC_ID)
             cbc_id_4.set("schemeID", str(customer_doc.custom_buyer_id_type))
-            cbc_id_4.text = customer_doc.custom_buyer_id            
+            cbc_id_4.text = customer_doc.custom_buyer_id
 
         country_dict = country_code_mapping()
         address = None
