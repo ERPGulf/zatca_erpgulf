@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal, ROUND_HALF_UP
 from num2words import num2words
 
@@ -92,3 +93,25 @@ def generate_qr_for_doc(doctype, docname, url, file_field=None):
         url=url,
         file_field=file_field
     )
+
+
+def get_tax_wise_detail(invoice_doc, single_item):
+    """Return item-wise tax as the legacy JSON string, on any ERPNext version.
+
+    ERPNext moved item-wise tax from the `item_wise_tax_detail` JSON field on
+    Sales Taxes and Charges to the `item_wise_tax_details` child table on the
+    invoice. Detect the child table instead of pinning to a version number.
+    """
+    if invoice_doc.meta.has_field("item_wise_tax_details"):
+        rows = invoice_doc.get("item_wise_tax_details")
+        if rows:
+            tax_rate = float(f"{rows[0].rate:.1f}")
+            tax_amount = rows[0].amount
+
+            # build JSON exactly like v15
+            return json.dumps({single_item.item_code: [tax_rate, float(tax_amount)]})
+
+        # No child rows: fall back to the legacy field if this version still has it.
+        return invoice_doc.taxes[0].get("item_wise_tax_detail") or "{}"
+
+    return invoice_doc.taxes[0].item_wise_tax_detail

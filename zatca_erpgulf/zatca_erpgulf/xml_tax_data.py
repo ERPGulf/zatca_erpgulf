@@ -9,6 +9,7 @@ from frappe import _
 import frappe
 import json
 from decimal import Decimal, ROUND_HALF_UP
+from zatca_erpgulf.zatca_erpgulf.utils import get_tax_wise_detail
 
 TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
@@ -68,20 +69,6 @@ def get_tax_for_item(full_string, item):
     except TypeError as e:
         frappe.throw(_("Type error occurred in tax for item: " + str(e)))
         return None
-
-def get_tax_wise_detail(sales_invoice_doc,single_item):
-    """getting item wise tax"""
-    if int(frappe.__version__.split(".", 1)[0]) == 16 and sales_invoice_doc.item_wise_tax_details:
-        tax_rate = float(f"{sales_invoice_doc.item_wise_tax_details[0].rate:.1f}")
-        tax_amount = sales_invoice_doc.item_wise_tax_details[0].amount
-
-        # build JSON exactly like v15
-        tax_json = json.dumps({
-            single_item.item_code: [tax_rate, float(tax_amount)]
-        })
-    else:
-        tax_json = sales_invoice_doc.taxes[0].item_wise_tax_detail
-    return tax_json
 
 def get_tax_total_from_items(sales_invoice_doc):
     """Getting tax total for items"""
