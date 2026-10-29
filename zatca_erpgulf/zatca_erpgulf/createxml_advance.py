@@ -117,6 +117,13 @@ def create_csr(zatca_doc: dict | str, portal_type: str, company_abbr: str):
     """
     Function defining the create csr method with the config csr data
     """
+    if not portal_type or portal_type not in ("Sandbox", "Simulation", "Production"):
+        frappe.throw(
+            _(
+                "Portal type is required. Please select either Sandbox, Simulation "
+                "or Production from the Select field before creating the CSR."
+            )
+        )
     try:
         # frappe.throw("hi")
 

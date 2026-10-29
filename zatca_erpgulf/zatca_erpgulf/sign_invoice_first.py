@@ -169,6 +169,13 @@ def create_csr(zatca_doc:dict | str, portal_type:str, company_abbr:str):
     """
     Function defining the create csr method with the config csr data
     """
+    if not portal_type or portal_type not in ("Sandbox", "Simulation", "Production"):
+        frappe.throw(
+            _(
+                "Portal type is required. Please select either Sandbox, Simulation "
+                "or Production from the Select field before creating the CSR."
+            )
+        )
     try:
         if isinstance(zatca_doc, str):
             zatca_doc = json.loads(zatca_doc)
@@ -293,6 +300,16 @@ def get_api_url(company_abbr, base_url):
     """There are many api susing in zatca which can be defined by a feild in settings"""
     try:
         company_doc = frappe.get_doc("Company", {"abbr": company_abbr})
+        if (
+            not company_doc.custom_select
+            or company_doc.custom_select not in ("Sandbox", "Simulation", "Production")
+        ):
+            frappe.throw(
+                _(
+                    "Portal type is required. Please select either Sandbox, Simulation "
+                    "or Production from the Select field in Company before calling ZATCA APIs."
+                )
+            )
         if company_doc.custom_select == "Sandbox":
             url = company_doc.custom_sandbox_url + base_url
         elif company_doc.custom_select == "Simulation":

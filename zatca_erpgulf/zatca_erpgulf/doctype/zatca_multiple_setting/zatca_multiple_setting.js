@@ -123,6 +123,14 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
             },
             callback: function (data) {
                 if (data.message) {
+                    if (!data.message.custom_select) {
+                        frappe.msgprint({
+                            title: __("Portal Type Required"),
+                            indicator: "orange",
+                            message: __("The linked Company has no portal selected. Please open the Company and select either <b>Sandbox</b>, <b>Simulation</b> or <b>Production</b> in the <b>Select</b> field first.")
+                        });
+                        return;
+                    }
                     frappe.call({
                         method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csid",
                         args: {
@@ -159,6 +167,14 @@ frappe.ui.form.on("ZATCA Multiple Setting", {
             callback: function (data) {
                 console.log("Fetched company data:", data);
                 if (data.message) {
+                    if (!data.message.custom_select) {
+                        frappe.msgprint({
+                            title: __("Portal Type Required"),
+                            indicator: "orange",
+                            message: __("The linked Company has no portal selected. Please open the Company and select either <b>Sandbox</b>, <b>Simulation</b> or <b>Production</b> in the <b>Select</b> field before creating the CSR.")
+                        });
+                        return;
+                    }
                     frappe.call({
                         method: "zatca_erpgulf.zatca_erpgulf.sign_invoice_first.create_csr",
                         args: {
