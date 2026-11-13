@@ -1330,11 +1330,6 @@ def zatca_background(invoice_number: str, source_doc:str|dict=None, bypass_backg
                 )
             )
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
-        if customer_doc.custom_b2c == 0:
-            if not customer_doc.custom_buyer_id:
-                frappe.throw(_(
-                    "As per ZATCA regulations - For B2B Customers, customer CR number has to be provided"
-                ))
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
@@ -1796,11 +1791,6 @@ def zatca_background_on_submit(doc: "str|dict", _method: str = None, bypass_back
             )
 
         customer_doc = frappe.get_doc("Customer", sales_invoice_doc.customer)
-        if customer_doc.custom_b2c == 0:
-            if not customer_doc.custom_buyer_id:
-                frappe.throw(_(
-                    "As per ZATCA regulations- For B2B Customers, customer CR number has to be provided"
-                ))
         address = None
         if customer_doc.custom_b2c != 1:
             if int(frappe.__version__.split(".", maxsplit=1)[0]) == 13:
