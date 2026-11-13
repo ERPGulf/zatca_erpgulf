@@ -207,7 +207,7 @@ def salesinvoice_data(invoice, invoice_number):
     """
     try:
         sales_invoice_doc = frappe.get_doc("Sales Invoice", invoice_number)
-
+        
         cbc_profile_id = ET.SubElement(invoice, "cbc:ProfileID")
         cbc_profile_id.text = "reporting:1.0"
 
