@@ -16,10 +16,10 @@ frappe.ui.form.on('POS Invoice', {
             if (responseText.trim().toUpperCase() === "NOT SUBMITTED") {
                 console.log("Detected NOT SUBMITTED → Show Failed badge");
                 let badgeHtml = `
-                    <div class="zatca-badge-container">
+                    <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
                              alt="Failed" class="zatca-badge" width="110" height="100"
-                             style="margin-top: -5px; margin-left: 380px;">
+                             style="margin-top: -5px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
                 frm.refresh_field('custom_zatca_status_notification');
@@ -30,10 +30,10 @@ frappe.ui.form.on('POS Invoice', {
             if (responseText.trim().toUpperCase().startsWith("ERROR")) {
                 console.log("Detected ERROR response → Show Failed badge");
                 let badgeHtml = `
-                    <div class="zatca-badge-container">
+                    <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
                              alt="Failed" class="zatca-badge" width="110" height="100"
-                             style="margin-top: -5px; margin-left: 380px;">
+                             style="margin-top: -5px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
                 frm.refresh_field('custom_zatca_status_notification');
@@ -57,10 +57,10 @@ frappe.ui.form.on('POS Invoice', {
             if (duplicateErrorExists && errors.length === 0) {
                 console.log('Duplicate Invoice detected. Showing Duplicate badge.');
                 let badgeHtml = `
-                    <div class="zatca-badge-container">
+                    <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-duplicated.png"
                              alt="Duplicate" class="zatca-badge" width="110" height="100"
-                             style="margin-top: -5px; margin-left: 380px;">
+                             style="margin-top: -5px;">
                     </div>`;
                 frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
                 frm.refresh_field('custom_zatca_status_notification');
@@ -85,10 +85,10 @@ frappe.ui.form.on('POS Invoice', {
             // 🔴 FAILED Badge
             if (finalStatus === 'FAILED') {
                 badgeHtml = `
-                    <div class="zatca-badge-container">
+                    <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                         <img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png"
                              alt="Failed" class="zatca-badge" width="110" height="100"
-                             style="margin-top: -5px; margin-left: 380px;">
+                             style="margin-top: -5px;">
                     </div>`;
             }
 
@@ -96,17 +96,17 @@ frappe.ui.form.on('POS Invoice', {
             else if (finalStatus === 'WARNING') {
                 if (reportingStatus === 'CLEARED') {
                     badgeHtml = `
-                        <div class="zatca-badge-container">
+                        <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-cleared-warning.png"
                                  alt="Cleared with Warning" class="zatca-badge" width="110" height="100"
-                                 style="margin-top: -5px; margin-left: 380px;">
+                                 style="margin-top: -5px;">
                         </div>`;
                 } else if (reportingStatus === 'REPORTED') {
                     badgeHtml = `
-                        <div class="zatca-badge-container">
+                        <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-reported-warning.png"
                                  alt="Reported with Warning" class="zatca-badge" width="110" height="100"
-                                 style="margin-top: -5px; margin-left: 380px;">
+                                 style="margin-top: -5px;">
                         </div>`;
                 }
             }
@@ -115,17 +115,17 @@ frappe.ui.form.on('POS Invoice', {
             else if (finalStatus === 'PASS') {
                 if (reportingStatus === 'CLEARED') {
                     badgeHtml = `
-                        <div class="zatca-badge-container">
+                        <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-cleared.png"
                                  alt="Cleared" class="zatca-badge" width="110" height="100"
-                                 style="margin-top: -5px; margin-left: 380px;">
+                                 style="margin-top: -5px;">
                         </div>`;
                 } else if (reportingStatus === 'REPORTED') {
                     badgeHtml = `
-                        <div class="zatca-badge-container">
+                        <div class="zatca-badge-container" style="display: flex; justify-content: flex-end;">
                             <img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png"
                                  alt="Reported" class="zatca-badge" width="110" height="100"
-                                 style="margin-top: -5px; margin-left: 380px;">
+                                 style="margin-top: -5px;">
                         </div>`;
                 }
             }
@@ -156,7 +156,7 @@ frappe.ui.form.on('POS Invoice', {
 //         // ✅ Check if the response starts with "Error"
 //                 if (ztcaresponse.trim().toUpperCase() === "NOT SUBMITTED") {
 //                     console.log("Error detected in ZATCA response. Displaying Failed badge.");
-//                     let badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 380px;"></div>';
+//                     let badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px;"></div>';
 //                     frm.set_df_property('custom_zatca_status_notification', 'options', badgeHtml);
 //                     frm.refresh_field('custom_zatca_status_notification');
 //                     return; // Exit since it's an error
@@ -181,11 +181,11 @@ frappe.ui.form.on('POS Invoice', {
 //                 if (status === 'PASS') {
 //                     if (reportingStatus === 'CLEARED') {
 //                         console.log('PASS - Cleared');
-//                         badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-cleared.png" alt="Cleared" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 380px;"></div>';
+//                         badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-cleared.png" alt="Cleared" class="zatca-badge" width="110" height="36" style="margin-top: -5px;"></div>';
 
 //                     } else if (reportingStatus === 'REPORTED') {
 //                         console.log('PASS - Reported');
-//                         badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png" alt="Reported" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 380px;"></div>';
+//                         badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported.png" alt="Reported" class="zatca-badge" width="110" height="36" style="margin-top: -5px;"></div>';
 //                     }
 //                 }
 
@@ -193,17 +193,17 @@ frappe.ui.form.on('POS Invoice', {
 //                 else if (status === 'WARNING') {
 //                     if (reportingStatus === 'CLEARED') {
 //                         console.log('WARNING - Cleared with Warning');
-//                         badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-cleared-warning.png" alt="Cleared with Warning" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 380px;"></div>';
+//                         badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-cleared-warning.png" alt="Cleared with Warning" class="zatca-badge" width="110" height="36" style="margin-top: -5px;"></div>';
 //                     } else if (reportingStatus === 'REPORTED') {
 //                         console.log('WARNING - Reported with Warning');
-//                         badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported-warning.png" alt="Reported with Warning" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 380px;"></div>';
+//                         badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-reported-warning.png" alt="Reported with Warning" class="zatca-badge" width="110" height="36" style="margin-top: -5px;"></div>';
 //                     }
 //                 }
 
 //                 // 🔴 FAILED Condition
 //                 else {
 //                     console.log('FAILED');
-//                     badgeHtml = '<div class="zatca-badge-container"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 250px;"></div>';
+//                     badgeHtml = '<div class="zatca-badge-container" style="display: flex; justify-content: flex-end;"><img src="/assets/zatca_erpgulf/js/badges/zatca-failed.png" alt="Failed" class="zatca-badge" width="110" height="36" style="margin-top: -5px; margin-left: 250px;"></div>';
 //                 }
 
 //                 // Set Badge or Clear if None
