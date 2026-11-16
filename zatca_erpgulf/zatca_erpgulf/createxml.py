@@ -224,6 +224,8 @@ def salesinvoice_data(invoice, invoice_number):
         cbc_issue_time = ET.SubElement(invoice, "cbc:IssueTime")
         cbc_issue_time.text = get_issue_time(invoice_number)
 
+        from zatca_erpgulf.zatca_erpgulf.xml_rounding import align_inclusive_net_for_xml
+        align_inclusive_net_for_xml(sales_invoice_doc)
         return invoice, uuid1, sales_invoice_doc
     except (AttributeError, ValueError, frappe.ValidationError) as e:
         frappe.throw(_(("Error occurred in SalesInvoice data: " f"{str(e)}")))

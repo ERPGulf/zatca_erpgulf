@@ -8,6 +8,20 @@ Saudi Arabian E-Invoicing (ZATCA Phase-2) – A Frappe ERPNext App
 
 A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZATCA Phase-2 e-invoicing regulations.
 
+> [!IMPORTANT]
+> **Notice for ZATCA e-invoicing users in Saudi Arabia (ZATCA by ERPGulf)**
+>
+> The latest ERPNext update (**v15.125.0** or **v16.54.0** and later, which include patch [`bc4c5ffd`](https://github.com/frappe/erpnext/commit/bc4c5ffd2e52ee7e696594d0f6232333012771e1) "distribute inclusive net rounding") changed how tax-inclusive amounts are rounded. Without our update, some invoices show ZATCA warnings **BR-S-08**, **BR-CO-10** and **BR-CO-13**.
+>
+> We have released a patch for `zatca_erpgulf` that handles this.
+>
+> **If you update ERPNext, please update `zatca_erpgulf` as well.**
+>
+> - Keep the **Round Tax Amount Row-wise** checkbox in **Accounts Settings** unticked. ZATCA's rule is that VAT is calculated on the total taxable amount and rounded once, not rounded per item row. Ticking this setting can make the VAT on your printed invoice differ from the VAT in the ZATCA QR code.
+> - Invoices already reported with these warnings were accepted by ZATCA; no action is needed on them.
+>
+> Support: [support@erpgulf.com](mailto:support@erpgulf.com)g
+
 🚀 Features
 
 ✅ Compliance with ZATCA E-Invoicing Phase-2 <br>
