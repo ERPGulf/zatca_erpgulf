@@ -5,6 +5,7 @@ v15.125.0 / v16.54.0 ("distribute inclusive net rounding") ERPNext carries round
 across items, so its net_total can be 0.01 off the sum of those lines. That gives
 BR-CO-10, BR-CO-13 and BR-S-08 warnings and a TaxInclusiveAmount 0.01 off the
 grand total.
+
 This aligns the in-memory document used to build the XML with the same per-line
 rounding the lines use. It is never saved: invoice values in ERPNext are untouched.
 """
