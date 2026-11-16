@@ -205,8 +205,7 @@ def salesinvoice_data(invoice, invoice_number):
         cbc_issuedate = ET.SubElement(invoice, "cbc:IssueDate")
         cbc_issuedate.text = str(pos_invoice_doc.posting_date)
         cbc_issuetime = ET.SubElement(invoice, "cbc:IssueTime")
-        cbc_issuetime.text = get_issue_time(invoice_number)
-        
+        cbc_issuetime.text = get_issue_time(invoice_number) 
         from zatca_erpgulf.zatca_erpgulf.xml_rounding import align_inclusive_net_for_xml
         align_inclusive_net_for_xml(pos_invoice_doc)
         return invoice, uuid1, pos_invoice_doc

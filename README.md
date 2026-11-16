@@ -20,7 +20,7 @@ A Frappe ERPNext app for businesses in Saudi Arabia, ensuring compliance with ZA
 > - Keep the **Round Tax Amount Row-wise** checkbox in **Accounts Settings** unticked. ZATCA's rule is that VAT is calculated on the total taxable amount and rounded once, not rounded per item row. Ticking this setting can make the VAT on your printed invoice differ from the VAT in the ZATCA QR code.
 > - Invoices already reported with these warnings were accepted by ZATCA; no action is needed on them.
 >
-> Support: [support@erpgulf.com](mailto:support@erpgulf.com)g
+> Support: [support@erpgulf.com](mailto:support@erpgulf.com)
 
 🚀 Features
 
