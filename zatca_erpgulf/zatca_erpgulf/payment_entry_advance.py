@@ -406,8 +406,9 @@ def send_to_zatca(pe):
         frappe.throw(_("{0} has already been sent to ZATCA.").format(pe.name))
 
     with _company_chain_lock(pe.company):
-        company_doc = frappe.get_doc("Company", pe.company)
-        csid = company_doc.custom_basic_auth_from_production
+        company_abbr, csid = frappe.db.get_value(
+            "Company", pe.company, ["abbr", "custom_basic_auth_from_production"]
+        )
         if not csid:
             frappe.throw(_("Production CSID for company {0} not found.").format(pe.company))
 
@@ -428,7 +429,7 @@ def send_to_zatca(pe):
         endpoint = "invoices/reporting/single" if simplified else "invoices/clearance/single"
         try:
             response = requests.post(
-                url=get_api_url(company_doc.abbr, base_url=endpoint),
+                url=get_api_url(company_abbr, base_url=endpoint),
                 headers=headers,
                 json=payload,
                 timeout=300,
@@ -447,8 +448,10 @@ def send_to_zatca(pe):
 
         status = "REPORTED" if simplified else "CLEARED"
         prefix = "WITH WARNINGS: " if response.status_code == 202 else "SUCCESS: "
-        company_doc.custom_pih = encoded_hash
-        company_doc.save(ignore_permissions=True)
+        # ERPGulf's QR step (tag8_publickey -> create_public_key) saves and commits
+        # the Company while the XML is built, so a Company doc loaded before it is
+        # stale ("Document has been modified"). Write the PIH directly instead.
+        frappe.db.set_value("Company", pe.company, "custom_pih", encoded_hash)
 
         pe.db_set("custom_uuid", uuid1, update_modified=False)
         pe.db_set("custom_zatca_status", status, update_modified=False)
