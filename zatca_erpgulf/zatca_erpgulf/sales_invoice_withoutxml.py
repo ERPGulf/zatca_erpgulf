@@ -169,6 +169,12 @@ def zatca_call_withoutxml(
             invoice = item_data(invoice, sales_invoice_doc)
         else:
             invoice = item_data_with_template(invoice, sales_invoice_doc)
+        # Advances sent to ZATCA as Payment Entries
+        from zatca_erpgulf.zatca_erpgulf.payment_entry_advance import (
+            add_prepayment_lines,
+        )
+
+        invoice = add_prepayment_lines(invoice, sales_invoice_doc)
         file_content = xml_structuring(invoice)
         # try:
         #     with open(
