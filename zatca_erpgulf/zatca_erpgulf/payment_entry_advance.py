@@ -601,6 +601,7 @@ def make_advance_refund(source_name):
         },
     )
     pe.remarks = _("Refund of advance {0}").format(src.name)
+    pe.setup_party_account_field()
     pe.set_missing_values()
     return pe.as_dict()
 
