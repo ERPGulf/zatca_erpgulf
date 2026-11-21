@@ -14,6 +14,17 @@ TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 
 
+
+def payable_rounding_amount(sales_invoice_doc, tax_inclusive_amount):
+    """Rounding difference between ERPNext grand total and XML total (VAT-inclusive only)."""
+    taxes = sales_invoice_doc.get("taxes") or []
+    if not taxes or not taxes[0].included_in_print_rate:
+        return 0
+    diff = round(
+        abs(float(sales_invoice_doc.grand_total or 0)) - abs(float(tax_inclusive_amount)), 2
+    )
+    return diff if 0 < abs(diff) <= 0.05 else 0
+
 def get_exemption_reason_map():
     """Mapping of the exception reason code accoding to the reason code"""
     return {
@@ -432,10 +443,16 @@ def tax_data(invoice, sales_invoice_doc):
                 )
                 cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
                 cbc_prepaidamount.text = str(advance_amount)
-
+        rounding_amount = payable_rounding_amount(sales_invoice_doc, total_amount)
+        if rounding_amount:
+            cbc_roundingamount = ET.SubElement(
+                cac_legalmonetarytotal, "cbc:PayableRoundingAmount"
+            )
+            cbc_roundingamount.set("currencyID", sales_invoice_doc.currency)
+            cbc_roundingamount.text = "{:.2f}".format(rounding_amount)
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
-
+        
         # if sales_invoice_doc.taxes[0].included_in_print_rate == 0:
         #     cbc_payableamount.text = str(
         #         round(
@@ -476,7 +493,11 @@ def tax_data(invoice, sales_invoice_doc):
                 payable_amount = round(total_amount - advance_amount, 2)
 
         # Set the final payable amount in the XML
-        cbc_payableamount.text = str(payable_amount)
+        # cbc_payableamount.text = str(payable_amount)
+        payable_amount = round(payable_amount + rounding_amount, 2)
+
+        # Set the final payable amount in the XML
+        cbc_payableamount.text = "{:.2f}".format(payable_amount)
         return invoice
 
     except (AttributeError, KeyError, ValueError, TypeError) as e:
