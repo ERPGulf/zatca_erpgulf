@@ -184,6 +184,12 @@ def debug_call(
                     invoice = item_data(invoice, invoice_doc)
                 else:
                     invoice = item_data_with_template(invoice, invoice_doc)
+                # Advances sent to ZATCA as Payment Entries
+                from zatca_erpgulf.zatca_erpgulf.payment_entry_advance import (
+                    add_prepayment_lines,
+                )
+
+                invoice = add_prepayment_lines(invoice, invoice_doc)
 
             # Step 6: XML Structuring & reading
             file_content = xml_structuring(invoice)

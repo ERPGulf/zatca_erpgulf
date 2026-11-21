@@ -14,6 +14,14 @@ TAX_CALCULATION_ERROR = "Tax Calculation Error"
 CAC_TAX_TOTAL = "cac:TaxTotal"
 
 
+def payment_entry_prepaid_amount(sales_invoice_doc):
+    """PrepaidAmount (VAT included) from advances sent to ZATCA as Payment
+    Entries, or None when the invoice has none. Imported here to avoid a
+    circular import with payment_entry_advance."""
+    from zatca_erpgulf.zatca_erpgulf.payment_entry_advance import get_prepaid_amount
+
+    return get_prepaid_amount(sales_invoice_doc)
+
 
 def payable_rounding_amount(sales_invoice_doc, tax_inclusive_amount):
     """Rounding difference between ERPNext grand total and XML total (VAT-inclusive only)."""
@@ -443,6 +451,15 @@ def tax_data(invoice, sales_invoice_doc):
                 )
                 cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
                 cbc_prepaidamount.text = str(advance_amount)
+        else:
+            pe_prepaid = payment_entry_prepaid_amount(sales_invoice_doc)
+            if pe_prepaid is not None:
+                cbc_prepaidamount = ET.SubElement(
+                    cac_legalmonetarytotal, "cbc:PrepaidAmount"
+                )
+                cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+                cbc_prepaidamount.text = str(pe_prepaid)
+
         rounding_amount = payable_rounding_amount(sales_invoice_doc, total_amount)
         if rounding_amount:
             cbc_roundingamount = ET.SubElement(
@@ -491,6 +508,10 @@ def tax_data(invoice, sales_invoice_doc):
                     for advance in sales_invoice_doc.custom_advances_copy
                 )
                 payable_amount = round(total_amount - advance_amount, 2)
+        else:
+            pe_prepaid = payment_entry_prepaid_amount(sales_invoice_doc)
+            if pe_prepaid is not None:
+                payable_amount = round(total_amount - float(pe_prepaid), 2)
 
         # Set the final payable amount in the XML
         # cbc_payableamount.text = str(payable_amount)
@@ -859,6 +880,14 @@ def tax_data_with_template(invoice, sales_invoice_doc):
             )
             cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
             cbc_prepaidamount.text = str(advance_amount)
+        else:
+            pe_prepaid = payment_entry_prepaid_amount(sales_invoice_doc)
+            if pe_prepaid is not None:
+                cbc_prepaidamount = ET.SubElement(
+                    cac_legalmonetarytotal, "cbc:PrepaidAmount"
+                )
+                cbc_prepaidamount.set("currencyID", sales_invoice_doc.currency)
+                cbc_prepaidamount.text = str(pe_prepaid)
         cbc_payableamount = ET.SubElement(cac_legalmonetarytotal, "cbc:PayableAmount")
         cbc_payableamount.set("currencyID", sales_invoice_doc.currency)
         # cbc_payableamount.text = str(
@@ -889,6 +918,12 @@ def tax_data_with_template(invoice, sales_invoice_doc):
                     for advance in sales_invoice_doc.custom_advances_copy
                 )
                 payable_amount = round(tax_inclusive_amount - advance_amount, 2)
+        else:
+            pe_prepaid = payment_entry_prepaid_amount(sales_invoice_doc)
+            if pe_prepaid is not None:
+                payable_amount = (tax_inclusive_amount - pe_prepaid).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
 
         cbc_payableamount.text = str(payable_amount)
 

@@ -806,7 +806,7 @@ def generate_tlv_xml(final_xml_string,company_abbr, source_doc):
                 "/ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID",
             ),
             (3, None),
-            (4, "/ubl:Invoice/cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount"),
+            (4, "/ubl:Invoice/cac:LegalMonetaryTotal/cbc:PayableAmount"),  # BT-115: amount due after advances/rounding
             (5, "/ubl:Invoice/cac:TaxTotal/cbc:TaxAmount"),
             (
                 6,
